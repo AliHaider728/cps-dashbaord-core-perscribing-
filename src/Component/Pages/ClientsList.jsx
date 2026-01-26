@@ -1,27 +1,33 @@
 import React, { useState } from 'react';
-import { Search, Plus, Filter, Hospital, Building2, ChevronRight } from 'lucide-react';
+import { Search, Plus, Filter, Hospital, Building2, ChevronRight, MoreVertical, Edit, Trash, RefreshCw } from 'lucide-react';
 
 const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all'); // all, pcn, standalone
-  const [showAddModal, setShowAddModal] = useState(false);
-
-  // Mock data - replace with real data
-  const mockClients = [
+  const [showAddTypeModal, setShowAddTypeModal] = useState(false);
+  const [addType, setAddType] = useState(null); // 'pcn' or 'standalone'
+  const [editingClient, setEditingClient] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [clients, setClients] = useState([
     {
       id: 1,
       name: 'Bradford PCN',
       type: 'pcn',
       code: 'PCN001',
       practices: 5,
+      patients: 12000, // Added for completeness, though fix is in details
+      activeSince: '2023-01-15', // Added formatted date
       status: 'Active',
-      region: 'Yorkshire'
+      region: 'Yorkshire',
+      accountManager: 'John Doe' // Added for PCN details fix, though shown in details
     },
     {
       id: 2,
       name: 'Green Street Surgery',
       type: 'standalone',
       code: 'PR001',
+      patients: 5000,
+      activeSince: '2022-06-01',
       status: 'Active',
       region: 'London'
     },
@@ -31,12 +37,15 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
       type: 'pcn',
       code: 'PCN002',
       practices: 8,
+      patients: 20000,
+      activeSince: '2023-03-20',
       status: 'Onboarding',
-      region: 'Yorkshire'
+      region: 'Yorkshire',
+      accountManager: 'Jane Smith'
     }
-  ];
+  ]);
 
-  const filteredClients = mockClients.filter(client => {
+  const filteredClients = clients.filter(client => {
     const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          client.code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || 
@@ -53,6 +62,217 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
     }
   };
 
+  const handleAddClient = (newClient) => {
+    const maxId = Math.max(...clients.map(c => c.id), 0);
+    setClients([...clients, { ...newClient, id: maxId + 1 }]);
+    setAddType(null);
+    alert('Client added successfully!');
+  };
+
+  const handleEditClient = (updatedClient) => {
+    setClients(clients.map(c => c.id === updatedClient.id ? updatedClient : c));
+    setEditingClient(null);
+    alert('Client updated successfully!');
+  };
+
+  const handleDeleteClient = (id) => {
+    if (window.confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+      setClients(clients.filter(c => c.id !== id));
+      alert('Client deleted successfully!');
+    }
+  };
+
+ 
+
+  const ClientForm = ({ client = {}, onSubmit, type }) => {
+    const [formData, setFormData] = useState({
+      name: client.name || '',
+      code: client.code || '',
+      practices: client.practices || (type === 'pcn' ? '' : undefined),
+      patients: client.patients || '',
+      activeSince: client.activeSince || '',
+      status: client.status || 'Active',
+      region: client.region || '',
+      accountManager: client.accountManager || (type === 'pcn' ? '' : undefined)
+    });
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const validate = () => {
+      if (!formData.name || !formData.code || !formData.region || !formData.activeSince || !formData.patients) {
+        alert('Please fill all required fields.');
+        return false;
+      }
+      if (type === 'pcn' && (!formData.practices || !formData.accountManager)) {
+        alert('PCN requires practices count and account manager.');
+        return false;
+      }
+      if (isNaN(formData.patients) || (type === 'pcn' && isNaN(formData.practices))) {
+        alert('Patients and practices must be numbers.');
+        return false;
+      }
+      return true;
+    };
+
+    const handleFormSubmit = (e) => {
+      e.preventDefault();
+      if (validate()) {
+        onSubmit({ ...client, ...formData, type, practices: type === 'pcn' ? parseInt(formData.practices) : undefined, patients: parseInt(formData.patients) });
+      }
+    };
+
+    return (
+     <form
+  onSubmit={handleFormSubmit}
+  className="w-full max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-5"
+>
+  {/* Name */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Name *
+    </label>
+    <input
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+      required
+    />
+  </div>
+
+  {/* Code */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Code *
+    </label>
+    <input
+      name="code"
+      value={formData.code}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+      required
+    />
+  </div>
+
+  {/* Practices (PCN only) */}
+  {type === 'pcn' && (
+    <div>
+      <label className="block text-sm font-medium text-primary mb-1">
+        Practices *
+      </label>
+      <input
+        name="practices"
+        type="number"
+        value={formData.practices}
+        onChange={handleChange}
+        className="w-full px-4 py-2.5 border rounded-md"
+        required
+      />
+    </div>
+  )}
+
+  {/* Patients */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Patients *
+    </label>
+    <input
+      name="patients"
+      type="number"
+      value={formData.patients}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+      required
+    />
+  </div>
+
+  {/* Active Since */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Active Since *
+    </label>
+    <input
+      name="activeSince"
+      type="date"
+      value={formData.activeSince}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+      required
+    />
+  </div>
+
+  {/* Status */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Status *
+    </label>
+    <select
+      name="status"
+      value={formData.status}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+    >
+      <option>Active</option>
+      <option>Onboarding</option>
+    </select>
+  </div>
+
+  {/* Region */}
+  <div>
+    <label className="block text-sm font-medium text-primary mb-1">
+      Region *
+    </label>
+    <input
+      name="region"
+      value={formData.region}
+      onChange={handleChange}
+      className="w-full px-4 py-2.5 border rounded-md"
+      required
+    />
+  </div>
+
+  {/* Account Manager (PCN only) */}
+  {type === 'pcn' && (
+    <div>
+      <label className="block text-sm font-medium text-primary mb-1">
+        Account Manager *
+      </label>
+      <input
+        name="accountManager"
+        value={formData.accountManager}
+        onChange={handleChange}
+        className="w-full px-4 py-2.5 border rounded-md"
+        required
+      />
+    </div>
+  )}
+
+  {/* Buttons */}
+  <div className="md:col-span-2 flex justify-start gap-3 pt-4">
+    <button
+      type="submit"
+      className="px-6 py-2.5 bg-core-primary-500 text-white rounded-md"
+    >
+      Save
+    </button>
+    <button
+      type="button"
+      onClick={() => {
+        setAddType(null)
+        setEditingClient(null)
+      }}
+      className="px-6 py-2.5 border rounded-md"
+    >
+      Cancel
+    </button>
+  </div>
+</form>
+
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -62,7 +282,7 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
           <p className="text-secondary mt-1">Manage PCNs and standalone practices</p>
         </div>
         <button
-          onClick={() => setShowAddModal(true)}
+          onClick={() => setShowAddTypeModal(true)}
           className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm"
         >
           <Plus size={20} />
@@ -122,7 +342,7 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
           <div
             key={client.id}
             onClick={() => handleClientClick(client)}
-            className="bg-secondary border border-border rounded-xl p-6 hover:shadow-md hover:border-core-primary-500 transition-all cursor-pointer group"
+            className="bg-secondary border border-border rounded-xl p-6 hover:shadow-md hover:border-core-primary-500 transition-all cursor-pointer group relative"
           >
             <div className="flex items-start justify-between mb-4">
               <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
@@ -134,13 +354,24 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
                   <Building2 className="text-green-500" size={24} />
                 )}
               </div>
-              <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                client.status === 'Active'
-                  ? 'bg-green-50 text-green-600'
-                  : 'bg-orange-50 text-orange-600'
-              }`}>
-                {client.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                  client.status === 'Active'
+                    ? 'bg-green-50 text-green-600'
+                    : 'bg-orange-50 text-orange-600'
+                }`}>
+                  {client.status}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setOpenMenuId(openMenuId === client.id ? null : client.id);
+                  }}
+                  className="p-1 hover:bg-gray-200 rounded"
+                >
+                  <MoreVertical size={20} className="text-muted" />
+                </button>
+              </div>
             </div>
             
             <h3 className="text-lg font-semibold text-primary mb-1 group-hover:text-core-primary-500 transition-colors">
@@ -158,6 +389,35 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
               </div>
               <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
             </div>
+
+            {/* Actions Dropdown */}
+            {openMenuId === client.id && (
+              <div className="absolute right-4 top-12 bg-white border border-border rounded-lg shadow-lg z-10">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingClient(client);
+                    setOpenMenuId(null);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100"
+                >
+                  <Edit size={16} />
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteClient(client.id);
+                    setOpenMenuId(null);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 text-red-600"
+                >
+                  <Trash size={16} />
+                  Delete
+                </button>
+               
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -168,8 +428,8 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
         </div>
       )}
 
-      {/* Add Client Modal */}
-      {showAddModal && (
+      {/* Add Type Modal */}
+      {showAddTypeModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-secondary rounded-xl p-6 max-w-md w-full shadow-xl">
             <h2 className="text-2xl font-bold text-primary mb-4">Select Client Type</h2>
@@ -178,8 +438,8 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
             <div className="space-y-3">
               <button
                 onClick={() => {
-                  setShowAddModal(false);
-                  // Add PCN creation logic
+                  setAddType('pcn');
+                  setShowAddTypeModal(false);
                 }}
                 className="w-full flex items-center gap-4 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg hover:border-blue-500 transition-all group"
               >
@@ -194,8 +454,8 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
 
               <button
                 onClick={() => {
-                  setShowAddModal(false);
-                  // Add standalone practice logic
+                  setAddType('standalone');
+                  setShowAddTypeModal(false);
                 }}
                 className="w-full flex items-center gap-4 p-4 bg-green-50 border-2 border-green-200 rounded-lg hover:border-green-500 transition-all group"
               >
@@ -210,11 +470,27 @@ const ClientsList = ({ onSelectPCN, onSelectPractice }) => {
             </div>
 
             <button
-              onClick={() => setShowAddModal(false)}
+              onClick={() => setShowAddTypeModal(false)}
               className="w-full mt-4 px-4 py-2 bg-secondary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 transition-all"
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {(addType || editingClient) && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-secondary rounded-xl p-6 max-w-[800px] w-full shadow-xl">
+            <h2 className="text-2xl font-bold text-primary mb-4">
+              {editingClient ? 'Edit Client' : 'Add ' + (addType === 'pcn' ? 'PCN' : 'Standalone Practice')}
+            </h2>
+            <ClientForm 
+              client={editingClient || {}}
+              onSubmit={editingClient ? handleEditClient : handleAddClient}
+              type={editingClient?.type || addType}
+            />
           </div>
         </div>
       )}

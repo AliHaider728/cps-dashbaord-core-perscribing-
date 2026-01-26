@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Plus, Building2, ChevronRight, MapPin, Hospital } from 'lucide-react';
+import { Search, Plus, Building2, ChevronRight, MapPin, Hospital, MoreVertical, Edit, Trash, RefreshCw } from 'lucide-react';
 
 const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-
-  // Mock practices data
-  const mockPractices = [
+  const [practices, setPractices] = useState([
     {
       id: 1,
       name: 'Green Street Surgery',
@@ -47,15 +45,167 @@ const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
       pcnName: 'Leeds Medical PCN',
       manager: 'Dr. Robert Taylor'
     }
-  ];
+  ]);
+  const [editingPractice, setEditingPractice] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
-  const filteredPractices = mockPractices.filter(practice => {
+  const filteredPractices = practices.filter(practice => {
     const matchesSearch = practice.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          practice.code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || practice.status.toLowerCase() === statusFilter;
     const matchesType = !standaloneOnly || practice.type === 'standalone';
     return matchesSearch && matchesStatus && matchesType;
   });
+
+  const handleAddPractice = (newPractice) => {
+    const maxId = Math.max(...practices.map(p => p.id), 0);
+    setPractices([...practices, { ...newPractice, id: maxId + 1 }]);
+    setEditingPractice(null);
+    alert('Practice added successfully!');
+  };
+
+  const handleEditPractice = (updatedPractice) => {
+    setPractices(practices.map(p => p.id === updatedPractice.id ? updatedPractice : p));
+    setEditingPractice(null);
+    alert('Practice updated successfully!');
+  };
+
+  const handleDeletePractice = (id) => {  
+    if (window.confirm('Are you sure you want to delete this practice? This action cannot be undone.')) {
+      setPractices(practices.filter(p => p.id !== id));
+      alert('Practice deleted successfully!');
+    }
+  };
+
+  
+
+  const PracticeForm = ({ practice = {}, onSubmit }) => {
+    const [formData, setFormData] = useState({
+      name: practice.name || '',
+      code: practice.code || '',
+      type: practice.type || 'standalone',
+      status: practice.status || 'Active',
+      location: practice.location || '',
+      pcnName: practice.pcnName || '',
+      manager: practice.manager || ''
+    });
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const validate = () => {
+      if (!formData.name || !formData.code || !formData.location || !formData.manager) {
+        alert('Please fill all required fields.');
+        return false;
+      }
+      if (formData.type === 'pcn-practice' && !formData.pcnName) {
+        alert('PCN Practice requires PCN Name.');
+        return false;
+      }
+      return true;
+    };
+
+    const handleFormSubmit = (e) => {
+      e.preventDefault();
+      if (validate()) {
+        onSubmit({ ...practice, ...formData });
+      }
+    };
+
+    return (
+      <form onSubmit={handleFormSubmit} className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Name *</label>
+          <input 
+            name="name" 
+            value={formData.name} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all" 
+            required 
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Code *</label>
+          <input 
+            name="code" 
+            value={formData.code} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all" 
+            required 
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Type *</label>
+          <select 
+            name="type" 
+            value={formData.type} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all"
+          >
+            <option value="standalone">Standalone</option>
+            <option value="pcn-practice">PCN Practice</option>
+          </select>
+        </div>
+        {formData.type === 'pcn-practice' && (
+          <div>
+            <label className="block text-sm font-medium text-primary mb-1">PCN Name *</label>
+            <input 
+              name="pcnName" 
+              value={formData.pcnName} 
+              onChange={handleChange} 
+              className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all" 
+              required 
+            />
+          </div>
+        )}
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Location *</label>
+          <input 
+            name="location" 
+            value={formData.location} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all" 
+            required 
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Manager *</label>
+          <input 
+            name="manager" 
+            value={formData.manager} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all" 
+            required 
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Status *</label>
+          <select 
+            name="status" 
+            value={formData.status} 
+            onChange={handleChange} 
+            className="w-full px-4 py-2 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all"
+          >
+            <option>Active</option>
+            <option>Onboarding</option>
+          </select>
+        </div>
+        <div className="flex gap-2 pt-2">
+          <button type="submit" className="flex-1 px-4 py-2 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors">
+            Save
+          </button>
+          <button 
+            type="button" 
+            onClick={() => setEditingPractice(null)} 
+            className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 transition-all"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -71,7 +221,10 @@ const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
               : 'All practices including PCN members and standalone'}
           </p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm">
+        <button
+          onClick={() => setEditingPractice({})}
+          className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm"
+        >
           <Plus size={20} />
           <span className="font-medium">Add Practice</span>
         </button>
@@ -152,7 +305,7 @@ const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
                 <tr
                   key={practice.id}
                   onClick={() => onSelectPractice(practice)}
-                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group"
+                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group relative"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -200,7 +353,45 @@ const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
+                    <div className="flex items-center justify-end gap-2">
+                      <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === practice.id ? null : practice.id);
+                        }}
+                        className="p-1 hover:bg-gray-200 rounded"
+                      >
+                        <MoreVertical size={18} className="text-muted" />
+                      </button>
+                    </div>
+                    {openMenuId === practice.id && (
+                      <div className="absolute right-4 top-12 bg-white border border-border rounded-lg shadow-lg z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPractice(practice);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100"
+                        >
+                          <Edit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePractice(practice.id);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 text-red-600"
+                        >
+                          <Trash size={16} />
+                          Delete
+                        </button>
+                        
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -212,6 +403,21 @@ const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
       {filteredPractices.length === 0 && (
         <div className="text-center py-12 bg-secondary rounded-xl">
           <p className="text-secondary">No practices found</p>
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {editingPractice && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-secondary rounded-xl p-6 max-w-[800px] w-full shadow-xl">
+            <h2 className="text-2xl font-bold text-primary mb-4">
+              {editingPractice.id ? 'Edit Practice' : 'Add Practice'}
+            </h2>
+            <PracticeForm 
+              practice={editingPractice}
+              onSubmit={editingPractice.id ? handleEditPractice : handleAddPractice}
+            />
+          </div>
         </div>
       )}
     </div>

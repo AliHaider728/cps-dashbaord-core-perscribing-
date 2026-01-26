@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Plus, Hospital, ChevronRight, MapPin, Users } from 'lucide-react';
+import { Search, Plus, Hospital, ChevronRight, MapPin, Users, MoreVertical, Edit, Trash, RefreshCw } from 'lucide-react';
 
 const PCNsList = ({ onSelectPCN }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-
-  // Mock PCN data
-  const mockPCNs = [
+  const [pcns, setPcns] = useState([
     {
       id: 1,
       name: 'Bradford PCN',
@@ -37,14 +35,98 @@ const PCNsList = ({ onSelectPCN }) => {
       region: 'Greater Manchester',
       accountManager: 'Mike Davis'
     }
-  ];
+  ]);
+  const [editingPcn, setEditingPcn] = useState(null);
+  const [openMenuId, setOpenMenuId] = useState(null);
 
-  const filteredPCNs = mockPCNs.filter(pcn => {
+  const filteredPCNs = pcns.filter(pcn => {
     const matchesSearch = pcn.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          pcn.code.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || pcn.status.toLowerCase() === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleAddPcn = (newPcn) => {
+    const maxId = Math.max(...pcns.map(p => p.id), 0);
+    setPcns([...pcns, { ...newPcn, id: maxId + 1 }]);
+    alert('PCN added successfully!');
+  };
+
+  const handleEditPcn = (updatedPcn) => {
+    setPcns(pcns.map(p => p.id === updatedPcn.id ? updatedPcn : p));
+    setEditingPcn(null);
+    alert('PCN updated successfully!');
+  };
+
+  const handleDeletePcn = (id) => {
+    if (window.confirm('Are you sure you want to delete this PCN?')) {
+      setPcns(pcns.filter(p => p.id !== id));
+      alert('PCN deleted successfully!');
+    }
+  };
+
+ 
+
+  const PcnForm = ({ pcn = {}, onSubmit }) => {
+    const [formData, setFormData] = useState({
+      name: pcn.name || '',
+      code: pcn.code || '',
+      practices: pcn.practices || '',
+      totalPatients: pcn.totalPatients || '',
+      status: pcn.status || 'Active',
+      region: pcn.region || '',
+      accountManager: pcn.accountManager || ''
+    });
+
+    const handleChange = (e) => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleFormSubmit = (e) => {
+      e.preventDefault();
+      onSubmit({ ...pcn, ...formData, practices: parseInt(formData.practices), totalPatients: parseInt(formData.totalPatients) });
+    };
+
+    return (
+      <form onSubmit={handleFormSubmit} className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Name *</label>
+          <input name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Code *</label>
+          <input name="code" value={formData.code} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Practices *</label>
+          <input name="practices" type="number" value={formData.practices} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Total Patients *</label>
+          <input name="totalPatients" type="number" value={formData.totalPatients} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Status *</label>
+          <select name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg">
+            <option>Active</option>
+            <option>Onboarding</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Region *</label>
+          <input name="region" value={formData.region} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-primary mb-1">Account Manager *</label>
+          <input name="accountManager" value={formData.accountManager} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
+        </div>
+        <div className="flex gap-2 pt-2">
+          <button type="submit" className="flex-1 px-4 py-2 bg-core-primary-500 text-white rounded-lg">Save</button>
+          <button type="button" onClick={() => setEditingPcn(null)} className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg">Cancel</button>
+        </div>
+      </form>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -54,7 +136,7 @@ const PCNsList = ({ onSelectPCN }) => {
           <h1 className="text-3xl font-bold text-primary">PCNs</h1>
           <p className="text-secondary mt-1">Primary Care Networks with multiple practices</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm">
+        <button onClick={() => setEditingPcn({})} className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm">
           <Plus size={20} />
           <span className="font-medium">Add PCN</span>
         </button>
@@ -135,7 +217,7 @@ const PCNsList = ({ onSelectPCN }) => {
                 <tr
                   key={pcn.id}
                   onClick={() => onSelectPCN(pcn)}
-                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group"
+                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group relative"
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -175,7 +257,45 @@ const PCNsList = ({ onSelectPCN }) => {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
+                    <div className="flex items-center justify-end gap-2">
+                      <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpenMenuId(openMenuId === pcn.id ? null : pcn.id);
+                        }}
+                        className="p-1 hover:bg-gray-200 rounded"
+                      >
+                        <MoreVertical size={18} className="text-muted" />
+                      </button>
+                    </div>
+                    {openMenuId === pcn.id && (
+                      <div className="absolute right-4 top-12 bg-white border border-border rounded-lg shadow-lg z-10">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingPcn(pcn);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100"
+                        >
+                          <Edit size={16} />
+                          Edit
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeletePcn(pcn.id);
+                            setOpenMenuId(null);
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 text-red-600"
+                        >
+                          <Trash size={16} />
+                          Delete
+                        </button>
+                        
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -187,6 +307,16 @@ const PCNsList = ({ onSelectPCN }) => {
       {filteredPCNs.length === 0 && (
         <div className="text-center py-12 bg-secondary rounded-xl">
           <p className="text-secondary">No PCNs found</p>
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {editingPcn && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-secondary rounded-xl p-6 max-w-lg w-full">
+            <h2 className="text-2xl font-bold text-primary mb-4">{editingPcn.id ? 'Edit PCN' : 'Add PCN'}</h2>
+            <PcnForm pcn={editingPcn} onSubmit={editingPcn.id ? handleEditPcn : handleAddPcn} />
+          </div>
         </div>
       )}
     </div>
