@@ -3,7 +3,7 @@ import { Menu, Search, Plus, Bell, Sun, Moon } from 'lucide-react';
 
 const Header = ({ onMenuClick, onThemeToggle, isDark }) => {
   return (
-    <header className="sticky top-0 z-30 bg-secondary/95 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-30 bg-secondary shadow-sm">
       <div className="flex items-center justify-between px-6 py-4 gap-4">
         {/* Left Section */}
         <div className="flex items-center gap-4">
