@@ -14,8 +14,7 @@
   --core-primary-700: #1E1B8F;
   --core-primary-800: #15136B;
   --core-primary-900: #0E0C47;
- --core-primary-1000: #e4e8ed;
-
+  --core-primary-1000: #e4e8ed;
 
   /* Neutral Colors */
   --core-bg-dark: #0B1020;
@@ -88,4 +87,14 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--core-primary-600);
+}
+
+/* Hide scrollbar for specific elements */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }

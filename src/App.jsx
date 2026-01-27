@@ -6,10 +6,13 @@ import PCNsList from './Component/Pages/PCNsList.jsx';
 import PracticesList from './Component/Pages/PracticesList.jsx';
 import PCNProfile from './Component/Pages/PCNProfile.jsx';
 import PracticeProfile from './Component/Pages/PracticeProfile.jsx';
+import StaffList from './Component/Pages/Staff/Stafflist.jsx';
+import StaffDetails from './Component/Pages/Staff/StaffDetails.jsx';
 
 const App = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [selectedClient, setSelectedClient] = useState(null);
+  const [selectedStaff, setSelectedStaff] = useState(null);
 
   const renderPage = () => {
     switch(activePage) {
@@ -65,6 +68,26 @@ const App = () => {
           practiceData={selectedClient}
           onBack={() => setActivePage('clients')}
           setActivePage={setActivePage}
+        />;
+      
+      // Staff List
+      case 'staff-list':
+        return <StaffList 
+          onSelectStaff={(staff) => {
+            setSelectedStaff(staff);
+            setActivePage('staff-details');
+          }}
+          onAddStaff={() => {
+            // Add new staff logic
+            console.log('Add new staff');
+          }}
+        />;
+      
+      // Staff Details
+      case 'staff-details':
+        return <StaffDetails 
+          staffData={selectedStaff}
+          onBack={() => setActivePage('staff-list')}
         />;
       
       // Placeholder pages for other menu items

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Users,
   Building2,
@@ -11,22 +11,69 @@ import {
   FileText,
   LayoutDashboard,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  UserCircle,
+  ClipboardList
 } from 'lucide-react';
 
-const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
+const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, setIsCollapsed, setClientFilter }) => {
+  const [openDropdowns, setOpenDropdowns] = useState({});
+
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
-    { icon: Users, label: 'Clients', id: 'clients' },
-    { icon: Hospital, label: 'PCNs', id: 'pcns' },
+    { 
+      icon: Users, 
+      label: 'Clients', 
+      id: 'clients',
+      hasDropdown: true,
+      subItems: [
+        { icon: Hospital, label: 'PCNs', id: 'clients', filterType: 'pcn' },
+        { icon: Building2, label: 'Standalone', id: 'clients', filterType: 'standalone' }
+      ]
+    },
     { icon: Building2, label: 'Practices', id: 'practices' },
-    { icon: UserCog, label: 'Staff', id: 'staff' },
+    { 
+      icon: UserCog, 
+      label: 'Staff', 
+      id: 'staff',
+      hasDropdown: true,
+      subItems: [
+        { icon: ClipboardList, label: 'Staff List', id: 'staff-list' },
+        { icon: UserCircle, label: 'Staff Details', id: 'staff-details' }
+      ]
+    },
     { icon: Calendar, label: 'Rota', id: 'rota' },
     { icon: Umbrella, label: 'Leave', id: 'leave' },
     { icon: CheckCircle, label: 'Compliance', id: 'compliance' },
     { icon: Clock, label: 'Timesheets', id: 'timesheets' },
     { icon: FileText, label: 'Invoices', id: 'invoices' },
   ];
+
+  const toggleDropdown = (itemId) => {
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      setTimeout(() => {
+        setOpenDropdowns(prev => ({
+          ...prev,
+          [itemId]: !prev[itemId]
+        }));
+      }, 100);
+    } else {
+      setOpenDropdowns(prev => ({
+        ...prev,
+        [itemId]: !prev[itemId]
+      }));
+    }
+  };
+
+  const isItemActive = (item) => {
+    if (item.hasDropdown) {
+      return item.subItems.some(sub => activePage === sub.id);
+    }
+    return activePage === item.id;
+  };
 
   return (
     <>
@@ -61,8 +108,10 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
             />
           )}
         </div>
+        
         {/* Subtle Divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
+        
         {/* Navigation */}
         <nav
           className="flex-1 overflow-y-auto px-3 py-4 space-y-1"
@@ -101,46 +150,110 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
           
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activePage === item.id;
+            const isActive = isItemActive(item);
+            const isDropdownOpen = openDropdowns[item.id];
+            
             return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActivePage(item.id);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all duration-200 ease-in-out group relative ${
-                  isActive
-                    ? 'bg-core-primary-50 text-core-primary-500'
-                    : 'text-secondary hover:bg-core-primary-50/50 hover:text-core-primary-500'
-                } ${isCollapsed ? 'justify-center' : ''}`}
-                title={isCollapsed ? item.label : ''}
-              >
-                {isActive && !isCollapsed && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full transition-all duration-200" />
-                )}
-                <Icon
-                  size={18}
-                  className={`transition-all duration-200 ${
+              <div key={item.id}>
+                {/* Main Menu Item */}
+                <button
+                  onClick={() => {
+                    if (item.hasDropdown) {
+                      toggleDropdown(item.id);
+                    } else {
+                      setActivePage(item.id);
+                      setIsOpen(false);
+                    }
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all duration-200 ease-in-out group relative ${
                     isActive
-                      ? 'text-core-primary-500'
-                      : 'text-muted group-hover:text-core-primary-500'
-                  } ${isCollapsed ? '' : 'ml-1'}`}
-                  strokeWidth={isActive ? 2.5 : 2}
-                />
-                {!isCollapsed && (
-                  <span className={`font-medium text-sm transition-all duration-200 ${
-                    isActive ? 'text-core-primary-500' : ''
-                  }`}>
-                    {item.label}
-                  </span>
+                      ? 'bg-core-primary-50 text-core-primary-500'
+                      : 'text-secondary hover:bg-core-primary-50/50 hover:text-core-primary-500'
+                  } ${isCollapsed ? 'justify-center' : ''}`}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  {isActive && !isCollapsed && (
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full transition-all duration-200" />
+                  )}
+                  <Icon
+                    size={18}
+                    className={`transition-all duration-200 ${
+                      isActive
+                        ? 'text-core-primary-500'
+                        : 'text-muted group-hover:text-core-primary-500'
+                    } ${isCollapsed ? '' : 'ml-1'}`}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  {!isCollapsed && (
+                    <>
+                      <span className={`flex-1 text-left font-medium text-sm transition-all duration-200 ${
+                        isActive ? 'text-core-primary-500' : ''
+                      }`}>
+                        {item.label}
+                      </span>
+                      {item.hasDropdown && (
+                        isDropdownOpen ? 
+                          <ChevronUp size={16} className={`transition-all duration-200 ${
+                            isActive ? 'text-core-primary-500' : 'text-muted'
+                          }`} /> : 
+                          <ChevronDown size={16} className={`transition-all duration-200 ${
+                            isActive ? 'text-core-primary-500' : 'text-muted'
+                          }`} />
+                      )}
+                    </>
+                  )}
+                </button>
+
+                {/* Dropdown Sub-items */}
+                {item.hasDropdown && !isCollapsed && isDropdownOpen && (
+                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-core-primary-100">
+                    {item.subItems.map((subItem) => {
+                      const SubIcon = subItem.icon;
+                      const isSubActive = activePage === subItem.id;
+                      
+                      return (
+                        <button
+                          key={subItem.label}
+                          onClick={() => {
+                            setActivePage(subItem.id);
+                            if (subItem.filterType && setClientFilter) {
+                              setClientFilter(subItem.filterType);
+                            }
+                            setIsOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 pl-4 rounded-lg transition-all duration-200 ease-in-out group ${
+                            isSubActive
+                              ? 'bg-core-primary-50 text-core-primary-500'
+                              : 'text-secondary hover:bg-core-primary-50/50 hover:text-core-primary-500'
+                          }`}
+                        >
+                          <SubIcon
+                            size={16}
+                            className={`transition-all duration-200 ${
+                              isSubActive
+                                ? 'text-core-primary-500'
+                                : 'text-muted group-hover:text-core-primary-500'
+                            }`}
+                            strokeWidth={isSubActive ? 2.5 : 2}
+                          />
+                          <span className={`font-medium text-sm transition-all duration-200 ${
+                            isSubActive ? 'text-core-primary-500' : ''
+                          }`}>
+                            {subItem.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 )}
-              </button>
+              </div>
             );
           })}
         </nav>
+        
         {/* Subtle Divider */}
         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
+        
         {/* User Profile */}
         <div className={`transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-4'}`}>
           <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
@@ -176,6 +289,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
             )}
           </div>
         </div>
+        
         {/* Toggle Button - Desktop Only */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -185,6 +299,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </aside>
+      
       {/* Mobile Overlay */}
       {isOpen && (
         <div
