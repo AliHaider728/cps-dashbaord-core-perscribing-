@@ -18,7 +18,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 
-const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, setIsCollapsed, setClientFilter }) => {
+const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, setIsCollapsed, clientFilterType, setClientFilterType }) => {
   const [openDropdowns, setOpenDropdowns] = useState({});
 
   const menuItems = [
@@ -29,8 +29,8 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
       id: 'clients',
       hasDropdown: true,
       subItems: [
-        { icon: Hospital, label: 'PCNs', id: 'clients', filterType: 'pcn' },
-        { icon: Building2, label: 'Standalone', id: 'clients', filterType: 'standalone' }
+        { icon: Hospital, label: 'PCNs', filterType: 'pcn' },
+        { icon: Building2, label: 'Standalone', filterType: 'standalone' }
       ]
     },
     { icon: Building2, label: 'Practices', id: 'practices' },
@@ -69,10 +69,17 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
   };
 
   const isItemActive = (item) => {
-    if (item.hasDropdown) {
+    if (item.id === 'clients') {
+      return activePage === 'clients';
+    }
+    if (item.hasDropdown && item.id === 'staff') {
       return item.subItems.some(sub => activePage === sub.id);
     }
     return activePage === item.id;
+  };
+
+  const isClientSubItemActive = (filterType) => {
+    return activePage === 'clients' && clientFilterType === filterType;
   };
 
   return (
@@ -160,6 +167,13 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                   onClick={() => {
                     if (item.hasDropdown) {
                       toggleDropdown(item.id);
+                      // If clicking Clients main item, open it with 'all' filter
+                      if (item.id === 'clients') {
+                        setActivePage('clients');
+                        if (setClientFilterType) {
+                          setClientFilterType('all');
+                        }
+                      }
                     } else {
                       setActivePage(item.id);
                       setIsOpen(false);
@@ -209,15 +223,25 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                   <div className="ml-4 mt-1 space-y-1 border-l-2 border-core-primary-100">
                     {item.subItems.map((subItem) => {
                       const SubIcon = subItem.icon;
-                      const isSubActive = activePage === subItem.id;
+                      
+                      // For Clients dropdown - check filterType
+                      const isSubActive = item.id === 'clients' 
+                        ? isClientSubItemActive(subItem.filterType)
+                        : activePage === subItem.id;
                       
                       return (
                         <button
                           key={subItem.label}
                           onClick={() => {
-                            setActivePage(subItem.id);
-                            if (subItem.filterType && setClientFilter) {
-                              setClientFilter(subItem.filterType);
+                            // Handle Clients sub-items (PCNs/Standalone)
+                            if (item.id === 'clients' && subItem.filterType) {
+                              setActivePage('clients');
+                              if (setClientFilterType) {
+                                setClientFilterType(subItem.filterType);
+                              }
+                            } else {
+                              // Handle other dropdowns (Staff)
+                              setActivePage(subItem.id);
                             }
                             setIsOpen(false);
                           }}
