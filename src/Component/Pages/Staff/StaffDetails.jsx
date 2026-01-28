@@ -236,29 +236,7 @@ const StaffDetails = ({ staffData, onBack }) => {
       <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
         {renderTabContent()}
       </div>
-
-      {/* Edit Actions (only on personal tab) */}
-      {activeTab === 'personal' && (
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={() => setIsEditing(false)}
-            className="flex items-center gap-2 px-6 py-2.5 bg-white border-2 border-gray-200 rounded-xl text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 font-medium"
-          >
-            <X size={18} />
-            <span>Cancel</span>
-          </button>
-          <button
-            onClick={() => {
-              // TODO: Add real save logic here
-              setIsEditing(false);
-            }}
-            className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
-          >
-            <Save size={18} />
-            <span>Save Changes</span>
-          </button>
-        </div>
-      )}
+ 
     </div>
   );
 };
