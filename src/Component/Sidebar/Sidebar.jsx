@@ -68,6 +68,14 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
     }
   };
 
+  const handleLogoClick = () => {
+    setActivePage('dashboard');
+    setIsOpen(false);
+    if (setClientFilterType) {
+      setClientFilterType('all');
+    }
+  };
+
   const isItemActive = (item) => {
     if (item.id === 'clients') {
       return activePage === 'clients';
@@ -85,12 +93,17 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
   return (
     <>
       <aside
-        className={`fixed left-0 top-0 h-screen bg-secondary flex flex-col transition-all duration-300 ease-in-out z-50 shadow-sm ${
+        className={`fixed left-0 top-0 h-screen bg-secondary flex flex-col transition-all duration-300 ease-in-out z-50 border-r border-[var(--border-color)] ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         } ${isCollapsed ? 'w-16' : 'w-64'}`}
       >
-        {/* Logo Header */}
-        <div className={`flex items-center transition-all duration-300 ${isCollapsed ? 'h-16 justify-center px-3' : 'h-20 px-6'}`}>
+        {/* Logo Header - Clickable */}
+        <button
+          onClick={handleLogoClick}
+          className={`flex items-center transition-all duration-300 hover:bg-primary/50 ${
+            isCollapsed ? 'h-16 justify-center px-3' : 'h-20 px-6'
+          }`}
+        >
           {!isCollapsed ? (
             <div className="flex items-center gap-3">
               <img
@@ -100,7 +113,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
               />
               <div className="flex flex-col">
                 <span className="text-primary font-semibold text-base leading-tight">
-                  CorePrescribing
+                  Core  Prescribing
                 </span>
                 <span className="text-primary font-semibold text-base leading-tight">
                   Solutions
@@ -114,44 +127,58 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
               className="w-8 h-8 object-contain transition-all duration-300"
             />
           )}
-        </div>
+        </button>
         
         {/* Subtle Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
+        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mx-4" />
         
         {/* Navigation */}
         <nav
-          className="flex-1 overflow-y-auto px-3 py-4 space-y-1"
+          className="flex-1 overflow-y-auto px-3 py-4 space-y-1 sidebar-scroll"
           style={{
             scrollbarWidth: 'thin',
             scrollbarColor: 'var(--core-primary-1000) transparent'
           }}
         >
           <style>{`
-            nav::-webkit-scrollbar {
+            .sidebar-scroll::-webkit-scrollbar {
               width: 1px;
             }
-            nav::-webkit-scrollbar-track {
+            .sidebar-scroll::-webkit-scrollbar-track {
               background: transparent;
             }
-            nav::-webkit-scrollbar-thumb {
+            .sidebar-scroll::-webkit-scrollbar-thumb {
               background: var(--core-primary-1000);
               border-radius: 10px;
             }
-            nav::-webkit-scrollbar-thumb:hover {
+            .sidebar-scroll::-webkit-scrollbar-thumb:hover {
               background: var(--core-primary-600);
             }
             @media (max-width: 767px) {
-              nav::-webkit-scrollbar {
+              .sidebar-scroll::-webkit-scrollbar {
                 width: 2px;
               }
-              nav::-webkit-scrollbar-thumb {
+              .sidebar-scroll::-webkit-scrollbar-thumb {
                 background: var(--core-primary-300);
                 border-radius: 10px;
               }
-              nav::-webkit-scrollbar-thumb:hover {
+              .sidebar-scroll::-webkit-scrollbar-thumb:hover {
                 background: var(--core-primary-400);
               }
+            }
+
+            /* Smooth Dropdown Animation */
+            .dropdown-enter {
+              max-height: 0;
+              opacity: 0;
+              overflow: hidden;
+              transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                          opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            .dropdown-enter-active {
+              max-height: 500px;
+              opacity: 1;
             }
           `}</style>
           
@@ -182,7 +209,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                   className={`w-full flex items-center gap-3 px-3 py-3.5 rounded-lg transition-all duration-200 ease-in-out group relative ${
                     isActive
                       ? 'bg-core-primary-50 text-core-primary-500'
-                      : 'text-secondary hover:bg-core-primary-50/50 hover:text-core-primary-500'
+                      : 'text-secondary hover:bg-primary hover:text-core-primary-500'
                   } ${isCollapsed ? 'justify-center' : ''}`}
                   title={isCollapsed ? item.label : ''}
                 >
@@ -206,68 +233,70 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                         {item.label}
                       </span>
                       {item.hasDropdown && (
-                        isDropdownOpen ? 
-                          <ChevronUp size={16} className={`transition-all duration-200 ${
-                            isActive ? 'text-core-primary-500' : 'text-muted'
-                          }`} /> : 
+                        <div className="transition-transform duration-300 ease-in-out" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
                           <ChevronDown size={16} className={`transition-all duration-200 ${
                             isActive ? 'text-core-primary-500' : 'text-muted'
                           }`} />
+                        </div>
                       )}
                     </>
                   )}
                 </button>
 
-                {/* Dropdown Sub-items */}
-                {item.hasDropdown && !isCollapsed && isDropdownOpen && (
-                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-core-primary-100">
-                    {item.subItems.map((subItem) => {
-                      const SubIcon = subItem.icon;
-                      
-                      // For Clients dropdown - check filterType
-                      const isSubActive = item.id === 'clients' 
-                        ? isClientSubItemActive(subItem.filterType)
-                        : activePage === subItem.id;
-                      
-                      return (
-                        <button
-                          key={subItem.label}
-                          onClick={() => {
-                            // Handle Clients sub-items (PCNs/Standalone)
-                            if (item.id === 'clients' && subItem.filterType) {
-                              setActivePage('clients');
-                              if (setClientFilterType) {
-                                setClientFilterType(subItem.filterType);
+                {/* Dropdown Sub-items with Smooth Animation */}
+                {item.hasDropdown && !isCollapsed && (
+                  <div 
+                    className={`dropdown-enter ${isDropdownOpen ? 'dropdown-enter-active' : ''}`}
+                  >
+                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-core-primary-100 pl-1">
+                      {item.subItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        
+                        // For Clients dropdown - check filterType
+                        const isSubActive = item.id === 'clients' 
+                          ? isClientSubItemActive(subItem.filterType)
+                          : activePage === subItem.id;
+                        
+                        return (
+                          <button
+                            key={subItem.label}
+                            onClick={() => {
+                              // Handle Clients sub-items (PCNs/Standalone)
+                              if (item.id === 'clients' && subItem.filterType) {
+                                setActivePage('clients');
+                                if (setClientFilterType) {
+                                  setClientFilterType(subItem.filterType);
+                                }
+                              } else {
+                                // Handle other dropdowns (Staff)
+                                setActivePage(subItem.id);
                               }
-                            } else {
-                              // Handle other dropdowns (Staff)
-                              setActivePage(subItem.id);
-                            }
-                            setIsOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 pl-4 rounded-lg transition-all duration-200 ease-in-out group ${
-                            isSubActive
-                              ? 'bg-core-primary-50 text-core-primary-500'
-                              : 'text-secondary hover:bg-core-primary-50/50 hover:text-core-primary-500'
-                          }`}
-                        >
-                          <SubIcon
-                            size={16}
-                            className={`transition-all duration-200 ${
+                              setIsOpen(false);
+                            }}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 pl-3 rounded-lg transition-all duration-200 ease-in-out group ${
                               isSubActive
-                                ? 'text-core-primary-500'
-                                : 'text-muted group-hover:text-core-primary-500'
+                                ? 'bg-core-primary-50 text-core-primary-500'
+                                : 'text-secondary hover:bg-primary hover:text-core-primary-500'
                             }`}
-                            strokeWidth={isSubActive ? 2.5 : 2}
-                          />
-                          <span className={`font-medium text-sm transition-all duration-200 ${
-                            isSubActive ? 'text-core-primary-500' : ''
-                          }`}>
-                            {subItem.label}
-                          </span>
-                        </button>
-                      );
-                    })}
+                          >
+                            <SubIcon
+                              size={16}
+                              className={`transition-all duration-200 ${
+                                isSubActive
+                                  ? 'text-core-primary-500'
+                                  : 'text-muted group-hover:text-core-primary-500'
+                              }`}
+                              strokeWidth={isSubActive ? 2.5 : 2}
+                            />
+                            <span className={`font-medium text-sm transition-all duration-200 ${
+                              isSubActive ? 'text-core-primary-500' : ''
+                            }`}>
+                              {subItem.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
@@ -276,7 +305,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
         </nav>
         
         {/* Subtle Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
+        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mx-4" />
         
         {/* User Profile */}
         <div className={`transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-4'}`}>
@@ -317,7 +346,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
         {/* Toggle Button - Desktop Only */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 bg-secondary border border-border rounded-full items-center justify-center text-muted hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200 shadow-sm hover:shadow-md z-10"
+          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 bg-secondary border border-[var(--border-color)] rounded-full items-center justify-center text-muted hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200 shadow-sm hover:shadow-md z-10"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
