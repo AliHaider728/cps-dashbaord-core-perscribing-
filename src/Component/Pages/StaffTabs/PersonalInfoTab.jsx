@@ -6,23 +6,22 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
   
   // State management for dynamic fields
   const [selectedApprovers, setSelectedApprovers] = useState([
-    { id: 1, name: 'Arslan Shahroz' },
-    { id: 2, name: 'Stephen Elliott' },
-    { id: 3, name: 'Tabassum Khan' }
+    { id: 1, name: 'Zara Ahmed' },
+    { id: 4, name: 'Dr. Bilal Khan' }
   ]);
   
   const [approverSearch, setApproverSearch] = useState('');
   const [showApproverDropdown, setShowApproverDropdown] = useState(false);
   
   const [selectedTeams, setSelectedTeams] = useState([
-    { id: 1, name: 'CPS Teams' }
+    { id: 1, name: 'Pharmacy Team' }
   ]);
   
   const [teamSearch, setTeamSearch] = useState('');
   const [showTeamDropdown, setShowTeamDropdown] = useState(false);
   
   const [selectedViewTeams, setSelectedViewTeams] = useState([
-    { id: 1, name: 'CPS Teams' }
+    { id: 2, name: 'Clinical Operations' }
   ]);
   
   const [viewTeamSearch, setViewTeamSearch] = useState('');
@@ -31,47 +30,47 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
   const [selectedDocumentGroup, setSelectedDocumentGroup] = useState('');
   const [selectedTrainingGroup, setSelectedTrainingGroup] = useState('');
 
-  // Mock data for dropdowns
+  // Mock data for dropdowns (new random realistic values)
   const availableApprovers = [
-    { id: 1, name: 'Arslan Shahroz' },
-    { id: 2, name: 'Stephen Elliott' },
-    { id: 3, name: 'Tabassum Khan' },
-    { id: 4, name: 'Dr. Ahmed Hassan' },
-    { id: 5, name: 'Sarah Thompson' },
-    { id: 6, name: 'Marcus Rodriguez' },
-    { id: 7, name: 'Jennifer Wu' },
-    { id: 8, name: 'Omar Khalil' }
+    { id: 1, name: 'Zara Ahmed' },
+    { id: 2, name: 'Omar Farooq' },
+    { id: 3, name: 'Sana Malik' },
+    { id: 4, name: 'Dr. Bilal Khan' },
+    { id: 5, name: 'Amina Raza' },
+    { id: 6, name: 'Tariq Jamil' },
+    { id: 7, name: 'Nida Hussain' },
+    { id: 8, name: 'Rehan Siddiqui' }
   ];
 
   const availableTeams = [
-    { id: 1, name: 'CPS Teams' },
-    { id: 2, name: 'Clinical Staff' },
-    { id: 3, name: 'Pharmacy Team' },
-    { id: 4, name: 'Central Office' },
-    { id: 5, name: 'Administration' },
-    { id: 6, name: 'Management Team' }
+    { id: 1, name: 'Pharmacy Team' },
+    { id: 2, name: 'Clinical Operations' },
+    { id: 3, name: 'Admin & HR' },
+    { id: 4, name: 'Management' },
+    { id: 5, name: 'Compliance' },
+    { id: 6, name: 'Finance Team' }
   ];
 
   const documentGroups = [
-    'Mandatory Documents',
-    'Security Clearance',
-    'Professional Licenses',
-    'Insurance Documents',
-    'Training Certificates',
-    'Health & Safety',
-    'Compliance Documents'
+    'Core Compliance Docs',
+    'Identity Verification',
+    'Professional Registrations',
+    'Insurance & Liability',
+    'CPD & Training Records',
+    'Health Screening',
+    'Regulatory Filings'
   ];
 
   const trainingGroups = [
-    'Clinical Training',
-    'Safety Training',
-    'Compliance Training',
-    'Professional Development',
-    'Mandatory Training',
-    'Specialized Training'
+    'Pharmacist CPD',
+    'Health & Safety Induction',
+    'Data Protection & GDPR',
+    'Leadership Development',
+    'Mandatory Annual Refreshers',
+    'Specialty Modules'
   ];
 
-  // Handlers for Cover Approver
+  // Handlers remain the same...
   const filteredApprovers = availableApprovers.filter(approver => 
     !selectedApprovers.find(s => s.id === approver.id) &&
     approver.name.toLowerCase().includes(approverSearch.toLowerCase())
@@ -89,7 +88,6 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
     }
   };
 
-  // Handlers for Team
   const filteredTeams = availableTeams.filter(team => 
     !selectedTeams.find(s => s.id === team.id) &&
     team.name.toLowerCase().includes(teamSearch.toLowerCase())
@@ -107,7 +105,6 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
     }
   };
 
-  // Handlers for View Team
   const filteredViewTeams = availableTeams.filter(team => 
     !selectedViewTeams.find(s => s.id === team.id) &&
     team.name.toLowerCase().includes(viewTeamSearch.toLowerCase())
@@ -126,7 +123,6 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
   };
 
   const handleSave = () => {
-    // Save logic here
     setIsEditing(false);
     if (onUpdate) {
       onUpdate({
@@ -141,7 +137,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
         <div>
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Staff Detail - Personal Information</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Sohail Ahmed - Director - Central Office</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Ali Hassan - Pharmacist - Pharmacy Team</p>
         </div>
         <div className="flex gap-3">
           {!isEditing ? (
@@ -185,7 +181,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="SA001"
+                    defaultValue="PK7890"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -196,16 +192,16 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Region
                   </label>
                   <select
-                    defaultValue="Select Region"
+                    defaultValue="Islamabad Capital Territory"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
                     <option>Select Region</option>
-                    <option>Northwest</option>
-                    <option>Northeast</option>
-                    <option>Southeast</option>
-                    <option>Southwest</option>
-                    <option>Central</option>
+                    <option>Islamabad Capital Territory</option>
+                    <option>Punjab</option>
+                    <option>Sindh</option>
+                    <option>Khyber Pakhtunkhwa</option>
+                    <option>Balochistan</option>
                   </select>
                 </div>
 
@@ -215,7 +211,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Sohail"
+                    defaultValue="alihassan"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -227,7 +223,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="email"
-                    defaultValue="sohail@coreprescribingsolutions.co"
+                    defaultValue="ali.hassan@coreprescribingsolutions.co"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -239,7 +235,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Sohail"
+                    defaultValue="Ali"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -251,6 +247,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue=""
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -262,7 +259,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Ahmed"
+                    defaultValue="Hassan"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -274,7 +271,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
-                    defaultValue="1988-12-09"
+                    defaultValue="1992-07-20"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -285,14 +282,14 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Department <span className="text-red-500">*</span>
                   </label>
                   <select
-                    defaultValue="Central Office"
+                    defaultValue="Pharmacy Team"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
-                    <option>Central Office</option>
-                    <option>Clinical Staff</option>
-                    <option>Pharmacy</option>
-                    <option>Administration</option>
+                    <option>Pharmacy Team</option>
+                    <option>Clinical Operations</option>
+                    <option>Admin & HR</option>
+                    <option>Management</option>
                   </select>
                 </div>
 
@@ -301,14 +298,14 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Line Manager <span className="text-red-500">*</span>
                   </label>
                   <select
-                    defaultValue="Layegur Rahman"
+                    defaultValue="Dr. Bilal Khan"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
-                    <option>Layegur Rahman</option>
-                    <option>Dr. Ahmed Hassan</option>
-                    <option>Sarah Thompson</option>
-                    <option>Marcus Rodriguez</option>
+                    <option>Dr. Bilal Khan</option>
+                    <option>Zara Ahmed</option>
+                    <option>Sana Malik</option>
+                    <option>Omar Farooq</option>
                   </select>
                 </div>
 
@@ -318,7 +315,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="Director"
+                    defaultValue="Pharmacist"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -360,7 +357,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
-                    defaultValue="07732875560"
+                    defaultValue="03451234567"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -387,7 +384,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
-                    defaultValue="2019-11-30"
+                    defaultValue="2021-06-15"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -399,7 +396,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <textarea
                     rows="2"
-                    defaultValue="x"
+                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
                   />
@@ -411,6 +408,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
+                    defaultValue="051-87654321"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -422,6 +420,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
+                    defaultValue="2025-06-15"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -433,6 +432,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="email"
+                    defaultValue="ali.hassan.personal@gmail.com"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -453,7 +453,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      defaultChecked={false}
                       disabled={!isEditing}
                       className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                     />
@@ -479,6 +479,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
+                    defaultValue="2024-01-10"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -490,6 +491,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="number"
+                    defaultValue="40"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -501,6 +503,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="number"
+                    defaultValue="8"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -512,7 +515,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="011450629040"
+                    defaultValue="987654321098"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -637,7 +640,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Clinician Type <span className="text-red-500">*</span>
                   </label>
                   <select
-                    defaultValue="Non Clinical"
+                    defaultValue="Clinical"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
@@ -651,7 +654,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
-                      defaultChecked
+                      defaultChecked={false}
                       disabled={!isEditing}
                       className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                     />
@@ -671,11 +674,11 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                         disabled={!isEditing}
                         className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">No</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
                     </label>
                     <input
                       type="text"
-                      defaultValue="2086866"
+                      defaultValue="7654321"
                       disabled={!isEditing}
                       className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                     />
@@ -688,7 +691,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
-                    defaultValue="2026-11-30"
+                    defaultValue="2028-05-31"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -700,7 +703,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="date"
-                    defaultValue="2025-11-25"
+                    defaultValue="2024-11-20"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -710,6 +713,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
+                      defaultChecked={false}
                       disabled={!isEditing}
                       className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                     />
@@ -724,6 +728,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <div className="flex gap-2 items-center">
                     <input
                       type="number"
+                      defaultValue="4"
                       disabled={!isEditing}
                       className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                     />
@@ -732,8 +737,6 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                 </div>
               </div>
             </div>
-
-          
 
             {/* Bank Detail */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
@@ -752,6 +755,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="Ali Hassan"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -763,6 +767,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="12345678"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -774,6 +779,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue=""
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -785,6 +791,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="12-34-56"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -796,6 +803,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <textarea
                     rows="2"
+                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
                   />
@@ -806,12 +814,12 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Role <span className="text-red-500">*</span>
                   </label>
                   <select
-                    defaultValue="Admin"
+                    defaultValue="Pharmacist"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
+                    <option>Pharmacist</option>
                     <option>Admin</option>
-                    <option>User</option>
                     <option>Manager</option>
                     <option>Director</option>
                   </select>
@@ -822,14 +830,14 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     Group <span className="text-red-500">*</span>
                   </label>
                   <select
-                    defaultValue="Central Office"
+                    defaultValue="Pharmacy Team"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
-                    <option>Central Office</option>
-                    <option>Clinical Staff</option>
-                    <option>Pharmacy</option>
-                    <option>Administration</option>
+                    <option>Pharmacy Team</option>
+                    <option>Clinical Operations</option>
+                    <option>Admin & HR</option>
+                    <option>Management</option>
                   </select>
                 </div>
 
@@ -860,7 +868,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   >
-                    <option value="">Select Document Group...</option>
+                    <option value="">Select Training Group...</option>
                     {trainingGroups.map((group, index) => (
                       <option key={index} value={group}>{group}</option>
                     ))}
@@ -893,6 +901,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
+                      defaultChecked={false}
                       disabled={!isEditing}
                       className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                     />
@@ -920,6 +929,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input
                       type="checkbox"
+                      defaultChecked={false}
                       disabled={!isEditing}
                       className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                     />
@@ -933,6 +943,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue=""
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -944,6 +955,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="A"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -974,7 +986,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
               </label>
               <input
                 type="text"
-                defaultValue="SA06"
+                defaultValue="AH123"
                 disabled={!isEditing}
                 className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
               />
@@ -1048,7 +1060,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
               </label>
               <input
                 type="text"
-                defaultValue="x"
+                defaultValue="AB123456C"
                 disabled={!isEditing}
                 className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
               />
@@ -1061,11 +1073,13 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
               </label>
               <input
                 type="text"
+                defaultValue="456"
                 disabled={!isEditing}
                 className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
               />
             </div>
-              {/* Emergency Contact Detail - 1 */}
+
+            {/* Emergency Contact Detail - 1 */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Emergency Contact Detail - 1</h3>
               
@@ -1076,7 +1090,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="xx"
+                    defaultValue="Sara Hassan"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1088,7 +1102,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
-                    defaultValue="xx"
+                    defaultValue="03457654321"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1100,6 +1114,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
+                    defaultValue="051-1112222"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1111,7 +1126,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
-                    defaultValue="xx"
+                    defaultValue="Wife"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1123,7 +1138,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <textarea
                     rows="2"
-                    defaultValue="xx"
+                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
                   />
@@ -1142,6 +1157,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="Muhammad Raza"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1153,6 +1169,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
+                    defaultValue="03339876543"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1164,6 +1181,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="tel"
+                    defaultValue=""
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1175,6 +1193,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <input
                     type="text"
+                    defaultValue="Father"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
                   />
@@ -1186,6 +1205,7 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
                   </label>
                   <textarea
                     rows="2"
+                    defaultValue="Village Pindi, Near Rawalpindi"
                     disabled={!isEditing}
                     className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
                   />
