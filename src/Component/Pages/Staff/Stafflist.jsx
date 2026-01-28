@@ -218,15 +218,15 @@ const StaffList = ({ onSelectStaff }) => {
     .filter(f => f !== 'all').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50/30 to-indigo-50/20 overflow-x-hidden">
+    <div className="min-h-screen bg-primary overflow-x-hidden">
       <div className="max-w-[1600px] mx-auto space-y-4">
-        {/* Header Section - Compact */}
+        {/* Header Section - Dark mode support */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Staff Directory
             </h1>
-            <p className="text-gray-500 text-xs mt-0.5">
+            <p className="text-secondary text-xs mt-0.5">
               Manage and monitor your team members
             </p>
           </div>
@@ -239,13 +239,13 @@ const StaffList = ({ onSelectStaff }) => {
           </button>
         </div>
 
-        {/* Stats Cards - Compact */}
+        {/* Stats Cards - Dark mode support */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-white rounded-xl p-3.5 border border-gray-100 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-secondary rounded-xl p-3.5 border border-[var(--border-color)] hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium">Total Staff</p>
-                <p className="text-2xl font-bold text-gray-900 mt-0.5">{staffData.length}</p>
+                <p className="text-secondary text-xs font-medium">Total Staff</p>
+                <p className="text-2xl font-bold text-primary mt-0.5">{staffData.length}</p>
               </div>
               <div className="w-11 h-11 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center shadow-md">
                 <UserPlus className="text-white" size={20} />
@@ -253,10 +253,10 @@ const StaffList = ({ onSelectStaff }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-3.5 border border-gray-100 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-secondary rounded-xl p-3.5 border border-[var(--border-color)] hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium">Active</p>
+                <p className="text-secondary text-xs font-medium">Active</p>
                 <p className="text-2xl font-bold text-emerald-600 mt-0.5">
                   {staffData.filter(s => s.status === 'Working').length}
                 </p>
@@ -267,10 +267,10 @@ const StaffList = ({ onSelectStaff }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-3.5 border border-gray-100 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-secondary rounded-xl p-3.5 border border-[var(--border-color)] hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium">Compliant</p>
+                <p className="text-secondary text-xs font-medium">Compliant</p>
                 <p className="text-2xl font-bold text-green-600 mt-0.5">
                   {staffData.filter(s => s.compDoc === 'Compliant' && s.compTraining === 'Compliant').length}
                 </p>
@@ -281,10 +281,10 @@ const StaffList = ({ onSelectStaff }) => {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl p-3.5 border border-gray-100 hover:shadow-md transition-shadow duration-200">
+          <div className="bg-secondary rounded-xl p-3.5 border border-[var(--border-color)] hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-500 text-xs font-medium">Non-Compliant</p>
+                <p className="text-secondary text-xs font-medium">Non-Compliant</p>
                 <p className="text-2xl font-bold text-rose-600 mt-0.5">
                   {staffData.filter(s => s.compDoc === 'Non-Compliant' || s.compTraining === 'Non-Compliant').length}
                 </p>
@@ -296,25 +296,25 @@ const StaffList = ({ onSelectStaff }) => {
           </div>
         </div>
 
-        {/* Search and Filters Bar - Compact */}
-        <div className="bg-white rounded-xl p-3.5 shadow-sm border border-gray-100">
+        {/* Search and Filters Bar - Dark mode support */}
+        <div className="bg-secondary rounded-xl p-3.5 shadow-sm border border-[var(--border-color)]">
           <div className="flex flex-col lg:flex-row gap-3">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
               <input
                 type="text"
                 placeholder="Search staff members..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                className="w-full pl-10 pr-3 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
               />
             </div>
 
             {/* Filter Button */}
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="relative flex items-center justify-center gap-2 px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200 text-sm"
+              className="relative flex items-center justify-center gap-2 px-4 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-secondary hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-200 text-sm"
             >
               <SlidersHorizontal size={18} />
               <span className="font-medium">Filters</span>
@@ -326,15 +326,15 @@ const StaffList = ({ onSelectStaff }) => {
             </button>
           </div>
 
-          {/* Advanced Filter Options - Compact */}
+          {/* Advanced Filter Options */}
           {showFilters && (
-            <div className="mt-3 pt-3 border-t border-gray-100">
+            <div className="mt-3 pt-3 border-t border-[var(--border-color)]">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-base font-semibold text-gray-900">Advanced Filters</h3>
+                <h3 className="text-base font-semibold text-primary">Advanced Filters</h3>
                 {activeFiltersCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
+                    className="flex items-center gap-1.5 px-2.5 py-1 text-xs text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200"
                   >
                     <X size={14} />
                     Clear All
@@ -344,71 +344,71 @@ const StaffList = ({ onSelectStaff }) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {/* Status Filter */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Status</label>
+                  <label className="block text-xs font-medium text-secondary mb-1.5">Status</label>
                   <div className="relative">
                     <select
                       value={filterStatus}
                       onChange={(e) => setFilterStatus(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     >
                       <option value="all">All Status</option>
                       <option value="Working">Working</option>
                       <option value="Left">Left</option>
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={16} />
                   </div>
                 </div>
 
                 {/* Role Filter */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Role</label>
+                  <label className="block text-xs font-medium text-secondary mb-1.5">Role</label>
                   <div className="relative">
                     <select
                       value={filterRole}
                       onChange={(e) => setFilterRole(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     >
                       <option value="all">All Roles</option>
                       {roles.slice(1).map(role => (
                         <option key={role} value={role}>{role}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={16} />
                   </div>
                 </div>
 
                 {/* Department Filter */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Department</label>
+                  <label className="block text-xs font-medium text-secondary mb-1.5">Department</label>
                   <div className="relative">
                     <select
                       value={filterDepartment}
                       onChange={(e) => setFilterDepartment(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     >
                       <option value="all">All Departments</option>
                       {departments.slice(1).map(dept => (
                         <option key={dept} value={dept}>{dept}</option>
                       ))}
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={16} />
                   </div>
                 </div>
 
                 {/* Compliance Filter */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Compliance</label>
+                  <label className="block text-xs font-medium text-secondary mb-1.5">Compliance</label>
                   <div className="relative">
                     <select
                       value={filterCompliance}
                       onChange={(e) => setFilterCompliance(e.target.value)}
-                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
+                      className="w-full px-3 py-2 bg-primary border border-[var(--border-color)] rounded-lg text-primary appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm"
                     >
                       <option value="all">All Compliance</option>
                       <option value="compliant">Fully Compliant</option>
                       <option value="non-compliant">Non-Compliant</option>
                     </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none" size={16} />
                   </div>
                 </div>
               </div>
@@ -416,27 +416,27 @@ const StaffList = ({ onSelectStaff }) => {
           )}
         </div>
 
-        {/* Staff Table - Desktop - Compact */}
-        <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-100">
+        {/* Staff Table - Desktop - Dark mode support */}
+        <div className="hidden lg:block bg-secondary rounded-xl shadow-sm border border-[var(--border-color)]">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200">
+              <thead className="bg-primary border-b border-[var(--border-color)]">
                 <tr>
                   <th className="px-3 py-2.5 text-left w-10">
                     <input type="checkbox" className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                   </th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Employee</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Job Title</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Role</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Department</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Documents</th>
-                  <th className="px-3 py-2.5 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Training</th>
-                  <th className="px-3 py-2.5 text-right text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Employee</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Job Title</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Role</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Email</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Department</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Status</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Documents</th>
+                  <th className="px-3 py-2.5 text-left text-xs font-bold text-secondary uppercase tracking-wider">Training</th>
+                  <th className="px-3 py-2.5 text-right text-xs font-bold text-secondary uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[var(--border-color)]">
                 {currentStaff.map((staff) => (
                   <tr key={staff.id} className="hover:bg-blue-50/50 transition-colors duration-150">
                     <td className="px-3 py-2.5">
@@ -447,12 +447,12 @@ const StaffList = ({ onSelectStaff }) => {
                         <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-md flex-shrink-0">
                           {staff.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                         </div>
-                        <span className="font-semibold text-gray-900 text-sm">{staff.name}</span>
+                        <span className="font-semibold text-primary text-sm">{staff.name}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-2.5 text-gray-600 text-xs">{staff.jobTitle}</td>
-                    <td className="px-3 py-2.5 text-gray-600 text-xs">{staff.role}</td>
-                    <td className="px-3 py-2.5 text-gray-600 text-xs">{staff.email}</td>
+                    <td className="px-3 py-2.5 text-secondary text-xs">{staff.jobTitle}</td>
+                    <td className="px-3 py-2.5 text-secondary text-xs">{staff.role}</td>
+                    <td className="px-3 py-2.5 text-secondary text-xs">{staff.email}</td>
                     <td className="px-3 py-2.5">
                       <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                         {staff.department}
@@ -510,18 +510,18 @@ const StaffList = ({ onSelectStaff }) => {
             </table>
           </div>
 
-          {/* Pagination - Compact */}
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="text-xs text-gray-600">
-              Showing <span className="font-semibold text-gray-900">{startIndex + 1}</span> to{' '}
-              <span className="font-semibold text-gray-900">{Math.min(endIndex, filteredStaff.length)}</span> of{' '}
-              <span className="font-semibold text-gray-900">{filteredStaff.length}</span> results
+          {/* Pagination */}
+          <div className="px-4 py-3 bg-primary border-t border-[var(--border-color)] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-xs text-secondary">
+              Showing <span className="font-semibold text-primary">{startIndex + 1}</span> to{' '}
+              <span className="font-semibold text-primary">{Math.min(endIndex, filteredStaff.length)}</span> of{' '}
+              <span className="font-semibold text-primary">{filteredStaff.length}</span> results
             </div>
             <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600"
+                className="p-1.5 text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-secondary"
               >
                 <ChevronDown size={18} className="rotate-90" />
               </button>
@@ -545,7 +545,7 @@ const StaffList = ({ onSelectStaff }) => {
                     className={`min-w-[32px] px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                       currentPage === pageNum
                         ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md'
-                        : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
+                        : 'text-secondary hover:bg-blue-50 hover:text-blue-600'
                     }`}
                   >
                     {pageNum}
@@ -556,7 +556,7 @@ const StaffList = ({ onSelectStaff }) => {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600"
+                className="p-1.5 text-secondary hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-secondary"
               >
                 <ChevronDown size={18} className="-rotate-90" />
               </button>
@@ -564,18 +564,18 @@ const StaffList = ({ onSelectStaff }) => {
           </div>
         </div>
 
-        {/* Mobile Card View - Compact */}
+        {/* Mobile Card View - Dark mode support */}
         <div className="lg:hidden space-y-3">
           {currentStaff.map((staff) => (
-            <div key={staff.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow duration-200">
+            <div key={staff.id} className="bg-secondary rounded-xl p-4 shadow-sm border border-[var(--border-color)] hover:shadow-md transition-shadow duration-200">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2.5">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-md">
                     {staff.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 text-sm">{staff.name}</h3>
-                    <p className="text-xs text-gray-500">{staff.jobTitle}</p>
+                    <h3 className="font-semibold text-primary text-sm">{staff.name}</h3>
+                    <p className="text-xs text-secondary">{staff.jobTitle}</p>
                   </div>
                 </div>
                 <button
@@ -588,36 +588,36 @@ const StaffList = ({ onSelectStaff }) => {
               
               <div className="space-y-1.5 text-xs">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Email:</span>
-                  <span className="text-gray-900 font-medium">{staff.email}</span>
+                  <span className="text-secondary">Email:</span>
+                  <span className="text-primary font-medium">{staff.email}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Department:</span>
+                  <span className="text-secondary">Department:</span>
                   <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                     {staff.department}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Status:</span>
+                  <span className="text-secondary">Status:</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold ${getStatusBadgeClass(staff.status)}`}>
                     {staff.status}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Documents:</span>
+                  <span className="text-secondary">Documents:</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold ${getComplianceBadgeClass(staff.compDoc)}`}>
                     {staff.compDoc}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Training:</span>
+                  <span className="text-secondary">Training:</span>
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-semibold ${getComplianceBadgeClass(staff.compTraining)}`}>
                     {staff.compTraining}
                   </span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--border-color)]">
                 <button
                   onClick={() => handleEditStaff(staff)}
                   className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all duration-200 text-xs"
@@ -647,22 +647,22 @@ const StaffList = ({ onSelectStaff }) => {
         />
       )}
 
-      {/* Delete Confirmation Modal - Compact */}
+      {/* Delete Confirmation Modal - Dark mode support */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-5">
+          <div className="bg-secondary rounded-xl shadow-2xl max-w-md w-full p-5 border border-[var(--border-color)]">
             <div className="text-center">
               <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3">
                 <Trash2 className="text-red-600" size={28} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Staff Member?</h3>
-              <p className="text-gray-600 mb-5 text-sm">
+              <h3 className="text-xl font-bold text-primary mb-2">Delete Staff Member?</h3>
+              <p className="text-secondary mb-5 text-sm">
                 Are you sure you want to delete this staff member? This action cannot be undone.
               </p>
               <div className="flex items-center gap-2.5">
                 <button
                   onClick={() => setShowDeleteConfirm(null)}
-                  className="flex-1 px-5 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-200 font-semibold text-sm"
+                  className="flex-1 px-5 py-2 bg-primary border border-[var(--border-color)] text-secondary rounded-lg hover:bg-gray-200 transition-all duration-200 font-semibold text-sm"
                 >
                   Cancel
                 </button>

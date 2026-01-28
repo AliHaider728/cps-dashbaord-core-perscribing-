@@ -39,13 +39,13 @@ const StaffDetails = ({ staffData, onBack }) => {
   // Early return if no staffData (prevents crash)
   if (!staffData) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm p-8 min-h-[400px] flex items-center justify-center border border-gray-100">
+      <div className="bg-secondary rounded-2xl shadow-sm p-8 min-h-[400px] flex items-center justify-center border border-[var(--border-color)]">
         <div className="text-center">
           <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <User size={40} className="text-blue-600" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">No Staff Member Selected</h2>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-primary mb-3">No Staff Member Selected</h2>
+          <p className="text-secondary mb-6 max-w-md mx-auto">
             Select a staff member from the list to view their details, rota, documents, and more.
           </p>
           <button
@@ -115,13 +115,13 @@ const StaffDetails = ({ staffData, onBack }) => {
 
   return (
     <div className="space-y-5">
-      {/* Header Section - Improved */}
-      <div className="bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-        {/* Top Bar - Streamlined */}
-        <div className="px-5 py-3 bg-gradient-to-r from-gray-50 to-blue-50/30 border-b border-gray-200 flex items-center justify-between">
+      {/* Header Section - Dark mode support */}
+      <div className="bg-secondary rounded-2xl shadow-sm overflow-hidden border border-[var(--border-color)]">
+        {/* Top Bar */}
+        <div className="px-5 py-3 bg-primary border-b border-[var(--border-color)] flex items-center justify-between">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            className="flex items-center gap-2 text-secondary hover:text-blue-600 transition-colors duration-200 font-medium"
           >
             <ArrowLeft size={18} />
             <span>Back to Staff List</span>
@@ -146,7 +146,7 @@ const StaffDetails = ({ staffData, onBack }) => {
           </div>
         </div>
 
-        {/* Profile Header - Redesigned for compactness */}
+        {/* Profile Header */}
         <div className="px-5 py-4">
           <div className="flex items-center justify-between">
             {/* Left: Avatar + Info */}
@@ -158,8 +158,8 @@ const StaffDetails = ({ staffData, onBack }) => {
 
               {/* Info */}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{staffData?.name || 'Unknown Staff'}</h1>
-                <div className="flex items-center gap-4 mt-1 text-gray-600">
+                <h1 className="text-2xl font-bold text-primary">{staffData?.name || 'Unknown Staff'}</h1>
+                <div className="flex items-center gap-4 mt-1 text-secondary">
                   <span className="flex items-center gap-1.5 text-sm">
                     <Building2 size={15} />
                     {staffData?.jobTitle || 'N/A'}
@@ -170,8 +170,8 @@ const StaffDetails = ({ staffData, onBack }) => {
                     {staffData?.department || 'N/A'}
                   </span>
                 </div>
-                <a
-                  href={`mailto:${staffData?.email || ''}`}
+
+                <a href={`mailto:${staffData?.email || ''}`}
                   className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transition-colors mt-1.5"
                 >
                   <Mail size={14} />
@@ -198,8 +198,8 @@ const StaffDetails = ({ staffData, onBack }) => {
           </div>
         </div>
 
-        {/* Tabs - Improved scrollable design */}
-        <div className="border-t border-gray-200 bg-gray-50/50">
+        {/* Tabs - Dark mode support */}
+        <div className="border-t border-[var(--border-color)] bg-primary">
           <div className="flex overflow-x-auto scrollbar-hide">
             <style>{`
               .scrollbar-hide::-webkit-scrollbar {
@@ -218,8 +218,8 @@ const StaffDetails = ({ staffData, onBack }) => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-2 px-5 py-3 font-medium text-sm whitespace-nowrap transition-all duration-200 border-b-3 relative ${
                     activeTab === tab.id
-                      ? 'text-blue-600 bg-white border-b-blue-600'
-                      : 'text-gray-600 hover:text-blue-600 hover:bg-white/50 border-b-transparent'
+                      ? 'text-blue-600 bg-secondary border-b-blue-600'
+                      : 'text-secondary hover:text-blue-600 hover:bg-secondary/50 border-b-transparent'
                   }`}
                   style={{ borderBottomWidth: activeTab === tab.id ? '3px' : '3px' }}
                 >
@@ -232,11 +232,10 @@ const StaffDetails = ({ staffData, onBack }) => {
         </div>
       </div>
 
-      {/* Tab Content */}
-      <div className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
+      {/* Tab Content - Dark mode support */}
+      <div className="bg-secondary rounded-2xl shadow-sm p-5 border border-[var(--border-color)]">
         {renderTabContent()}
       </div>
- 
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Camera, X, Search, Edit2, Save } from 'lucide-react';
 const PersonalInfoTab = ({ staffData, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   
-    // State management for dynamic fields
+  // State management for dynamic fields
   const [selectedApprovers, setSelectedApprovers] = useState([
     { id: 1, name: 'Zara Ahmed' },
     { id: 4, name: 'Dr. Bilal Khan' }
@@ -30,11 +30,10 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
   const [selectedDocumentGroup, setSelectedDocumentGroup] = useState('');
   const [selectedTrainingGroup, setSelectedTrainingGroup] = useState('');
 
-  //handel save 
-const [photoPreview, setPhotoPreview] = useState(null);  // agar staffData.photo hai to initial set kar sakte ho: staffData?.photo || null
-  const fileInputRef = useRef(null);      
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const fileInputRef = useRef(null);
 
-  // Mock data for dropdowns (new random realistic values)
+  // Mock data for dropdowns
   const availableApprovers = [
     { id: 1, name: 'Zara Ahmed' },
     { id: 2, name: 'Omar Farooq' },
@@ -74,7 +73,7 @@ const [photoPreview, setPhotoPreview] = useState(null);  // agar staffData.photo
     'Specialty Modules'
   ];
 
-  // Handlers remain the same...
+  // Handlers
   const filteredApprovers = availableApprovers.filter(approver => 
     !selectedApprovers.find(s => s.id === approver.id) &&
     approver.name.toLowerCase().includes(approverSearch.toLowerCase())
@@ -131,27 +130,18 @@ const [photoPreview, setPhotoPreview] = useState(null);  // agar staffData.photo
     if (onUpdate) {
       onUpdate({
         // collect all form data
+        photoPreview: photoPreview
       });
     }
-    const handleSave = () => {
-  setIsEditing(false);
-  if (onUpdate) {
-    onUpdate({
-      // ... baqi data
-      photoFile: selectedPhotoFile,  // backend ko bhej sakte ho (FormData mein)
-    });
-  }
-  setSelectedPhotoFile(null); // reset after save
-};
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 min-h-screen">
+    <div className="bg-primary min-h-screen">
       {/* Header with Edit Button */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
+      <div className="bg-secondary border-b border-[var(--border-color)] px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Staff Detail - Personal Information</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Ali Hassan - Pharmacist - Pharmacy Team</p>
+          <h2 className="text-xl font-semibold text-primary">Staff Detail - Personal Information</h2>
+          <p className="text-sm text-secondary">Ali Hassan - Pharmacist - Pharmacy Team</p>
         </div>
         <div className="flex gap-3">
           {!isEditing ? (
@@ -183,1085 +173,1082 @@ const [photoPreview, setPhotoPreview] = useState(null);  // agar staffData.photo
       </div>
 
       <div className="p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left & Center Column */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Basic Information */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Employee Code
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="PK7890"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Region
-                  </label>
-                  <select
-                    defaultValue="Islamabad Capital Territory"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Select Region</option>
-                    <option>Islamabad Capital Territory</option>
-                    <option>Punjab</option>
-                    <option>Sindh</option>
-                    <option>Khyber Pakhtunkhwa</option>
-                    <option>Balochistan</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Login Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="alihassan"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Office Email <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="email"
-                    defaultValue="ali.hassan@coreprescribingsolutions.co"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    First Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Ali"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Middle Name
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue=""
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Last Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Hassan"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Birth Date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="1992-07-20"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Department <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Pharmacy Team"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Pharmacy Team</option>
-                    <option>Clinical Operations</option>
-                    <option>Admin & HR</option>
-                    <option>Management</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Line Manager <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Dr. Bilal Khan"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Dr. Bilal Khan</option>
-                    <option>Zara Ahmed</option>
-                    <option>Sana Malik</option>
-                    <option>Omar Farooq</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Job Title <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Pharmacist"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Gender <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Male"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Employed"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Employed</option>
-                    <option>Limited Company</option>
-                    <option>Contractor</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Mobile <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue="03451234567"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Status <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Working"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Working</option>
-                    <option>Left</option>
-                    <option>On Leave</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Joining Date <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="2021-06-15"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address
-                  </label>
-                  <textarea
-                    rows="2"
-                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Home Telephone
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue="051-87654321"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Review Date
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="2025-06-15"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Home Email
-                  </label>
-                  <input
-                    type="email"
-                    defaultValue="ali.hassan.personal@gmail.com"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Leaving Date
-                  </label>
-                  <input
-                    type="date"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+        {/* Grid changed to single column for better control */}
+        <div className="space-y-6">
+          {/* Top Section: Basic Info + Right Column Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Basic Information - Takes 2 columns */}
+            <div className="lg:col-span-2">
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Employee Code
+                    </label>
                     <input
-                      type="checkbox"
-                      defaultChecked={false}
+                      type="text"
+                      defaultValue="PK7890"
                       disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
-                    Non Medical Prescriber
-                  </label>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
-                    />
-                    Access to Report System
-                  </label>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Checked On
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="2024-01-10"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Hour Per Week
-                  </label>
-                  <input
-                    type="number"
-                    defaultValue="40"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Hour Per Day
-                  </label>
-                  <input
-                    type="number"
-                    defaultValue="8"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Smartcard number
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="987654321098"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                {/* Team */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Team <span className="text-red-500">*</span>
-                  </label>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {selectedTeams.map(team => (
-                        <span 
-                          key={team.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                        >
-                          {team.name}
-                          {isEditing && (
-                            <button
-                              onClick={() => removeTeam(team.id)}
-                              className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {isEditing && (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={teamSearch}
-                          onChange={(e) => {
-                            setTeamSearch(e.target.value);
-                            setShowTeamDropdown(true);
-                          }}
-                          onFocus={() => setShowTeamDropdown(true)}
-                          placeholder="Search teams..."
-                          className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        
-                        {showTeamDropdown && filteredTeams.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                            {filteredTeams.map(team => (
-                              <button
-                                key={team.id}
-                                onClick={() => addTeam(team)}
-                                className="w-full text-left px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-900 dark:text-gray-100"
-                              >
-                                {team.name}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
                   </div>
-                </div>
 
-                {/* View Team */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    View Team
-                  </label>
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      {selectedViewTeams.map(team => (
-                        <span 
-                          key={team.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800"
-                        >
-                          {team.name}
-                          {isEditing && (
-                            <button
-                              onClick={() => removeViewTeam(team.id)}
-                              className="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5 transition-colors"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    {isEditing && (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          value={viewTeamSearch}
-                          onChange={(e) => {
-                            setViewTeamSearch(e.target.value);
-                            setShowViewTeamDropdown(true);
-                          }}
-                          onFocus={() => setShowViewTeamDropdown(true)}
-                          placeholder="Search teams..."
-                          className="w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        
-                        {showViewTeamDropdown && filteredViewTeams.length > 0 && (
-                          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                            {filteredViewTeams.map(team => (
-                              <button
-                                key={team.id}
-                                onClick={() => addViewTeam(team)}
-                                className="w-full text-left px-4 py-2 hover:bg-green-50 dark:hover:bg-green-900/30 text-gray-900 dark:text-gray-100"
-                              >
-                                {team.name}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Clinician Type <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Clinical"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Non Clinical</option>
-                    <option>Clinical</option>
-                    <option>Medical</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked={false}
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Region
+                    </label>
+                    <select
+                      defaultValue="Islamabad Capital Territory"
                       disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
-                    />
-                    Line Manager
-                  </label>
-                </div>
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Select Region</option>
+                      <option>Islamabad Capital Territory</option>
+                      <option>Punjab</option>
+                      <option>Sindh</option>
+                      <option>Khyber Pakhtunkhwa</option>
+                      <option>Balochistan</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Valid GPhC Reg
-                  </label>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Login Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="alihassan"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Office Email <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      defaultValue="ali.hassan@coreprescribingsolutions.co"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Ali"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Middle Name
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue=""
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Hassan"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Birth Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      defaultValue="1992-07-20"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Department <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Pharmacy Team"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Pharmacy Team</option>
+                      <option>Clinical Operations</option>
+                      <option>Admin & HR</option>
+                      <option>Management</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Line Manager <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Dr. Bilal Khan"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Dr. Bilal Khan</option>
+                      <option>Zara Ahmed</option>
+                      <option>Sana Malik</option>
+                      <option>Omar Farooq</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Job Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Pharmacist"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Gender <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Male"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Male</option>
+                      <option>Female</option>
+                      <option>Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Employed"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Employed</option>
+                      <option>Limited Company</option>
+                      <option>Contractor</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Mobile <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="03451234567"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Status <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Working"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Working</option>
+                      <option>Left</option>
+                      <option>On Leave</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Joining Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      defaultValue="2021-06-15"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Address
+                    </label>
+                    <textarea
+                      rows="2"
+                      defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed resize-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Home Telephone
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="051-87654321"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Review Date
+                    </label>
+                    <input
+                      type="date"
+                      defaultValue="2025-06-15"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Home Email
+                    </label>
+                    <input
+                      type="email"
+                      defaultValue="ali.hassan.personal@gmail.com"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Leaving Date
+                    </label>
+                    <input
+                      type="date"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
                   <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
+                    <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        defaultChecked={false}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      />
+                      Non Medical Prescriber
+                    </label>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
                       <input
                         type="checkbox"
                         defaultChecked
                         disabled={!isEditing}
-                        className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                        className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                       />
-                      <span className="text-sm text-gray-700 dark:text-gray-300">Yes</span>
+                      Access to Report System
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Checked On
+                    </label>
+                    <input
+                      type="date"
+                      defaultValue="2024-01-10"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Hour Per Week
+                    </label>
+                    <input
+                      type="number"
+                      defaultValue="40"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Hour Per Day
+                    </label>
+                    <input
+                      type="number"
+                      defaultValue="8"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Smartcard number
                     </label>
                     <input
                       type="text"
-                      defaultValue="7654321"
+                      defaultValue="987654321098"
                       disabled={!isEditing}
-                      className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Exp. Date
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="2028-05-31"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
+                  {/* Team */}
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Team <span className="text-red-500">*</span>
+                    </label>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedTeams.map(team => (
+                          <span 
+                            key={team.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-blue-100 text-blue-700 border border-blue-200"
+                          >
+                            {team.name}
+                            {isEditing && (
+                              <button
+                                onClick={() => removeTeam(team.id)}
+                                className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {isEditing && (
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={teamSearch}
+                            onChange={(e) => {
+                              setTeamSearch(e.target.value);
+                              setShowTeamDropdown(true);
+                            }}
+                            onFocus={() => setShowTeamDropdown(true)}
+                            placeholder="Search teams..."
+                            className="w-full px-4 py-2 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          
+                          {showTeamDropdown && filteredTeams.length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-secondary border border-[var(--border-color)] rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              {filteredTeams.map(team => (
+                                <button
+                                  key={team.id}
+                                  onClick={() => addTeam(team)}
+                                  className="w-full text-left px-4 py-2 hover:bg-blue-50 text-primary"
+                                >
+                                  {team.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Checked On
-                  </label>
-                  <input
-                    type="date"
-                    defaultValue="2024-11-20"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
+                  {/* View Team */}
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      View Team
+                    </label>
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedViewTeams.map(team => (
+                          <span 
+                            key={team.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-green-100 text-green-700 border border-green-200"
+                          >
+                            {team.name}
+                            {isEditing && (
+                              <button
+                                onClick={() => removeViewTeam(team.id)}
+                                className="hover:bg-green-200 rounded-full p-0.5 transition-colors"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      {isEditing && (
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={viewTeamSearch}
+                            onChange={(e) => {
+                              setViewTeamSearch(e.target.value);
+                              setShowViewTeamDropdown(true);
+                            }}
+                            onFocus={() => setShowViewTeamDropdown(true)}
+                            placeholder="Search teams..."
+                            className="w-full px-4 py-2 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                          
+                          {showViewTeamDropdown && filteredViewTeams.length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-secondary border border-[var(--border-color)] rounded-md shadow-lg max-h-48 overflow-y-auto">
+                              {filteredViewTeams.map(team => (
+                                <button
+                                  key={team.id}
+                                  onClick={() => addViewTeam(team)}
+                                  className="w-full text-left px-4 py-2 hover:bg-green-50 text-primary"
+                                >
+                                  {team.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
 
-                <div className="flex items-center">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      defaultChecked={false}
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Clinician Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      defaultValue="Clinical"
                       disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
-                    />
-                    GPhC/NMC N/A
-                  </label>
-                </div>
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      <option>Non Clinical</option>
+                      <option>Clinical</option>
+                      <option>Medical</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Notice Period
-                  </label>
-                  <div className="flex gap-2 items-center">
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        defaultChecked={false}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      />
+                      Line Manager
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Valid GPhC Reg
+                    </label>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          disabled={!isEditing}
+                          className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                        />
+                        <span className="text-sm text-secondary">Yes</span>
+                      </label>
+                      <input
+                        type="text"
+                        defaultValue="7654321"
+                        disabled={!isEditing}
+                        className="flex-1 px-4 py-2 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Exp. Date
+                    </label>
                     <input
-                      type="number"
-                      defaultValue="4"
+                      type="date"
+                      defaultValue="2028-05-31"
                       disabled={!isEditing}
-                      className="flex-1 px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">( Weeks )</span>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Checked On
+                    </label>
+                    <input
+                      type="date"
+                      defaultValue="2024-11-20"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
+                      <input
+                        type="checkbox"
+                        defaultChecked={false}
+                        disabled={!isEditing}
+                        className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      />
+                      GPhC/NMC N/A
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Notice Period
+                    </label>
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="number"
+                        defaultValue="4"
+                        disabled={!isEditing}
+                        className="flex-1 px-4 py-2 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                      />
+                      <span className="text-sm text-secondary">( Weeks )</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bank Detail */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Bank Detail</h3>
-              
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 mb-4 rounded">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  Please ensure your details are correct. If you need to amend your bank account details, you <strong>must</strong> contact us and request this by emailing compliance.coreprescribingsolutions@nhs.net with the details.
-                </p>
+            {/* Right Column - Photo and Other Fields */}
+            <div className="space-y-6">
+              {/* Photo Upload */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6 text-center">
+                {photoPreview ? (
+                  <img
+                    src={photoPreview}
+                    alt="Profile Preview"
+                    className="w-32 h-32 mx-auto rounded-lg object-cover mb-4"
+                  />
+                ) : (
+                  <div className="w-32 h-32 mx-auto bg-gray-300 rounded-lg flex items-center justify-center mb-4">
+                    <Camera size={48} className="text-gray-500" />
+                  </div>
+                )}
+
+                {isEditing && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+                    >
+                      <Camera size={16} />
+                      <span className="text-sm font-medium">Upload Photo</span>
+                    </button>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setPhotoPreview(reader.result);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                  </>
+                )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Ali Hassan"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
+              {/* Contractor Code */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-5">
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Contractor Code <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  defaultValue="AH123"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Account No
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="12345678"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Limited Company Name (if applicable)
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue=""
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Sort Code
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="12-34-56"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address
-                  </label>
-                  <textarea
-                    rows="2"
-                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Role <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Pharmacist"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Pharmacist</option>
-                    <option>Admin</option>
-                    <option>Manager</option>
-                    <option>Director</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Group <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Pharmacy Team"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Pharmacy Team</option>
-                    <option>Clinical Operations</option>
-                    <option>Admin & HR</option>
-                    <option>Management</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Document Group
-                  </label>
-                  <select
-                    value={selectedDocumentGroup}
-                    onChange={(e) => setSelectedDocumentGroup(e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select Document Group...</option>
-                    {documentGroups.map((group, index) => (
-                      <option key={index} value={group}>{group}</option>
+              {/* Cover Approver */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-5">
+                <label className="block text-sm font-medium text-secondary mb-3">
+                  Cover Approver <span className="text-red-500">*</span>
+                </label>
+                
+                <div className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {selectedApprovers.map(approver => (
+                      <span 
+                        key={approver.id}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-blue-100 text-blue-700 border border-blue-200"
+                      >
+                        {approver.name}
+                        {isEditing && (
+                          <button
+                            onClick={() => removeApprover(approver.id)}
+                            className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </span>
                     ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Training Group
-                  </label>
-                  <select
-                    value={selectedTrainingGroup}
-                    onChange={(e) => setSelectedTrainingGroup(e.target.value)}
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select Training Group...</option>
-                    {trainingGroups.map((group, index) => (
-                      <option key={index} value={group}>{group}</option>
-                    ))}
-                  </select>
+                  </div>
+                  
+                  {isEditing && (
+                    <div className="relative">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted" size={18} />
+                        <input
+                          type="text"
+                          value={approverSearch}
+                          onChange={(e) => {
+                            setApproverSearch(e.target.value);
+                            setShowApproverDropdown(true);
+                          }}
+                          onFocus={() => setShowApproverDropdown(true)}
+                          placeholder="Search approvers..."
+                          className="w-full pl-10 pr-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                      </div>
+                      
+                      {showApproverDropdown && filteredApprovers.length > 0 && (
+                        <div className="absolute z-10 w-full mt-1 bg-secondary border border-[var(--border-color)] rounded-md shadow-lg max-h-48 overflow-y-auto">
+                          {filteredApprovers.map(approver => (
+                            <button
+                              key={approver.id}
+                              onClick={() => addApprover(approver)}
+                              className="w-full text-left px-4 py-2.5 hover:bg-blue-50 text-primary transition-colors border-b border-[var(--border-color)] last:border-b-0"
+                            >
+                              {approver.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Timesheet Detail */}
-            <div className="bg-white w-full dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Timesheet Detail</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Company <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="CPS"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>CPS</option>
-                    <option>NHS</option>
-                    <option>Private</option>
-                  </select>
-                </div>
+              {/* NI Number */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-5">
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  NI Number <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  defaultValue="AB123456C"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
 
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+              {/* Extension */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-5">
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Extension
+                </label>
+                <input
+                  type="text"
+                  defaultValue="456"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              {/* Emergency Contact Detail - 1 */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6">
+                <h3 className="text-lg font-semibold text-primary mb-4">Emergency Contact Detail - 1</h3>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
                     <input
-                      type="checkbox"
-                      defaultChecked={false}
+                      type="text"
+                      defaultValue="Sara Hassan"
                       disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
-                    Vat Registered
-                  </label>
-                </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Payment Method <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    defaultValue="Bacs"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  >
-                    <option>Bacs</option>
-                    <option>Cheque</option>
-                    <option>Cash</option>
-                    <option>Bank Transfer</option>
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-6">
-                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Home Telephone <span className="text-red-500">*</span>
+                    </label>
                     <input
-                      type="checkbox"
-                      defaultChecked={false}
+                      type="tel"
+                      defaultValue="03457654321"
                       disabled={!isEditing}
-                      className="w-4 h-4 text-blue-600 bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 rounded focus:ring-blue-500 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
                     />
-                    Finance Controller
-                  </label>
-                </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Vat Registration No
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue=""
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Work Telephone
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="051-1112222"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    NI Table Letter
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="A"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Relationship <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Wife"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows="2"
+                      defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed resize-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Emergency Contact Detail - 2 */}
+              <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6">
+                <h3 className="text-lg font-semibold text-primary mb-4">Emergency Contact Detail - 2</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Muhammad Raza"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Home Telephone <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue="03339876543"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Work Telephone
+                    </label>
+                    <input
+                      type="tel"
+                      defaultValue=""
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Relationship <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue="Father"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-secondary mb-2">
+                      Address <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows="2"
+                      defaultValue="Village Pindi, Near Rawalpindi"
+                      disabled={!isEditing}
+                      className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed resize-none"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Photo and Cover Approver */}
-          <div className="space-y-6">
-            {/* Photo Upload */}
-           {/* Photo Upload */}
-<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-  {photoPreview ? (
-    <img
-      src={photoPreview}
-      alt="Profile Preview"
-      className="w-32 h-32 mx-auto rounded-lg object-cover mb-4"
-    />
-  ) : (
-    <div className="w-32 h-32 mx-auto bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mb-4">
-      <Camera size={48} className="text-gray-500 dark:text-gray-400" />
-    </div>
-  )}
-
-  {isEditing && (
-    <>
-      <button
-        type="button"
-        onClick={() => fileInputRef.current?.click()}
-        className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
-      >
-        <Camera size={16} />
-        <span className="text-sm font-medium">Upload Photo</span>
-      </button>
-
-      {/* Hidden file input */}
-      <input
-        type="file"
-        accept="image/*"  // sirf images
-        ref={fileInputRef}
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              setPhotoPreview(reader.result);  // preview set
-            };
-            reader.readAsDataURL(file);
-
-            // Optional: Save ke liye file store kar lo (onUpdate mein pass karne ke liye)
-            // Example: setSelectedPhotoFile(file);
-            // Ya direct onUpdate call agar save pe chahiye
-          }
-        }}
-      />
-    </>
-  )}
-</div>
-
-            {/* Contractor Code */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Contractor Code <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                defaultValue="AH123"
-                disabled={!isEditing}
-                className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-              />
+          {/* Bank Detail - FULL WIDTH */}
+          <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6">
+            <h3 className="text-lg font-semibold text-primary mb-4">Bank Detail</h3>
+            
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 rounded">
+              <p className="text-sm text-yellow-800">
+                Please ensure your details are correct. If you need to amend your bank account details, you <strong>must</strong> contact us and request this by emailing compliance.coreprescribingsolutions@nhs.net with the details.
+              </p>
             </div>
 
-            {/* Cover Approver */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                Cover Approver <span className="text-red-500">*</span>
-              </label>
-              
-              <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
-                  {selectedApprovers.map(approver => (
-                    <span 
-                      key={approver.id}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                    >
-                      {approver.name}
-                      {isEditing && (
-                        <button
-                          onClick={() => removeApprover(approver.id)}
-                          className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors"
-                        >
-                          <X size={14} />
-                        </button>
-                      )}
-                    </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  defaultValue="Ali Hassan"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Account No
+                </label>
+                <input
+                  type="text"
+                  defaultValue="12345678"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Limited Company Name (if applicable)
+                </label>
+                <input
+                  type="text"
+                  defaultValue=""
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Sort Code
+                </label>
+                <input
+                  type="text"
+                  defaultValue="12-34-56"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Address
+                </label>
+                <textarea
+                  rows="2"
+                  defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Role <span className="text-red-500">*</span>
+                </label>
+                <select
+                  defaultValue="Pharmacist"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option>Pharmacist</option>
+                  <option>Admin</option>
+                  <option>Manager</option>
+                  <option>Director</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Group <span className="text-red-500">*</span>
+                </label>
+                <select
+                  defaultValue="Pharmacy Team"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option>Pharmacy Team</option>
+                  <option>Clinical Operations</option>
+                  <option>Admin & HR</option>
+                  <option>Management</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Document Group
+                </label>
+                <select
+                  value={selectedDocumentGroup}
+                  onChange={(e) => setSelectedDocumentGroup(e.target.value)}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select Document Group...</option>
+                  {documentGroups.map((group, index) => (
+                    <option key={index} value={group}>{group}</option>
                   ))}
-                </div>
-                
-                {isEditing && (
-                  <div className="relative">
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-                      <input
-                        type="text"
-                        value={approverSearch}
-                        onChange={(e) => {
-                          setApproverSearch(e.target.value);
-                          setShowApproverDropdown(true);
-                        }}
-                        onFocus={() => setShowApproverDropdown(true)}
-                        placeholder="Search approvers..."
-                        className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                    
-                    {showApproverDropdown && filteredApprovers.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg max-h-48 overflow-y-auto">
-                        {filteredApprovers.map(approver => (
-                          <button
-                            key={approver.id}
-                            onClick={() => addApprover(approver)}
-                            className="w-full text-left px-4 py-2.5 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-gray-900 dark:text-gray-100 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-b-0"
-                          >
-                            {approver.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Training Group
+                </label>
+                <select
+                  value={selectedTrainingGroup}
+                  onChange={(e) => setSelectedTrainingGroup(e.target.value)}
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option value="">Select Training Group...</option>
+                  {trainingGroups.map((group, index) => (
+                    <option key={index} value={group}>{group}</option>
+                  ))}
+                </select>
               </div>
             </div>
+          </div>
 
-            {/* NI Number */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                NI Number <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                defaultValue="AB123456C"
-                disabled={!isEditing}
-                className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            {/* Extension */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Extension
-              </label>
-              <input
-                type="text"
-                defaultValue="456"
-                disabled={!isEditing}
-                className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-              />
-            </div>
-
-            {/* Emergency Contact Detail - 1 */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Emergency Contact Detail - 1</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Sara Hassan"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Home Telephone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue="03457654321"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Work Telephone
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue="051-1112222"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Relationship <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Wife"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    rows="2"
-                    defaultValue="House #123, Street 10, F-8 Markaz, Islamabad"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
-                  />
-                </div>
+          {/* Timesheet Detail - FULL WIDTH */}
+          <div className="bg-secondary rounded-lg border border-[var(--border-color)] p-6">
+            <h3 className="text-lg font-semibold text-primary mb-4">Timesheet Detail</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Company <span className="text-red-500">*</span>
+                </label>
+                <select
+                  defaultValue="CPS"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option>CPS</option>
+                  <option>NHS</option>
+                  <option>Private</option>
+                </select>
               </div>
-            </div>
 
-            {/* Emergency Contact Detail - 2 */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Emergency Contact Detail - 2</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Name <span className="text-red-500">*</span>
-                  </label>
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
                   <input
-                    type="text"
-                    defaultValue="Muhammad Raza"
+                    type="checkbox"
+                    defaultChecked={false}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                    className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                   />
-                </div>
+                  Vat Registered
+                </label>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Home Telephone <span className="text-red-500">*</span>
-                  </label>
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Payment Method <span className="text-red-500">*</span>
+                </label>
+                <select
+                  defaultValue="Bacs"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <option>Bacs</option>
+                  <option>Cheque</option>
+                  <option>Cash</option>
+                  <option>Bank Transfer</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 text-sm font-medium text-secondary cursor-pointer">
                   <input
-                    type="tel"
-                    defaultValue="03339876543"
+                    type="checkbox"
+                    defaultChecked={false}
                     disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
+                    className="w-4 h-4 text-blue-600 bg-primary border-[var(--border-color)] rounded focus:ring-blue-500 disabled:cursor-not-allowed"
                   />
-                </div>
+                  Finance Controller
+                </label>
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Work Telephone
-                  </label>
-                  <input
-                    type="tel"
-                    defaultValue=""
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  Vat Registration No
+                </label>
+                <input
+                  type="text"
+                  defaultValue=""
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Relationship <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue="Father"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Address <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    rows="2"
-                    defaultValue="Village Pindi, Near Rawalpindi"
-                    disabled={!isEditing}
-                    className="w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-800 disabled:cursor-not-allowed resize-none"
-                  />
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-secondary mb-2">
+                  NI Table Letter
+                </label>
+                <input
+                  type="text"
+                  defaultValue="A"
+                  disabled={!isEditing}
+                  className="w-full px-4 py-2.5 bg-primary border border-[var(--border-color)] rounded-md text-primary focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                />
               </div>
             </div>
           </div>

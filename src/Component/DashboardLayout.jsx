@@ -101,23 +101,23 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
           {children}
         </main>
 
-        {/* Footer - Ab bottom mein fixed rahega */}
-        <footer className="bg-white text-[#3b82f6] py-6 px-4 sm:px-6 border-t border-gray-200 mt-auto">
+        {/* Footer - Dark mode support ke sath */}
+        <footer className="bg-secondary py-6 px-4 sm:px-6 border-t border-[var(--border-color)] mt-auto transition-colors duration-300">
           <div className="w-full">
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
               {/* Copyright */}
               <div className="text-center sm:text-left">
-                <p className="text-sm text-gray-600 font-semibold">
+                <p className="text-sm text-secondary font-semibold">
                   © {new Date().getFullYear()} <span className="shiny-text text-[#D4AF37] font-semibold">CorePrescribing Solutions</span>. All Rights Reserved.
                 </p>
               </div>
 
               {/* Divider for desktop */}
-              <div className="hidden sm:block w-px h-8 bg-gray-300"></div>
+              <div className="hidden sm:block w-px h-8 bg-[var(--border-color)]"></div>
 
               {/* Designed By */}
               <div className="text-center sm:text-right">
-                <p className="text-sm text-gray-600 font-semibold">
+                <p className="text-sm text-secondary font-semibold">
                   Designed & Developed by <span className="shiny-text text-[#D4AF37] font-semibold">TecnoSphere</span>
                 </p>
               </div>
