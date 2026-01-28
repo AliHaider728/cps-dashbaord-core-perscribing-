@@ -25,6 +25,61 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
   };
 
   return (
+    <>
+      <style>
+{`
+  @import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+  body {
+    background-color: #ffffff;
+  }
+
+  .shiny-text {
+    position: relative;
+    display: inline-block;
+    font-family: "Josefin Sans", sans-serif;
+    color: #3b82f6;
+    overflow: hidden;
+  }
+
+  .shiny-text::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 150%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(59,130,246,0) 0%,
+      rgba(117,167,248,0.8) 50%,
+      rgba(59,130,246,0) 100%
+    );
+    animation: shine 3s linear infinite;
+  }
+
+  @keyframes shine {
+    0% { left: -150%; }
+    100% { left: 150%; }
+  }
+
+  /* Optional hover enhancement */
+  .shiny-text:hover {
+    color: #2580de;
+  }
+
+  /* Hide scrollbar */
+  .sidebar-scroll::-webkit-scrollbar {
+    display: none;
+  }
+
+  .sidebar-scroll {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`}
+</style>
+
     <div className="flex min-h-screen bg-primary">
       <Sidebar 
         activePage={activePage}
@@ -45,8 +100,32 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
         <main className="p-4">
           {children}
         </main>
+           {/* Footer */}
+            <footer className="bg-white text-[#3b82f6] py-6 px-4 sm:px-6 border-t border-[#D4AF37]/20">
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                  {/* Copyright */}
+                  <div className="text-center sm:text-left">
+                    <p className="text-sm text-gray-600 font-semibold">
+                      © {new Date().getFullYear()} <span className="shiny-text text-[#D4AF37] font-semibold"> CorePrescribing Solutions.</span>. All Rights Reserved.
+                    </p>
+                  </div>
+
+                  {/* Divider for mobile */}
+                  <div className="hidden sm:block w-px h-8 bg-[#D4AF37]/20"></div>
+
+                  {/* Designed By */}
+                  <div className="text-center sm:text-right ">
+                    <p className="text-sm text-gray-600 font-semibold">
+                      Designed & Developed by <span className="shiny-text text-[#D4AF37] font-semibold">TecnoSphere</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </footer>
       </div>
     </div>
+    </>
   );
 };
 

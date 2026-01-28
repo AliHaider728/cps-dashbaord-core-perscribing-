@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState , useRef } from 'react';
 import { Camera, X, Search, Edit2, Save } from 'lucide-react';
 
 const PersonalInfoTab = ({ staffData, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   
-  // State management for dynamic fields
+    // State management for dynamic fields
   const [selectedApprovers, setSelectedApprovers] = useState([
     { id: 1, name: 'Zara Ahmed' },
     { id: 4, name: 'Dr. Bilal Khan' }
@@ -29,6 +29,10 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
 
   const [selectedDocumentGroup, setSelectedDocumentGroup] = useState('');
   const [selectedTrainingGroup, setSelectedTrainingGroup] = useState('');
+
+  //handel save 
+const [photoPreview, setPhotoPreview] = useState(null);  // agar staffData.photo hai to initial set kar sakte ho: staffData?.photo || null
+  const fileInputRef = useRef(null);      
 
   // Mock data for dropdowns (new random realistic values)
   const availableApprovers = [
@@ -129,6 +133,16 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
         // collect all form data
       });
     }
+    const handleSave = () => {
+  setIsEditing(false);
+  if (onUpdate) {
+    onUpdate({
+      // ... baqi data
+      photoFile: selectedPhotoFile,  // backend ko bhej sakte ho (FormData mein)
+    });
+  }
+  setSelectedPhotoFile(null); // reset after save
+};
   };
 
   return (
@@ -967,17 +981,55 @@ const PersonalInfoTab = ({ staffData, onUpdate }) => {
           {/* Right Column - Photo and Cover Approver */}
           <div className="space-y-6">
             {/* Photo Upload */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
-              <div className="w-32 h-32 mx-auto bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mb-4">
-                <Camera size={48} className="text-gray-500 dark:text-gray-400" />
-              </div>
-              {isEditing && (
-                <button className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                  <Camera size={16} />
-                  <span className="text-sm font-medium">Upload Photo</span>
-                </button>
-              )}
-            </div>
+           {/* Photo Upload */}
+<div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 text-center">
+  {photoPreview ? (
+    <img
+      src={photoPreview}
+      alt="Profile Preview"
+      className="w-32 h-32 mx-auto rounded-lg object-cover mb-4"
+    />
+  ) : (
+    <div className="w-32 h-32 mx-auto bg-gray-300 dark:bg-gray-600 rounded-lg flex items-center justify-center mb-4">
+      <Camera size={48} className="text-gray-500 dark:text-gray-400" />
+    </div>
+  )}
+
+  {isEditing && (
+    <>
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        className="flex items-center gap-2 mx-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 shadow-md hover:shadow-lg font-medium"
+      >
+        <Camera size={16} />
+        <span className="text-sm font-medium">Upload Photo</span>
+      </button>
+
+      {/* Hidden file input */}
+      <input
+        type="file"
+        accept="image/*"  // sirf images
+        ref={fileInputRef}
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              setPhotoPreview(reader.result);  // preview set
+            };
+            reader.readAsDataURL(file);
+
+            // Optional: Save ke liye file store kar lo (onUpdate mein pass karne ke liye)
+            // Example: setSelectedPhotoFile(file);
+            // Ya direct onUpdate call agar save pe chahiye
+          }
+        }}
+      />
+    </>
+  )}
+</div>
 
             {/* Contractor Code */}
             <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
