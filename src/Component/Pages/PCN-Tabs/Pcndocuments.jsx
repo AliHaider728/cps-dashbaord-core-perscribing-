@@ -61,12 +61,12 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-core-surface-dark rounded-2xl shadow-2xl max-w-lg w-full border border-gray-200 dark:border-core-border-dark">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-core-border-dark flex items-center justify-between">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Upload Document</h3>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg transition-colors">
-              <X size={20} className="text-gray-600 dark:text-gray-400" />
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-secondary rounded-2xl shadow-2xl max-w-lg w-full border border-border">
+          <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+            <h3 className="text-lg font-bold text-primary">Upload Document</h3>
+            <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+              <X size={20} className="text-muted" />
             </button>
           </div>
           
@@ -79,46 +79,46 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
                 dragActive 
-                  ? 'border-blue-500 dark:border-core-primary-600 bg-blue-50 dark:bg-core-primary-900/20' 
-                  : 'border-gray-300 dark:border-core-border-dark hover:border-gray-400 dark:hover:border-gray-600'
+                  ? 'border-core-primary-500 bg-core-primary-50' 
+                  : 'border-border hover:border-gray-400'
               }`}
             >
               {formData.file ? (
                 <div className="space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                    <File className="text-blue-600 dark:text-blue-400" size={32} />
+                  <div className="w-16 h-16 mx-auto bg-blue-100 rounded-xl flex items-center justify-center">
+                    <File className="text-blue-600" size={32} />
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-white">{formData.file.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="font-semibold text-primary">{formData.file.name}</p>
+                    <p className="text-sm text-muted">
                       {(formData.file.size / (1024 * 1024)).toFixed(2)} MB
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFormData({...formData, file: null})}
-                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
+                    className="text-sm text-red-600 hover:text-red-700 font-medium"
                   >
                     Remove file
                   </button>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-core-primary-900/20 rounded-xl flex items-center justify-center">
-                    <Upload className="text-gray-400 dark:text-gray-500" size={32} />
+                  <div className="w-16 h-16 mx-auto bg-gray-100 rounded-xl flex items-center justify-center">
+                    <Upload className="text-muted" size={32} />
                   </div>
                   <div>
-                    <p className="text-gray-900 dark:text-white font-semibold mb-1">
+                    <p className="text-primary font-semibold mb-1">
                       Drop your file here, or{' '}
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="text-blue-600 dark:text-core-primary-400 hover:text-blue-700 dark:hover:text-core-primary-300"
+                        className="text-core-primary-600 hover:text-core-primary-700"
                       >
                         browse
                       </button>
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Supports: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</p>
+                    <p className="text-sm text-muted">Supports: PDF, DOC, DOCX, XLS, XLSX (Max 10MB)</p>
                   </div>
                   <input
                     ref={fileInputRef}
@@ -132,23 +132,23 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Document Name *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Document Name</label>
               <input
                 type="text"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 placeholder="e.g., Service Agreement 2024"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Document Type *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Document Type</label>
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({...formData, type: e.target.value})}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
               >
                 <option value="Contract">Contract</option>
                 <option value="Compliance">Compliance</option>
@@ -159,11 +159,11 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
               </select>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-core-border-dark">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 transition-colors font-medium text-gray-700 dark:text-gray-300"
+                className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
               >
                 Cancel
               </button>
@@ -172,8 +172,8 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
                 disabled={!formData.file}
                 className={`flex-1 px-4 py-2.5 rounded-lg transition-all font-medium ${
                   formData.file
-                    ? 'bg-blue-500 dark:bg-core-primary-600 text-white hover:bg-blue-600 dark:hover:bg-core-primary-700'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                    ? 'bg-core-primary-500 text-white hover:bg-core-primary-600'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}
               >
                 Upload Document
@@ -186,16 +186,16 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
   };
 
   const DeleteConfirmModal = ({ document, onClose }) => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-core-surface-dark rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-core-border-dark">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Document</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{document.name}</strong>?
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-secondary rounded-xl shadow-2xl max-w-md w-full p-6 border border-border">
+        <h3 className="text-lg font-bold text-primary mb-2">Delete Document</h3>
+        <p className="text-secondary mb-6">
+          Are you sure you want to delete <strong className="text-primary">{document.name}</strong>?
         </p>
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 text-gray-700 dark:text-gray-300"
+            className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
           >
             Cancel
           </button>
@@ -204,7 +204,7 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
               onDeleteDocument(document.id);
               onClose();
             }}
-            className="flex-1 px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
+            className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
           >
             Delete
           </button>
@@ -220,9 +220,9 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
           e.stopPropagation();
           setActiveActionsMenu(activeActionsMenu === document.id ? null : document.id);
         }}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg transition-colors"
+        className="p-2 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
       >
-        <MoreVertical size={18} className="text-gray-600 dark:text-gray-400" />
+        <MoreVertical size={18} className="text-muted" />
       </button>
 
       {activeActionsMenu === document.id && (
@@ -231,16 +231,15 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
             className="fixed inset-0 z-10" 
             onClick={() => setActiveActionsMenu(null)}
           />
-          <div className="absolute right-0 top-10 w-40 bg-white dark:bg-core-surface-dark rounded-lg shadow-lg border border-gray-200 dark:border-core-border-dark py-1 z-20">
+          <div className="absolute right-0 top-10 w-40 bg-white border border-border rounded-lg shadow-xl py-1 z-20 overflow-hidden">
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                // Download functionality
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-core-primary-900/20 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-primary"
             >
-              <Download size={14} />
+              <Download size={16} />
               <span>Download</span>
             </button>
             <button
@@ -249,9 +248,9 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
                 setShowDeleteConfirm(document);
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+              className="w-full px-4 py-2.5 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
               <span>Delete</span>
             </button>
           </div>
@@ -261,44 +260,62 @@ const PCNDocuments = ({ documents, onAddDocument, onDeleteDocument }) => {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">PCN Documents</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-primary">PCN Documents</h3>
+          <p className="text-sm text-muted mt-0.5">Important files and documentation</p>
+        </div>
         <button 
           onClick={() => setShowUploadModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 dark:bg-core-primary-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-core-primary-700 transition-colors shadow-sm"
+          className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-all hover:shadow-md font-medium"
         >
           <Upload size={18} />
           <span>Upload Document</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
-        {documents.map((doc) => (
-          <div key={doc.id} className="bg-white dark:bg-core-surface-dark rounded-xl border border-gray-200 dark:border-core-border-dark p-5 hover:shadow-lg transition-all cursor-pointer group">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 flex-1">
-                <div className="w-12 h-12 bg-red-50 dark:bg-red-900/30 rounded-xl flex items-center justify-center border border-red-100 dark:border-red-700/50">
-                  <FileText className="text-red-500 dark:text-red-400" size={24} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-core-primary-400 transition-colors truncate">
-                    {doc.name}
-                  </h4>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    <span className="px-2 py-0.5 bg-gray-100 dark:bg-core-primary-900/30 rounded font-medium text-xs">{doc.type}</span>
-                    <span>•</span>
-                    <span>{doc.size}</span>
-                    <span>•</span>
-                    <span>{doc.uploadDate}</span>
+      {documents.length === 0 ? (
+        <div className="text-center py-16 bg-secondary rounded-xl border border-border border-dashed">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="text-red-500" size={32} />
+          </div>
+          <p className="text-secondary font-medium">No documents uploaded</p>
+          <p className="text-muted text-sm mt-1">Upload your first document to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3">
+          {documents.map((doc) => (
+            <div key={doc.id} className="bg-secondary rounded-xl border border-border p-5 hover:shadow-lg hover:border-core-primary-200 transition-all group">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  <div className="w-12 h-12 bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-xl flex items-center justify-center shrink-0">
+                    <FileText className="text-red-600" size={22} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-primary group-hover:text-core-primary-500 transition-colors truncate">
+                      {doc.name}
+                    </h4>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-xs text-muted font-medium">{doc.type}</span>
+                      <span className="text-xs text-muted">•</span>
+                      <span className="text-xs text-muted">{doc.size}</span>
+                      <span className="text-xs text-muted">•</span>
+                      <span className="text-xs text-muted">{new Date(doc.uploadDate).toLocaleDateString('en-GB')}</span>
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-2">
+                  <button className="p-2 hover:bg-blue-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100">
+                    <Download size={18} className="text-blue-600" />
+                  </button>
+                  <ActionsMenu document={doc} />
+                </div>
               </div>
-              <ActionsMenu document={doc} />
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {showDeleteConfirm && (
         <DeleteConfirmModal 

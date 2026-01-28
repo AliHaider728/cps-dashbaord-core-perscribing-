@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Mail, Phone, CheckCircle, Edit2, Trash2, X, Save, MoreVertical } from 'lucide-react';
+import { Plus, Mail, Phone, CheckCircle, Edit, Trash2, X, MoreVertical } from 'lucide-react';
 
 const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact }) => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -28,101 +28,103 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
     };
 
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-core-surface-dark rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-core-border-dark">
-          <div className="sticky top-0 bg-white dark:bg-core-surface-dark border-b border-gray-200 dark:border-core-border-dark px-6 py-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-secondary rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border">
+          <div className="sticky top-0 bg-secondary border-b border-border px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-primary">
               {contact ? 'Edit Contact' : 'Add New Contact'}
             </h3>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg">
-              <X size={20} className="text-gray-600 dark:text-gray-400" />
+            <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+              <X size={20} className="text-muted" />
             </button>
           </div>
           
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name *</label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
-                placeholder="Dr. John Smith"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role/Position *</label>
-              <input
-                type="text"
-                required
-                value={formData.role}
-                onChange={(e) => setFormData({...formData, role: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
-                placeholder="PCN Manager"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-primary mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
+                  placeholder="Dr. John Smith"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-primary mb-1.5">Role/Position</label>
+                <input
+                  type="text"
+                  required
+                  value={formData.role}
+                  onChange={(e) => setFormData({...formData, role: e.target.value})}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
+                  placeholder="PCN Manager"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Email Address</label>
               <input
                 type="email"
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 placeholder="john.smith@pcn.nhs.uk"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Phone Number *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Phone Number</label>
               <input
                 type="tel"
                 required
                 value={formData.phone}
                 onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 placeholder="0113 123 4567"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Contact</label>
-              <select
-                value={formData.preferredContact}
-                onChange={(e) => setFormData({...formData, preferredContact: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
-              >
-                <option value="Email">Email</option>
-                <option value="Phone">Phone</option>
-              </select>
-            </div>
-
-            <div className="flex items-center">
+            <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={formData.isPrimary}
                   onChange={(e) => setFormData({...formData, isPrimary: e.target.checked})}
-                  className="w-4 h-4 text-blue-500 dark:text-core-primary-600 border-gray-300 dark:border-core-border-dark rounded"
+                  className="w-4 h-4 text-core-primary-500 border-border rounded focus:ring-core-primary-500"
                 />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Primary Contact</span>
+                <span className="text-sm font-medium text-primary">Primary Contact</span>
               </label>
+
+              <div className="flex-1">
+                <label className="block text-sm font-medium text-primary mb-1.5">Preferred Contact</label>
+                <select
+                  value={formData.preferredContact}
+                  onChange={(e) => setFormData({...formData, preferredContact: e.target.value})}
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
+                >
+                  <option value="Email">Email</option>
+                  <option value="Phone">Phone</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-core-border-dark">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 text-gray-700 dark:text-gray-300"
+                className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-500 dark:bg-core-primary-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-core-primary-700"
+                className="flex-1 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium"
               >
                 {contact ? 'Update' : 'Add'} Contact
               </button>
@@ -134,16 +136,16 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
   };
 
   const DeleteConfirmModal = ({ contact, onClose }) => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-core-surface-dark rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-core-border-dark">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Contact</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
-          Are you sure you want to delete <strong className="text-gray-900 dark:text-white">{contact.name}</strong>?
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-secondary rounded-xl shadow-2xl max-w-md w-full p-6 border border-border">
+        <h3 className="text-lg font-bold text-primary mb-2">Delete Contact</h3>
+        <p className="text-secondary mb-6">
+          Are you sure you want to delete <strong className="text-primary">{contact.name}</strong>?
         </p>
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 text-gray-700 dark:text-gray-300"
+            className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
           >
             Cancel
           </button>
@@ -152,7 +154,7 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
               onDeleteContact(contact.id);
               onClose();
             }}
-            className="flex-1 px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
+            className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
           >
             Delete
           </button>
@@ -168,9 +170,9 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
           e.stopPropagation();
           setActiveActionsMenu(activeActionsMenu === contact.id ? null : contact.id);
         }}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg transition-colors"
+        className="p-2 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
       >
-        <MoreVertical size={18} className="text-gray-600 dark:text-gray-400" />
+        <MoreVertical size={18} className="text-muted" />
       </button>
 
       {activeActionsMenu === contact.id && (
@@ -179,7 +181,7 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
             className="fixed inset-0 z-10" 
             onClick={() => setActiveActionsMenu(null)}
           />
-          <div className="absolute right-0 top-10 w-40 bg-white dark:bg-core-surface-dark rounded-lg shadow-lg border border-gray-200 dark:border-core-border-dark py-1 z-20">
+          <div className="absolute right-0 top-10 w-40 bg-white border border-border rounded-lg shadow-xl py-1 z-20 overflow-hidden">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -187,9 +189,9 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
                 setShowAddModal(true);
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-core-primary-900/20 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-primary"
             >
-              <Edit2 size={14} />
+              <Edit size={16} />
               <span>Edit</span>
             </button>
             <button
@@ -198,9 +200,9 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
                 setShowDeleteConfirm(contact);
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+              className="w-full px-4 py-2.5 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
               <span>Delete</span>
             </button>
           </div>
@@ -210,76 +212,89 @@ const PCNContacts = ({ contacts, onAddContact, onUpdateContact, onDeleteContact 
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">PCN Contacts</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-primary">PCN Contacts</h3>
+          <p className="text-sm text-muted mt-0.5">Manage key contact persons for this PCN</p>
+        </div>
         <button 
           onClick={() => {
             setEditingContact(null);
             setShowAddModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 dark:bg-core-primary-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-core-primary-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-all hover:shadow-md font-medium"
         >
           <Plus size={18} />
           <span>Add Contact</span>
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {contacts.map((contact) => (
-          <div key={contact.id} className="bg-white dark:bg-core-surface-dark rounded-2xl border border-gray-200 dark:border-core-border-dark p-6 hover:shadow-xl transition-all group">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-core-primary-600 dark:to-indigo-700 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                  {contact.name.split(' ').map(n => n[0]).join('')}
-                </div>
-                <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white text-lg">{contact.name}</h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">{contact.role}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {contact.isPrimary && (
-                  <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full border border-blue-200 dark:border-blue-700/50">
-                    PRIMARY
-                  </span>
-                )}
-                <ActionsMenu contact={contact} />
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-core-primary-900/10 rounded-lg">
-                <div className="w-9 h-9 bg-white dark:bg-core-surface-dark rounded-lg flex items-center justify-center border border-gray-200 dark:border-core-border-dark">
-                  <Mail size={16} className="text-gray-600 dark:text-gray-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Email</p>
-                  <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{contact.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-core-primary-900/10 rounded-lg">
-                <div className="w-9 h-9 bg-white dark:bg-core-surface-dark rounded-lg flex items-center justify-center border border-gray-200 dark:border-core-border-dark">
-                  <Phone size={16} className="text-gray-600 dark:text-gray-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Phone</p>
-                  <p className="text-sm text-gray-900 dark:text-white font-medium">{contact.phone}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-core-primary-900/10 rounded-lg md:col-span-2">
-                <div className="w-9 h-9 bg-white dark:bg-core-surface-dark rounded-lg flex items-center justify-center border border-gray-200 dark:border-core-border-dark">
-                  <CheckCircle size={16} className="text-gray-600 dark:text-gray-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Preferred Contact Method</p>
-                  <p className="text-sm text-gray-900 dark:text-white font-medium">{contact.preferredContact}</p>
-                </div>
-              </div>
-            </div>
+      {contacts.length === 0 ? (
+        <div className="text-center py-16 bg-secondary rounded-xl border border-border border-dashed">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="text-blue-500" size={32} />
           </div>
-        ))}
-      </div>
+          <p className="text-secondary font-medium">No contacts found</p>
+          <p className="text-muted text-sm mt-1">Add your first contact to get started</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {contacts.map((contact) => (
+            <div key={contact.id} className="bg-secondary rounded-xl border border-border p-6 hover:shadow-lg hover:border-core-primary-200 transition-all group">
+              <div className="flex items-start justify-between mb-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-core-primary-500 to-core-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md">
+                    {contact.name.split(' ').map(n => n[0]).join('')}
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-primary text-lg">{contact.name}</h4>
+                    <p className="text-sm text-muted mt-0.5">{contact.role}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {contact.isPrimary && (
+                    <span className="px-3 py-1.5 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full border border-blue-200">
+                      Primary
+                    </span>
+                  )}
+                  <ActionsMenu contact={contact} />
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Mail size={14} className="text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted font-medium">Email</p>
+                    <p className="text-sm text-primary truncate">{contact.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center shrink-0">
+                    <Phone size={14} className="text-emerald-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted font-medium">Phone</p>
+                    <p className="text-sm text-primary">{contact.phone}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 md:col-span-2">
+                  <div className="w-8 h-8 bg-violet-50 rounded-lg flex items-center justify-center shrink-0">
+                    <CheckCircle size={14} className="text-violet-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs text-muted font-medium">Preferred Contact</p>
+                    <p className="text-sm text-primary">{contact.preferredContact}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {showAddModal && (
         <ContactModal 

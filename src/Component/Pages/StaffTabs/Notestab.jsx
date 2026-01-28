@@ -6,80 +6,80 @@ const NotesTab = ({ staffData }) => {
   const [notes, setNotes] = useState([
     {
       id: 1,
-      title: 'Performance Review Discussion',
-      content: 'Discussed annual performance review. Staff member showed excellent improvement in clinical skills and patient communication. Recommended for advanced training program.',
+      title: 'Annual Performance Appraisal',
+      content: 'Conducted yearly review. Strong progress in clinical accuracy and team collaboration. Suggested leadership course for next quarter.',
       category: 'Performance',
       priority: 'High',
-      createdBy: 'Arslan Shahroz',
-      createdDate: '2026-01-20',
-      lastModified: '2026-01-20',
-      tags: ['performance', 'training', 'review']
+      createdBy: 'James Anderson',
+      createdDate: '2026-01-22',
+      lastModified: '2026-01-22',
+      tags: ['performance', 'review', 'leadership']
     },
     {
       id: 2,
-      title: 'Training Completion',
-      content: 'Successfully completed Advanced Sepsis Management training with distinction. Certificate uploaded to training records.',
+      title: 'CPPE Training Completed',
+      content: 'Finished CPPE Advanced Clinical Skills module with high score. Certificate saved in personnel file.',
       category: 'Training',
       priority: 'Medium',
-      createdBy: 'Noor Ul Hameed',
-      createdDate: '2026-01-18',
-      lastModified: '2026-01-18',
-      tags: ['training', 'certification', 'sepsis']
+      createdBy: 'Emma Thompson',
+      createdDate: '2026-01-19',
+      lastModified: '2026-01-19',
+      tags: ['cppe', 'training', 'clinical']
     },
     {
       id: 3,
-      title: 'Schedule Change Request',
-      content: 'Staff member requested flexible working hours for the next month due to family commitments. Discussed potential solutions and rota adjustments.',
+      title: 'Rota Adjustment Request',
+      content: 'Requested reduced hours for 4 weeks due to childcare responsibilities. Agreed temporary change to rota.',
       category: 'Schedule',
       priority: 'Medium',
-      createdBy: 'Stephen Elliott',
-      createdDate: '2026-01-15',
-      lastModified: '2026-01-16',
-      tags: ['schedule', 'flexibility', 'rota']
+      createdBy: 'Oliver Harris',
+      createdDate: '2026-01-17',
+      lastModified: '2026-01-18',
+      tags: ['rota', 'hours', 'family']
     },
     {
       id: 4,
-      title: 'Patient Feedback - Excellent Service',
-      content: 'Received exceptional feedback from patient regarding care quality and professionalism. Patient specifically praised communication skills and empathy.',
+      title: 'Positive Patient Compliment',
+      content: 'Patient wrote a thank-you card praising professionalism, clear explanations, and caring attitude during consultation.',
       category: 'Feedback',
       priority: 'High',
-      createdBy: 'Saba Kazmi',
-      createdDate: '2026-01-12',
-      lastModified: '2026-01-12',
-      tags: ['feedback', 'patient-care', 'positive']
+      createdBy: 'Sophia Clark',
+      createdDate: '2026-01-14',
+      lastModified: '2026-01-14',
+      tags: ['feedback', 'patient', 'positive']
     },
     {
       id: 5,
-      title: 'Equipment Training Required',
-      content: 'New medical equipment arriving next week. Staff member needs training on operation and safety protocols. Training session scheduled for Feb 1st.',
+      title: 'New Dispensary Software Training Needed',
+      content: 'Updated pharmacy system rolling out next month. Staff requires hands-on training session. Booked for Feb 5th.',
       category: 'Training',
       priority: 'High',
-      createdBy: 'Abdul Hoque',
-      createdDate: '2026-01-10',
-      lastModified: '2026-01-11',
-      tags: ['training', 'equipment', 'safety']
+      createdBy: 'William Taylor',
+      createdDate: '2026-01-11',
+      lastModified: '2026-01-12',
+      tags: ['training', 'software', 'dispensary']
     },
     {
       id: 6,
-      title: 'Mentorship Program',
-      content: 'Assigned as mentor for two new pharmacy technicians. Showing excellent leadership and teaching abilities. Regular check-ins scheduled.',
+      title: 'Pre-registration Mentor Assignment',
+      content: 'Appointed as tutor for pre-reg pharmacist. Demonstrating good supervisory and educational skills. Monthly meetings set.',
       category: 'Development',
       priority: 'Medium',
-      createdBy: 'Arslan Shahroz',
-      createdDate: '2026-01-08',
-      lastModified: '2026-01-15',
-      tags: ['mentorship', 'leadership', 'development']
+      createdBy: 'Charlotte Lewis',
+      createdDate: '2026-01-09',
+      lastModified: '2026-01-16',
+      tags: ['mentor', 'pre-reg', 'development']
     },
     {
       id: 7,
-      title: 'Compliance Documentation',
-      content: 'All mandatory compliance documents up to date. GPhC registration renewed successfully. Next review due in 12 months.',
+      title: 'GPhC Renewal Confirmed',
+      content: 'GPhC registration successfully renewed for another year. All CPD entries up to date. Next audit expected in 2027.',
       category: 'Compliance',
       priority: 'Low',
-      createdBy: 'Noor Ul Hameed',
-      createdDate: '2026-01-05',
-      lastModified: '2026-01-05',
-      tags: ['compliance', 'documentation', 'registration']
+      createdBy: 'George Mitchell',
+      createdDate: '2026-01-06',
+      lastModified: '2026-01-06',
+      tags: ['gphc', 'compliance', 'cpd']
     }
   ]);
 

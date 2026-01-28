@@ -19,7 +19,7 @@ const Header = ({ onMenuClick, onThemeToggle, isDark }) => {
               Admin Dashboard
             </h1>
             <p className="text-sm text-secondary">
-              CarePoint Services
+             Core Prescribing Services
             </p>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageSquare, Plus, Edit2, Trash2, X, Save, MoreVertical } from 'lucide-react';
+import { MessageSquare, Plus, Edit, Trash2, X, MoreVertical } from 'lucide-react';
 
 const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -33,25 +33,25 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
     };
 
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white dark:bg-core-surface-dark rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-core-border-dark">
-          <div className="sticky top-0 bg-white dark:bg-core-surface-dark border-b border-gray-200 dark:border-core-border-dark px-6 py-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-secondary rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border">
+          <div className="sticky top-0 bg-secondary border-b border-border px-6 py-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold text-primary">
               {note ? 'Edit Note' : 'Add New Note'}
             </h3>
-            <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg">
-              <X size={20} className="text-gray-600 dark:text-gray-400" />
+            <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+              <X size={20} className="text-muted" />
             </button>
           </div>
           
           <form onSubmit={handleSubmit} className="p-6 space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Activity Type</label>
+                <label className="block text-sm font-medium text-primary mb-1.5">Activity Type</label>
                 <select
                   value={formData.type}
                   onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 >
                   <option value="Call">Phone Call</option>
                   <option value="Meeting">Meeting</option>
@@ -60,11 +60,11 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Priority</label>
+                <label className="block text-sm font-medium text-primary mb-1.5">Priority</label>
                 <select
                   value={formData.priority}
                   onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                  className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 >
                   <option value="Low">Low</option>
                   <option value="Medium">Medium</option>
@@ -74,40 +74,40 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Title</label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent bg-secondary text-primary"
                 placeholder="Brief summary"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description *</label>
+              <label className="block text-sm font-medium text-primary mb-1.5">Description</label>
               <textarea
                 required
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-core-primary-600 focus:border-transparent resize-none bg-white dark:bg-core-bg-dark text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-core-primary-500 focus:border-transparent resize-none bg-secondary text-primary"
                 placeholder="Detailed notes..."
               />
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-core-border-dark">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 text-gray-700 dark:text-gray-300"
+                className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-2 bg-blue-500 dark:bg-core-primary-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-core-primary-700"
+                className="flex-1 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium"
               >
                 {note ? 'Update' : 'Add'} Note
               </button>
@@ -119,16 +119,16 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
   };
 
   const DeleteConfirmModal = ({ note, onClose }) => (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-core-surface-dark rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-200 dark:border-core-border-dark">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Delete Note</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-6">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-secondary rounded-xl shadow-2xl max-w-md w-full p-6 border border-border">
+        <h3 className="text-lg font-bold text-primary mb-2">Delete Note</h3>
+        <p className="text-secondary mb-6">
           Are you sure you want to delete this note?
         </p>
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 dark:border-core-border-dark rounded-lg hover:bg-gray-50 dark:hover:bg-core-primary-900/20 text-gray-700 dark:text-gray-300"
+            className="flex-1 px-4 py-2.5 border border-border rounded-lg hover:bg-primary transition-colors font-medium text-primary"
           >
             Cancel
           </button>
@@ -137,7 +137,7 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
               onDeleteNote(note.id);
               onClose();
             }}
-            className="flex-1 px-4 py-2 bg-red-500 dark:bg-red-600 text-white rounded-lg hover:bg-red-600 dark:hover:bg-red-700"
+            className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
           >
             Delete
           </button>
@@ -153,9 +153,9 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
           e.stopPropagation();
           setActiveActionsMenu(activeActionsMenu === note.id ? null : note.id);
         }}
-        className="p-2 hover:bg-gray-100 dark:hover:bg-core-primary-900/20 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+        className="p-2 hover:bg-gray-200 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
       >
-        <MoreVertical size={18} className="text-gray-600 dark:text-gray-400" />
+        <MoreVertical size={18} className="text-muted" />
       </button>
 
       {activeActionsMenu === note.id && (
@@ -164,7 +164,7 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
             className="fixed inset-0 z-10" 
             onClick={() => setActiveActionsMenu(null)}
           />
-          <div className="absolute right-0 top-10 w-40 bg-white dark:bg-core-surface-dark rounded-lg shadow-lg border border-gray-200 dark:border-core-border-dark py-1 z-20">
+          <div className="absolute right-0 top-10 w-40 bg-white border border-border rounded-lg shadow-xl py-1 z-20 overflow-hidden">
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -172,9 +172,9 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
                 setShowAddModal(true);
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-core-primary-900/20 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
+              className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-primary"
             >
-              <Edit2 size={14} />
+              <Edit size={16} />
               <span>Edit</span>
             </button>
             <button
@@ -183,9 +183,9 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
                 setShowDeleteConfirm(note);
                 setActiveActionsMenu(null);
               }}
-              className="w-full px-4 py-2 text-left hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-sm text-red-600 dark:text-red-400"
+              className="w-full px-4 py-2.5 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
             >
-              <Trash2 size={14} />
+              <Trash2 size={16} />
               <span>Delete</span>
             </button>
           </div>
@@ -195,63 +195,76 @@ const PCNNotes = ({ notes, onAddNote, onUpdateNote, onDeleteNote }) => {
   );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notes & Activity Log</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-primary">Notes & Activity Log</h3>
+          <p className="text-sm text-muted mt-0.5">Track all interactions and notes</p>
+        </div>
         <button 
           onClick={() => {
             setEditingNote(null);
             setShowAddModal(true);
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-500 dark:bg-core-primary-600 text-white rounded-lg hover:bg-blue-600 dark:hover:bg-core-primary-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-all hover:shadow-md font-medium"
         >
           <Plus size={18} />
           <span>Add Note</span>
         </button>
       </div>
 
-      <div className="space-y-3">
-        {notes.map((note) => (
-          <div key={note.id} className="bg-white dark:bg-core-surface-dark rounded-2xl border border-gray-200 dark:border-core-border-dark p-6 hover:shadow-xl transition-all group">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-start gap-4 flex-1">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-md ${
-                  note.type === 'Call' ? 'bg-green-100 border border-green-200 dark:bg-green-900/30 dark:border-green-700/50' :
-                  note.type === 'Meeting' ? 'bg-blue-100 border border-blue-200 dark:bg-blue-900/30 dark:border-blue-700/50' :
-                  'bg-purple-100 border border-purple-200 dark:bg-purple-900/30 dark:border-purple-700/50'
-                }`}>
-                  <MessageSquare className={
-                    note.type === 'Call' ? 'text-green-600 dark:text-green-400' :
-                    note.type === 'Meeting' ? 'text-blue-600 dark:text-blue-400' :
-                    'text-purple-600 dark:text-purple-400'
-                  } size={24} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-bold text-gray-900 dark:text-white text-lg">{note.title}</h4>
-                    <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
-                      note.priority === 'High' ? 'bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-700/50' :
-                      note.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-700/50' :
-                      'bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-700/30 dark:text-gray-400 dark:border-gray-600/50'
-                    }`}>
-                      {note.priority}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 mb-3">
-                    <span className="font-medium">{note.type}</span>
-                    <span>•</span>
-                    <span>{note.date}</span>
-                    <span>•</span>
-                    <span>{note.user}</span>
-                  </div>
-                  <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{note.description}</p>
-                </div>
-              </div>
-              <ActionsMenu note={note} />
-            </div>
+      {notes.length === 0 ? (
+        <div className="text-center py-16 bg-secondary rounded-xl border border-border border-dashed">
+          <div className="w-16 h-16 bg-violet-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <MessageSquare className="text-violet-500" size={32} />
           </div>
-        ))}
-      </div>
+          <p className="text-secondary font-medium">No notes found</p>
+          <p className="text-muted text-sm mt-1">Add your first note to track communications</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {notes.map((note) => (
+            <div key={note.id} className="bg-secondary rounded-xl border border-border p-6 hover:shadow-lg hover:border-core-primary-200 transition-all group">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-start gap-4 flex-1">
+                  <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${
+                    note.type === 'Call' ? 'bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200' :
+                    note.type === 'Meeting' ? 'bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200' :
+                    'bg-gradient-to-br from-violet-50 to-violet-100 border border-violet-200'
+                  }`}>
+                    <MessageSquare className={
+                      note.type === 'Call' ? 'text-emerald-600' :
+                      note.type === 'Meeting' ? 'text-blue-600' :
+                      'text-violet-600'
+                    } size={20} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className="font-semibold text-primary text-base">{note.title}</h4>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                        note.priority === 'High' ? 'bg-red-100 text-red-700' :
+                        note.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {note.priority}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted mb-3">
+                      <span className="font-medium">{note.type}</span>
+                      <span>•</span>
+                      <span>{new Date(note.date).toLocaleDateString('en-GB')}</span>
+                      <span>•</span>
+                      <span>{note.user}</span>
+                    </div>
+                    <p className="text-primary text-sm leading-relaxed">{note.description}</p>
+                  </div>
+                </div>
+                <ActionsMenu note={note} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {showAddModal && (
         <NoteModal 

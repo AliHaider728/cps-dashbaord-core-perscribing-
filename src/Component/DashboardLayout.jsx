@@ -5,7 +5,7 @@ import Header from './Header/Header';
 const DashboardLayout = ({ children, activePage, setActivePage }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isDark, setIsDark] = useState(true);
+  const [isDark, setIsDark] = useState(false); // Changed to false for light theme default
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -13,7 +13,10 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
       setIsDark(savedTheme === 'dark');
       document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
+      // Default to light theme
+      setIsDark(false);
+      document.documentElement.setAttribute('data-theme', 'light');
+      localStorage.setItem('theme', 'light');
     }
   }, []);
 
@@ -108,7 +111,7 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
               {/* Copyright */}
               <div className="text-center sm:text-left">
                 <p className="text-sm text-secondary font-semibold">
-                  © {new Date().getFullYear()} <span className="shiny-text   font-semibold">CorePrescribing Solutions</span>. All Rights Reserved.
+                  © {new Date().getFullYear()} <span className="shiny-text font-semibold">Core Prescribing Solutions</span>. All Rights Reserved.
                 </p>
               </div>
 
@@ -118,7 +121,7 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
               {/* Designed By */}
               <div className="text-center sm:text-right">
                 <p className="text-sm text-secondary font-semibold">
-                  Designed & Developed by <span className="shiny-text  font-semibold">TecnoSphere</span>
+                  Designed & Developed by <span className="shiny-text font-semibold">TecnoSphere</span>
                 </p>
               </div>
             </div>

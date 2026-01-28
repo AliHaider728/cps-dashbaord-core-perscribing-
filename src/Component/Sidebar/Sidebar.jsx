@@ -55,7 +55,7 @@ const Sidebar = ({
         { icon: UserCircle, label: 'Staff Details', id: 'staff-details' }
       ]
     },
-    { icon: Calendar, label: 'Rota', id: 'rota' },
+    { icon: Calendar, label: 'Rota', id: 'rota-management' },
     { icon: Umbrella, label: 'Leave', id: 'leave' },
     { icon: CheckCircle, label: 'Compliance', id: 'compliance' },
     { icon: Clock, label: 'Timesheets', id: 'timesheets' },
