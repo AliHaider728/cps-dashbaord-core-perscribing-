@@ -108,7 +108,7 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
               {/* Copyright */}
               <div className="text-center sm:text-left">
                 <p className="text-sm text-secondary font-semibold">
-                  © {new Date().getFullYear()} <span className="shiny-text text-[#D4AF37] font-semibold">CorePrescribing Solutions</span>. All Rights Reserved.
+                  © {new Date().getFullYear()} <span className="shiny-text   font-semibold">CorePrescribing Solutions</span>. All Rights Reserved.
                 </p>
               </div>
 
@@ -118,7 +118,7 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
               {/* Designed By */}
               <div className="text-center sm:text-right">
                 <p className="text-sm text-secondary font-semibold">
-                  Designed & Developed by <span className="shiny-text text-[#D4AF37] font-semibold">TecnoSphere</span>
+                  Designed & Developed by <span className="shiny-text  font-semibold">TecnoSphere</span>
                 </p>
               </div>
             </div>

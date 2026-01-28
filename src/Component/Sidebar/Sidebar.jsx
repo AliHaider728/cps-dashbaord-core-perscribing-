@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Users,
   Building2,
@@ -13,13 +13,24 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  ChevronUp,
   UserCircle,
   ClipboardList
 } from 'lucide-react';
 
-const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, setIsCollapsed, clientFilterType, setClientFilterType }) => {
+const Sidebar = ({ 
+  activePage, 
+  setActivePage, 
+  isOpen, 
+  setIsOpen, 
+  isCollapsed, 
+  setIsCollapsed, 
+  clientFilterType, 
+  setClientFilterType 
+}) => {
   const [openDropdowns, setOpenDropdowns] = useState({});
+  const [hoveredItem, setHoveredItem] = useState(null);
+  const [hoverTimeout, setHoverTimeout] = useState(null);
+  const [isHovered, setIsHovered] = useState(false);
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
@@ -51,8 +62,28 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
     { icon: FileText, label: 'Invoices', id: 'invoices' },
   ];
 
+  // Auto-expand active dropdowns
+  useEffect(() => {
+    const newExpanded = {};
+    menuItems.forEach((item) => {
+      if (item.hasDropdown) {
+        const hasActive = item.subItems?.some(sub => {
+          if (item.id === 'clients') {
+            return activePage === 'clients' && clientFilterType === sub.filterType;
+          }
+          return activePage === sub.id;
+        });
+        if (hasActive && !isCollapsed) {
+          newExpanded[item.id] = true;
+        }
+      }
+    });
+    setOpenDropdowns(newExpanded);
+  }, [activePage, clientFilterType, isCollapsed]);
+
   const toggleDropdown = (itemId) => {
-    if (isCollapsed) {
+    if (isCollapsed && !isHovered) {
+      // If collapsed and not hovered, expand sidebar first
       setIsCollapsed(false);
       setTimeout(() => {
         setOpenDropdowns(prev => ({
@@ -61,10 +92,35 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
         }));
       }, 100);
     } else {
+      // Normal toggle
       setOpenDropdowns(prev => ({
         ...prev,
         [itemId]: !prev[itemId]
       }));
+    }
+  };
+
+  const handleMouseEnter = (item) => {
+    if (isCollapsed && !isHovered && item.hasDropdown) {
+      if (hoverTimeout) {
+        clearTimeout(hoverTimeout);
+      }
+      setHoveredItem(item.id);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isCollapsed && !isHovered) {
+      const timeout = setTimeout(() => {
+        setHoveredItem(null);
+      }, 150);
+      setHoverTimeout(timeout);
+    }
+  };
+
+  const handleHoverMenuEnter = () => {
+    if (hoverTimeout) {
+      clearTimeout(hoverTimeout);
     }
   };
 
@@ -95,16 +151,18 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
       <aside
         className={`fixed left-0 top-0 h-screen bg-secondary flex flex-col transition-all duration-300 ease-in-out z-50 border-r border-[var(--border-color)] ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } ${isCollapsed ? 'w-16' : 'w-64'}`}
+        } ${isCollapsed && !isHovered ? 'w-16' : 'w-64'}`}
+        onMouseEnter={() => isCollapsed && setIsHovered(true)}
+        onMouseLeave={() => isCollapsed && setIsHovered(false)}
       >
         {/* Logo Header - Clickable */}
         <button
           onClick={handleLogoClick}
           className={`flex items-center transition-all duration-300 hover:bg-primary/50 ${
-            isCollapsed ? 'h-16 justify-center px-3' : 'h-20 px-6'
+            isCollapsed && !isHovered ? 'h-16 justify-center px-3' : 'h-20 px-6'
           }`}
         >
-          {!isCollapsed ? (
+          {!isCollapsed || isHovered ? (
             <div className="flex items-center gap-3">
               <img
                 src="https://coreprescribingsolutions.co.uk/wp-content/themes/core-prescribing/images/core-prescribing-logo.png"
@@ -113,7 +171,7 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
               />
               <div className="flex flex-col">
                 <span className="text-primary font-semibold text-base leading-tight">
-                  Core  Prescribing
+                  Core Prescribing
                 </span>
                 <span className="text-primary font-semibold text-base leading-tight">
                   Solutions
@@ -168,17 +226,57 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
             }
 
             /* Smooth Dropdown Animation */
-            .dropdown-enter {
+            .dropdown-content {
               max-height: 0;
               opacity: 0;
               overflow: hidden;
-              transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
-                          opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                          opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                          margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
-            .dropdown-enter-active {
+            .dropdown-content.open {
               max-height: 500px;
               opacity: 1;
+              margin-top: 0.25rem;
+            }
+
+            /* Hover Popup Menu Animation */
+            .hover-popup {
+              opacity: 0;
+              visibility: hidden;
+              transform: translateX(-8px) scale(0.96);
+              pointer-events: none;
+              transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                          visibility 0.2s;
+            }
+
+            .hover-popup.active {
+              opacity: 1;
+              visibility: visible;
+              transform: translateX(0) scale(1);
+              pointer-events: auto;
+            }
+
+            /* Active Border Indicator */
+            .active-indicator {
+              transform: scaleY(0);
+              transform-origin: center;
+              transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .active-indicator.show {
+              transform: scaleY(1);
+            }
+
+            /* Chevron Rotation */
+            .chevron-rotate {
+              transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .chevron-rotate.rotated {
+              transform: rotate(180deg);
             }
           `}</style>
           
@@ -186,15 +284,20 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
             const Icon = item.icon;
             const isActive = isItemActive(item);
             const isDropdownOpen = openDropdowns[item.id];
+            const isHoverActive = hoveredItem === item.id;
             
             return (
-              <div key={item.id}>
+              <div 
+                key={item.id}
+                className="relative"
+                onMouseEnter={() => handleMouseEnter(item)}
+                onMouseLeave={handleMouseLeave}
+              >
                 {/* Main Menu Item */}
                 <button
                   onClick={() => {
                     if (item.hasDropdown) {
                       toggleDropdown(item.id);
-                      // If clicking Clients main item, open it with 'all' filter
                       if (item.id === 'clients') {
                         setActivePage('clients');
                         if (setClientFilterType) {
@@ -210,22 +313,25 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                     isActive
                       ? 'bg-core-primary-50 text-core-primary-500'
                       : 'text-secondary hover:bg-primary hover:text-core-primary-500'
-                  } ${isCollapsed ? 'justify-center' : ''}`}
-                  title={isCollapsed ? item.label : ''}
+                  } ${isCollapsed && !isHovered ? 'justify-center' : ''}`}
+                  title={isCollapsed && !isHovered ? item.label : ''}
                 >
-                  {isActive && !isCollapsed && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full transition-all duration-200" />
+                  {/* Active Indicator */}
+                  {isActive && (!isCollapsed || isHovered) && (
+                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full active-indicator ${isActive ? 'show' : ''}`} />
                   )}
+                  
                   <Icon
                     size={18}
                     className={`transition-all duration-200 ${
                       isActive
                         ? 'text-core-primary-500'
                         : 'text-muted group-hover:text-core-primary-500'
-                    } ${isCollapsed ? '' : 'ml-1'}`}
+                    } ${isCollapsed && !isHovered ? '' : 'ml-1'}`}
                     strokeWidth={isActive ? 2.5 : 2}
                   />
-                  {!isCollapsed && (
+                  
+                  {(!isCollapsed || isHovered) && (
                     <>
                       <span className={`flex-1 text-left font-medium text-sm transition-all duration-200 ${
                         isActive ? 'text-core-primary-500' : ''
@@ -233,26 +339,23 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                         {item.label}
                       </span>
                       {item.hasDropdown && (
-                        <div className="transition-transform duration-300 ease-in-out" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                          <ChevronDown size={16} className={`transition-all duration-200 ${
+                        <ChevronDown 
+                          size={16} 
+                          className={`chevron-rotate ${isDropdownOpen ? 'rotated' : ''} transition-all duration-200 ${
                             isActive ? 'text-core-primary-500' : 'text-muted'
-                          }`} />
-                        </div>
+                          }`}
+                        />
                       )}
                     </>
                   )}
                 </button>
 
-                {/* Dropdown Sub-items with Smooth Animation */}
-                {item.hasDropdown && !isCollapsed && (
-                  <div 
-                    className={`dropdown-enter ${isDropdownOpen ? 'dropdown-enter-active' : ''}`}
-                  >
-                    <div className="ml-4 mt-1 space-y-1 border-l-2 border-core-primary-100 pl-1">
+                {/* Dropdown Sub-items (When Sidebar is Expanded) */}
+                {item.hasDropdown && (!isCollapsed || isHovered) && (
+                  <div className={`dropdown-content ${isDropdownOpen ? 'open' : ''}`}>
+                    <div className="ml-4 space-y-1 border-l-2 border-core-primary-100 pl-1">
                       {item.subItems.map((subItem) => {
                         const SubIcon = subItem.icon;
-                        
-                        // For Clients dropdown - check filterType
                         const isSubActive = item.id === 'clients' 
                           ? isClientSubItemActive(subItem.filterType)
                           : activePage === subItem.id;
@@ -261,14 +364,12 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                           <button
                             key={subItem.label}
                             onClick={() => {
-                              // Handle Clients sub-items (PCNs/Standalone)
                               if (item.id === 'clients' && subItem.filterType) {
                                 setActivePage('clients');
                                 if (setClientFilterType) {
                                   setClientFilterType(subItem.filterType);
                                 }
                               } else {
-                                // Handle other dropdowns (Staff)
                                 setActivePage(subItem.id);
                               }
                               setIsOpen(false);
@@ -299,6 +400,67 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
                     </div>
                   </div>
                 )}
+
+                {/* Hover Popup Menu (When Sidebar is Collapsed and NOT Hovered) */}
+                {item.hasDropdown && isCollapsed && !isHovered && (
+                  <div
+                    className={`hover-popup ${isHoverActive ? 'active' : ''} absolute left-full top-0 ml-2 bg-secondary border border-[var(--border-color)] rounded-lg shadow-xl z-50 min-w-[220px]`}
+                    onMouseEnter={handleHoverMenuEnter}
+                    onMouseLeave={handleMouseLeave}
+                  >
+                    {/* Popup Header */}
+                    <div className="px-4 py-3 border-b border-[var(--border-color)]">
+                      <div className="flex items-center gap-2">
+                        <Icon size={18} className="text-core-primary-500 shrink-0" />
+                        <span className="font-semibold text-sm text-primary">
+                          {item.label}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Popup Items */}
+                    <div className="py-2">
+                      {item.subItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        const isSubActive = item.id === 'clients' 
+                          ? isClientSubItemActive(subItem.filterType)
+                          : activePage === subItem.id;
+                        
+                        return (
+                          <button
+                            key={subItem.label}
+                            onClick={() => {
+                              if (item.id === 'clients' && subItem.filterType) {
+                                setActivePage('clients');
+                                if (setClientFilterType) {
+                                  setClientFilterType(subItem.filterType);
+                                }
+                              } else {
+                                setActivePage(subItem.id);
+                              }
+                              setIsOpen(false);
+                              setHoveredItem(null);
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm font-normal transition-all duration-200 ${
+                              isSubActive
+                                ? 'bg-core-primary-50 text-core-primary-500 font-medium'
+                                : 'text-secondary hover:bg-primary hover:text-core-primary-500'
+                            }`}
+                          >
+                            <SubIcon
+                              size={16}
+                              className={`shrink-0 ${
+                                isSubActive ? 'text-core-primary-500' : 'text-muted'
+                              }`}
+                              strokeWidth={isSubActive ? 2.5 : 2}
+                            />
+                            <span className="truncate">{subItem.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -308,12 +470,12 @@ const Sidebar = ({ activePage, setActivePage, isOpen, setIsOpen, isCollapsed, se
         <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mx-4" />
         
         {/* User Profile */}
-        <div className={`transition-all duration-300 ${isCollapsed ? 'p-3' : 'p-4'}`}>
-          <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+        <div className={`transition-all duration-300 ${isCollapsed && !isHovered ? 'p-3' : 'p-4'}`}>
+          <div className={`flex items-center gap-3 ${isCollapsed && !isHovered ? 'justify-center' : ''}`}>
             <div className="w-9 h-9 bg-gradient-to-br from-core-primary-500 to-core-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0 shadow-md transition-all duration-200 hover:shadow-lg">
               JD
             </div>
-            {!isCollapsed && (
+            {(!isCollapsed || isHovered) && (
               <>
                 <div className="flex-1 min-w-0">
                   <div className="text-primary text-sm font-medium truncate">
