@@ -90,43 +90,44 @@ const DashboardLayout = ({ children, activePage, setActivePage }) => {
         setIsCollapsed={setIsCollapsed}
       />
       
-      <div className={`flex-1 transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
         <Header 
           onMenuClick={() => setSidebarOpen(true)}
           onThemeToggle={handleThemeToggle}
           isDark={isDark}
         />
         
-        <main className="p-4">
+        <main className="flex-1 p-4">
           {children}
         </main>
-           {/* Footer */}
-            <footer className="bg-white text-[#3b82f6] py-6 px-4 sm:px-6 border-t border-[#D4AF37]/20">
-              <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                  {/* Copyright */}
-                  <div className="text-center sm:text-left">
-                    <p className="text-sm text-gray-600 font-semibold">
-                      © {new Date().getFullYear()} <span className="shiny-text text-[#D4AF37] font-semibold"> CorePrescribing Solutions.</span>. All Rights Reserved.
-                    </p>
-                  </div>
 
-                  {/* Divider for mobile */}
-                  <div className="hidden sm:block w-px h-8 bg-[#D4AF37]/20"></div>
-
-                  {/* Designed By */}
-                  <div className="text-center sm:text-right ">
-                    <p className="text-sm text-gray-600 font-semibold">
-                      Designed & Developed by <span className="shiny-text text-[#D4AF37] font-semibold">TecnoSphere</span>
-                    </p>
-                  </div>
-                </div>
+        {/* Footer - Ab bottom mein fixed rahega */}
+        <footer className="bg-white text-[#3b82f6] py-6 px-4 sm:px-6 border-t border-gray-200 mt-auto">
+          <div className="w-full">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              {/* Copyright */}
+              <div className="text-center sm:text-left">
+                <p className="text-sm text-gray-600 font-semibold">
+                  © {new Date().getFullYear()} <span className="shiny-text text-[#D4AF37] font-semibold">CorePrescribing Solutions</span>. All Rights Reserved.
+                </p>
               </div>
-            </footer>
+
+              {/* Divider for desktop */}
+              <div className="hidden sm:block w-px h-8 bg-gray-300"></div>
+
+              {/* Designed By */}
+              <div className="text-center sm:text-right">
+                <p className="text-sm text-gray-600 font-semibold">
+                  Designed & Developed by <span className="shiny-text text-[#D4AF37] font-semibold">TecnoSphere</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
     </>
   );
 };
 
-export default DashboardLayout; 
+export default DashboardLayout;
