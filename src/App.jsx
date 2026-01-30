@@ -15,6 +15,8 @@ import AddLeaveRequest from './Component/Pages/Leave/AddLeaveRequest.jsx';
 import ComplianceDashboard from './Component/ComplianceDashboard.jsx';
 import PCNDashboard from './Component/Dashboard/PCNDashboard.jsx';
 import Invoices from './Component/Pages/Invoices.jsx';
+import Announcements from './Component/Pages/Announcements.jsx';
+import AttendanceEmployee from './Component/Pages/Staff/AttendanceEmployee.jsx';
 
 const App = () => {
   const [activePage, setActivePage] = useState('dashboard');
@@ -31,6 +33,10 @@ const App = () => {
     switch(activePage) {
       case 'dashboard':
         return <Dashboard />;
+      
+      // ⭐ NEW CASE - Announcements
+      case 'announcements':
+        return <Announcements />;
       
       case 'clients':
         return <ClientsList 
@@ -94,6 +100,9 @@ const App = () => {
           staffData={selectedStaff}
           onBack={() => setActivePage('staff-list')}
         />;
+      
+      case 'attendance':
+        return <AttendanceEmployee />;
       
       case 'rota-management':
         return <RotaManagement />;
@@ -179,4 +188,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App; 

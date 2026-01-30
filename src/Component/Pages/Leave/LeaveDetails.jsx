@@ -35,94 +35,93 @@ const LeaveDetails = ({ leaveData, onBack, onApprove, onReject }) => {
   });
 
   // Available staff with detailed information
-  const availableStaff = [
-    { 
-      id: 1, 
-      name: 'Dr. Sarah Johnson', 
-      role: 'Clinical Pharmacist', 
-      availability: 'Full Day Available',
-      avatar: 'SJ',
-      currentWorkload: 65,
-      skills: ['Clinical Review', 'Patient Consultation', 'Medication Management'],
-      location: 'Arc Bucks PCN',
-      shifts: [
-        { date: '2026-02-01', time: 'Full Day', status: 'available' },
-        { date: '2026-02-02', time: 'Full Day', status: 'available' },
-        { date: '2026-02-03', time: 'AM Only', status: 'partially-available' }
-      ],
-      rating: 4.8,
-      completedCovers: 23
-    },
-    { 
-      id: 2, 
-      name: 'Mike Williams', 
-      role: 'Senior Pharmacist', 
-      availability: 'Morning Shift Available',
-      avatar: 'MW',
-      currentWorkload: 45,
-      skills: ['Dispensing', 'Patient Safety', 'Team Leadership'],
-      location: 'Clacton PCN',
-      shifts: [
-        { date: '2026-02-01', time: 'AM Only', status: 'available' },
-        { date: '2026-02-02', time: 'AM Only', status: 'available' },
-        { date: '2026-02-03', time: 'Not Available', status: 'unavailable' }
-      ],
-      rating: 4.6,
-      completedCovers: 18
-    },
-    { 
-      id: 3, 
-      name: 'Emma Brown', 
-      role: 'Pharmacy Manager', 
-      availability: 'Full Day Available',
-      avatar: 'EB',
-      currentWorkload: 80,
-      skills: ['Management', 'Clinical Services', 'Staff Training'],
-      location: 'Richmond General Practice',
-      shifts: [
-        { date: '2026-02-01', time: 'Full Day', status: 'available' },
-        { date: '2026-02-02', time: 'Full Day', status: 'available' },
-        { date: '2026-02-03', time: 'Full Day', status: 'available' }
-      ],
-      rating: 4.9,
-      completedCovers: 31
-    },
-    { 
-      id: 4, 
-      name: 'James Wilson', 
-      role: 'Clinical Lead', 
-      availability: 'Afternoon Available',
-      avatar: 'JW',
-      currentWorkload: 70,
-      skills: ['Clinical Governance', 'Quality Assurance', 'Training'],
-      location: 'COVER',
-      shifts: [
-        { date: '2026-02-01', time: 'PM Only', status: 'available' },
-        { date: '2026-02-02', time: 'PM Only', status: 'available' },
-        { date: '2026-02-03', time: 'Full Day', status: 'available' }
-      ],
-      rating: 4.7,
-      completedCovers: 27
-    },
-    { 
-      id: 5, 
-      name: 'Lisa Anderson', 
-      role: 'Practice Pharmacist', 
-      availability: 'Full Day Available',
-      avatar: 'LA',
-      currentWorkload: 55,
-      skills: ['Patient Care', 'Medication Review', 'Health Promotion'],
-      location: 'The Vineyard Surgery',
-      shifts: [
-        { date: '2026-02-01', time: 'Full Day', status: 'available' },
-        { date: '2026-02-02', time: 'Full Day', status: 'available' },
-        { date: '2026-02-03', time: 'AM Only', status: 'partially-available' }
-      ],
-      rating: 4.5,
-      completedCovers: 15
-    }
-  ];
-
+ const availableStaff = [
+  { 
+    id: 101, 
+    name: 'Dr. Ayesha Khan', 
+    role: 'Clinical Pharmacist', 
+    availability: 'Full Day Available',
+    avatar: 'AK',
+    currentWorkload: 52,
+    skills: ['Clinical Review', 'Medication Reconciliation', 'Chronic Disease Management'],
+    location: 'Islamabad Central PCN',
+    shifts: [
+      { date: '2026-04-15', time: 'Full Day', status: 'available' },
+      { date: '2026-04-16', time: 'Full Day', status: 'available' },
+      { date: '2026-04-17', time: 'Full Day', status: 'available' }
+    ],
+    rating: 4.9,
+    completedCovers: 19
+  },
+  { 
+    id: 102, 
+    name: 'Bilal Ahmed', 
+    role: 'Senior Pharmacist', 
+    availability: 'Morning Shift Available',
+    avatar: 'BA',
+    currentWorkload: 38,
+    skills: ['Dispensing', 'Stock Management', 'Patient Counselling'],
+    location: 'Rawalpindi Health Hub',
+    shifts: [
+      { date: '2026-04-15', time: 'AM Only', status: 'available' },
+      { date: '2026-04-16', time: 'AM Only', status: 'available' },
+      { date: '2026-04-17', time: 'Not Available', status: 'unavailable' }
+    ],
+    rating: 4.7,
+    completedCovers: 14
+  },
+  { 
+    id: 103, 
+    name: 'Fatima Noor', 
+    role: 'Pharmacy Manager', 
+    availability: 'Full Day Available',
+    avatar: 'FN',
+    currentWorkload: 72,
+    skills: ['Team Coordination', 'Compliance & Audit', 'Training & Development'],
+    location: 'Lahore PCN Network',
+    shifts: [
+      { date: '2026-04-15', time: 'Full Day', status: 'available' },
+      { date: '2026-04-16', time: 'Full Day', status: 'available' },
+      { date: '2026-04-17', time: 'Full Day', status: 'available' }
+    ],
+    rating: 4.8,
+    completedCovers: 34
+  },
+  { 
+    id: 104, 
+    name: 'Omar Siddiqui', 
+    role: 'Clinical Lead Pharmacist', 
+    availability: 'Afternoon Available',
+    avatar: 'OS',
+    currentWorkload: 68,
+    skills: ['Clinical Governance', 'Prescribing Support', 'Quality Improvement'],
+    location: 'Karachi Coastal PCN',
+    shifts: [
+      { date: '2026-04-15', time: 'PM Only', status: 'available' },
+      { date: '2026-04-16', time: 'PM Only', status: 'available' },
+      { date: '2026-04-17', time: 'Full Day', status: 'available' }
+    ],
+    rating: 4.6,
+    completedCovers: 22
+  },
+  { 
+    id: 105, 
+    name: 'Zainab Malik', 
+    role: 'Practice Pharmacist', 
+    availability: 'Full Day Available',
+    avatar: 'ZM',
+    currentWorkload: 60,
+    skills: ['Medication Review', 'Health Screening', 'Lifestyle Advice'],
+    location: 'Peshawar Family Practice',
+    shifts: [
+      { date: '2026-04-15', time: 'Full Day', status: 'available' },
+      { date: '2026-04-16', time: 'Full Day', status: 'available' },
+      { date: '2026-04-17', time: 'AM Only', status: 'partially-available' }
+    ],
+    rating: 4.7,
+    completedCovers: 17
+  }
+];
   const projects = [
     'Select Project',
     'Arc Bucks PCN EA',

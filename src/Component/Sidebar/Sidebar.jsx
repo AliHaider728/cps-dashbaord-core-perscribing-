@@ -15,7 +15,8 @@ import {
   ChevronDown,
   UserCircle,
   ClipboardList,
-  BarChart
+  BarChart,
+  Bell
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -36,6 +37,7 @@ const Sidebar = ({
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
     { icon: BarChart, label: 'PCN Performance', id: 'pcn-dashboard' },
+    { icon: Bell, label: 'Announcements', id: 'announcements' }, 
     { 
       icon: Users, 
       label: 'Clients', 
@@ -54,7 +56,8 @@ const Sidebar = ({
       hasDropdown: true,
       subItems: [
         { icon: ClipboardList, label: 'Staff List', id: 'staff-list' },
-        { icon: UserCircle, label: 'Staff Details', id: 'staff-details' }
+        { icon: UserCircle, label: 'Staff Details', id: 'staff-details' },
+        { icon: Clock, label: 'Attendance', id: 'attendance' }
       ]
     },
     { icon: Calendar, label: 'Rota Management', id: 'rota-management' },
@@ -489,4 +492,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar; 
+export default Sidebar;
