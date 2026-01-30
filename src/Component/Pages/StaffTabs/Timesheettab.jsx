@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Search, Download, Edit2, X, Check, Calendar, Clock, DollarSign, Briefcase } from 'lucide-react';
+import { Plus, Trash2, Search, Download, Edit2, X, Check, Calendar, Clock, DollarSign, Briefcase, ChevronRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const TimesheetTab = ({ staffData }) => {
@@ -209,31 +209,132 @@ const TimesheetTab = ({ staffData }) => {
     return [];
   };
 
+  // Mobile Card Components
+  const ProjectCard = ({ project }) => (
+    <div className="bg-primary border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-primary text-sm sm:text-base truncate">{project.project}</h3>
+          <p className="text-xs sm:text-sm text-secondary truncate mt-0.5">{project.practice}</p>
+        </div>
+        <button
+          onClick={() => handleDeleteProject(project.id)}
+          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
+        <div>
+          <span className="text-secondary">Type:</span>
+          <span className={`ml-1.5 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${
+            project.type === 'Paye' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-purple-100 text-purple-700 border-purple-200'
+          }`}>
+            {project.type}
+          </span>
+        </div>
+        <div>
+          <span className="text-secondary">Rate:</span>
+          <span className="ml-1.5 font-semibold text-primary">£{project.rate}</span>
+        </div>
+        <div>
+          <span className="text-secondary">Rate Type:</span>
+          <span className="ml-1.5 text-primary">{project.rateType}</span>
+        </div>
+        <div>
+          <span className="text-secondary">VAT:</span>
+          <span className="ml-1.5 text-primary">{project.vat}%</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const TimesheetCard = ({ entry }) => (
+    <div className="bg-primary border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs sm:text-sm font-medium text-secondary">{entry.date}</span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(entry.status)}`}>
+              {entry.status}
+            </span>
+          </div>
+          <h3 className="font-semibold text-primary text-sm sm:text-base truncate">{entry.project}</h3>
+          <p className="text-xs sm:text-sm text-secondary truncate">{entry.practice}</p>
+        </div>
+        <button
+          onClick={() => handleDeleteTimesheet(entry.id)}
+          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+      <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-border">
+        <div>
+          <span className="text-secondary">Hours:</span>
+          <span className="ml-1.5 font-bold text-core-primary-500">{entry.hours}</span>
+        </div>
+        <div className="text-right">
+          <span className="text-secondary">Approver:</span>
+          <p className="text-primary font-medium truncate max-w-[150px]">{entry.approver}</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  const ExpenseCard = ({ expense }) => (
+    <div className="bg-primary border border-border rounded-lg p-4 hover:shadow-md transition-shadow">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs sm:text-sm font-medium text-secondary">{expense.date}</span>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getStatusColor(expense.status)}`}>
+              {expense.status}
+            </span>
+          </div>
+          <h3 className="font-semibold text-primary text-sm sm:text-base line-clamp-2">{expense.description}</h3>
+        </div>
+        <button
+          onClick={() => handleDeleteExpense(expense.id)}
+          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-2 flex-shrink-0"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+      <div className="flex items-center justify-between text-xs sm:text-sm pt-2 border-t border-border">
+        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border bg-violet-100 text-violet-700 border-violet-200">
+          {expense.category}
+        </span>
+        <span className="font-bold text-core-primary-500 text-base">£{expense.amount}</span>
+      </div>
+    </div>
+  );
+
   // Modal Component
   const Modal = ({ onClose, onSave, type }) => {
     const renderFields = () => {
       if (type === 'project') {
         return (
-          <>
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-primary mb-2">
                 Project Name <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Enter project name"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, project: e.target.value })}
               />
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-primary mb-2">
                 Practice <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Enter practice name"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, practice: e.target.value })}
               />
             </div>
@@ -242,12 +343,25 @@ const TimesheetTab = ({ staffData }) => {
                 Type <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               >
                 <option value="">Select Type</option>
                 <option value="Paye">Paye</option>
                 <option value="Contract">Contract</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Rate Type <span className="text-red-500">*</span>
+              </label>
+              <select
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                onChange={(e) => setFormData({ ...formData, rateType: e.target.value })}
+              >
+                <option value="">Select Rate Type</option>
+                <option value="Hourly">Hourly</option>
+                <option value="Daily">Daily</option>
               </select>
             </div>
             <div>
@@ -258,22 +372,9 @@ const TimesheetTab = ({ staffData }) => {
                 type="number"
                 placeholder="0.00"
                 step="0.01"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Rate Type <span className="text-red-500">*</span>
-              </label>
-              <select
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
-                onChange={(e) => setFormData({ ...formData, rateType: e.target.value })}
-              >
-                <option value="">Select Rate Type</option>
-                <option value="Hourly">Hourly</option>
-                <option value="Daily">Daily</option>
-              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-primary mb-2">
@@ -283,45 +384,23 @@ const TimesheetTab = ({ staffData }) => {
                 type="number"
                 placeholder="0.00"
                 step="0.01"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, vat: e.target.value })}
               />
             </div>
-          </>
+          </div>
         );
       } else if (type === 'timesheet') {
         return (
-          <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-2">
                 Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Project <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Enter project name"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
-                onChange={(e) => setFormData({ ...formData, project: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Practice <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Enter practice name"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
-                onChange={(e) => setFormData({ ...formData, practice: e.target.value })}
               />
             </div>
             <div>
@@ -332,42 +411,76 @@ const TimesheetTab = ({ staffData }) => {
                 type="number"
                 placeholder="0.0"
                 step="0.5"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, hours: parseFloat(e.target.value) })}
               />
             </div>
-          </>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-primary mb-2">
+                Project <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Enter project name"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                onChange={(e) => setFormData({ ...formData, project: e.target.value })}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium text-primary mb-2">
+                Practice <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Enter practice name"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                onChange={(e) => setFormData({ ...formData, practice: e.target.value })}
+              />
+            </div>
+          </div>
         );
       } else if (type === 'expense') {
         return (
-          <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-primary mb-2">
                 Date <span className="text-red-500">*</span>
               </label>
               <input
                 type="date"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, date: e.target.value })}
               />
             </div>
             <div>
+              <label className="block text-sm font-medium text-primary mb-2">
+                Amount (£) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                placeholder="0.00"
+                step="0.01"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
+              />
+            </div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-primary mb-2">
                 Description <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 placeholder="Enter expense description"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-primary mb-2">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-core-primary-500"
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
               >
                 <option value="">Select Category</option>
@@ -379,48 +492,36 @@ const TimesheetTab = ({ staffData }) => {
                 <option value="Professional Development">Professional Development</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-primary mb-2">
-                Amount (£) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                placeholder="0.00"
-                step="0.01"
-                className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500"
-                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-              />
-            </div>
-          </>
+          </div>
         );
       }
     };
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-secondary rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="sticky top-0 bg-secondary border-b border-border px-6 py-4 flex items-center justify-between">
-            <h3 className="text-xl font-bold text-primary">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+        <div className="bg-secondary rounded-xl shadow-2xl max-w-3xl w-full my-4">
+          <div className="sticky top-0 bg-secondary border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between rounded-t-xl">
+            <h3 className="text-lg sm:text-xl font-bold text-primary">
               Add New {type === 'project' ? 'Project' : type === 'timesheet' ? 'Entry' : 'Expense'}
             </h3>
             <button onClick={onClose} className="p-2 hover:bg-primary rounded-lg transition-colors">
               <X size={20} className="text-secondary" />
             </button>
           </div>
-          <div className="p-6 space-y-4">
+          <div className="p-4 sm:p-6 max-h-[calc(90vh-140px)] overflow-y-auto">
             {renderFields()}
           </div>
-          <div className="sticky bottom-0 bg-secondary border-t border-border px-6 py-4 flex items-center justify-end gap-3">
+          <div className="sticky bottom-0 bg-secondary border-t border-border px-4 sm:px-6 py-3 sm:py-4 flex flex-col-reverse sm:flex-row items-center justify-end gap-2 sm:gap-3 rounded-b-xl">
             <button
               onClick={onClose}
-              className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200 text-sm sm:text-base"
             >
               <X size={18} />
               <span className="font-medium">Cancel</span>
             </button>
             <button
               onClick={onSave}
-              className="flex items-center gap-2 px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm text-sm sm:text-base"
             >
               <Check size={18} />
               <span className="font-medium">Add {type === 'project' ? 'Project' : type === 'timesheet' ? 'Entry' : 'Expense'}</span>
@@ -434,36 +535,35 @@ const TimesheetTab = ({ staffData }) => {
   const filteredData = getFilteredData();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-primary">Timesheet Management</h2>
-          <p className="text-secondary text-sm mt-1">Track projects, hours, and expenses efficiently</p>
-        </div>
+      <div className="flex flex-col gap-2 sm:gap-3">
+        <h2 className="text-lg sm:text-xl font-bold text-primary">Timesheet Management</h2>
+        <p className="text-secondary text-xs sm:text-sm">Track projects, hours, and expenses efficiently</p>
       </div>
 
       {/* Sub Tabs */}
-      <div className="border-b border-border">
-        <div className="flex gap-1 overflow-x-auto">
+      <div className="border-b border-border -mx-3 sm:mx-0">
+        <div className="flex gap-1 overflow-x-auto px-3 sm:px-0 scrollbar-hide">
           {[
-            { id: 'project-mapping', label: 'Projects', icon: Briefcase },
-            { id: 'timesheet', label: 'Timesheet', icon: Clock },
-            { id: 'expenses', label: 'Expenses', icon: DollarSign }
+            { id: 'project-mapping', label: 'Projects', icon: Briefcase, shortLabel: 'Projects' },
+            { id: 'timesheet', label: 'Timesheet', icon: Clock, shortLabel: 'Hours' },
+            { id: 'expenses', label: 'Expenses', icon: DollarSign, shortLabel: 'Expenses' }
           ].map(tab => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm whitespace-nowrap border-b-2 transition-all duration-200 ${
+                className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-6 py-2 sm:py-3 font-semibold text-xs sm:text-sm whitespace-nowrap border-b-2 transition-all duration-200 ${
                   activeSubTab === tab.id
                     ? 'border-core-primary-500 text-core-primary-500 bg-core-primary-50'
                     : 'border-transparent text-secondary hover:text-core-primary-500 hover:bg-core-primary-50/50'
                 }`}
               >
-                <Icon size={18} />
-                {tab.label}
+                <Icon size={16} className="sm:w-[18px] sm:h-[18px]" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.shortLabel}</span>
               </button>
             );
           })}
@@ -471,31 +571,32 @@ const TimesheetTab = ({ staffData }) => {
       </div>
 
       {/* Action Bar */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="text"
-            placeholder={`Search ${activeSubTab === 'project-mapping' ? 'projects' : activeSubTab === 'timesheet' ? 'timesheet entries' : 'expenses'}...`}
+            placeholder={`Search ${activeSubTab === 'project-mapping' ? 'projects' : activeSubTab === 'timesheet' ? 'entries' : 'expenses'}...`}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all duration-200"
+            className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-primary text-sm sm:text-base placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all duration-200"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2 sm:gap-3">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm text-sm sm:text-base"
           >
-            <Download size={18} />
+            <Download size={16} className="sm:w-[18px] sm:h-[18px]" />
             <span className="font-medium">Export</span>
           </button>
           <button
             onClick={() => { setShowAddModal(true); setModalType(activeSubTab === 'project-mapping' ? 'project' : activeSubTab === 'timesheet' ? 'timesheet' : 'expense'); }}
-            className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm"
+            className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm text-sm sm:text-base"
           >
-            <Plus size={18} />
-            <span className="font-medium">Add {activeSubTab === 'project-mapping' ? 'Project' : activeSubTab === 'timesheet' ? 'Entry' : 'Expense'}</span>
+            <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
+            <span className="font-medium hidden sm:inline">Add {activeSubTab === 'project-mapping' ? 'Project' : activeSubTab === 'timesheet' ? 'Entry' : 'Expense'}</span>
+            <span className="font-medium sm:hidden">Add</span>
           </button>
         </div>
       </div>
@@ -504,27 +605,34 @@ const TimesheetTab = ({ staffData }) => {
       {activeSubTab === 'project-mapping' && (
         <div className="space-y-4">
           {/* Statistics */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-core-primary-50 border border-core-primary-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-core-primary-600">{projectMappings.length}</div>
-              <div className="text-sm text-core-primary-700 mt-1">Total Projects</div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-core-primary-50 border border-core-primary-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-core-primary-600">{projectMappings.length}</div>
+              <div className="text-xs sm:text-sm text-core-primary-700 mt-1">Total Projects</div>
             </div>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-blue-600">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-blue-600">
                 {projectMappings.filter(p => p.type === 'Paye').length}
               </div>
-              <div className="text-sm text-blue-700 mt-1">PAYE Projects</div>
+              <div className="text-xs sm:text-sm text-blue-700 mt-1">PAYE Projects</div>
             </div>
-            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-purple-600">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-purple-600">
                 {projectMappings.filter(p => p.type === 'Contract').length}
               </div>
-              <div className="text-sm text-purple-700 mt-1">Contract Projects</div>
+              <div className="text-xs sm:text-sm text-purple-700 mt-1">Contract Projects</div>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3">
+            {filteredData.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-core-primary-50 border-b border-border">
@@ -577,35 +685,42 @@ const TimesheetTab = ({ staffData }) => {
       {activeSubTab === 'timesheet' && (
         <div className="space-y-4">
           {/* Statistics */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="bg-core-primary-50 border border-core-primary-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-core-primary-600">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+            <div className="bg-core-primary-50 border border-core-primary-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-core-primary-600">
                 {timesheetEntries.reduce((sum, e) => sum + e.hours, 0).toFixed(1)}
               </div>
-              <div className="text-sm text-core-primary-700 mt-1">Total Hours</div>
+              <div className="text-xs sm:text-sm text-core-primary-700 mt-1">Total Hours</div>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="bg-green-50 border border-green-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
                 {timesheetEntries.filter(e => e.status === 'Approved').reduce((sum, e) => sum + e.hours, 0).toFixed(1)}
               </div>
-              <div className="text-sm text-green-700 mt-1">Approved Hours</div>
+              <div className="text-xs sm:text-sm text-green-700 mt-1">Approved</div>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-yellow-600">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                 {timesheetEntries.filter(e => e.status === 'Pending').reduce((sum, e) => sum + e.hours, 0).toFixed(1)}
               </div>
-              <div className="text-sm text-yellow-700 mt-1">Pending Hours</div>
+              <div className="text-xs sm:text-sm text-yellow-700 mt-1">Pending</div>
             </div>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-red-600">
+            <div className="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-red-600">
                 {timesheetEntries.filter(e => e.status === 'Rejected').reduce((sum, e) => sum + e.hours, 0).toFixed(1)}
               </div>
-              <div className="text-sm text-red-700 mt-1">Rejected Hours</div>
+              <div className="text-xs sm:text-sm text-red-700 mt-1">Rejected</div>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3">
+            {filteredData.map((entry) => (
+              <TimesheetCard key={entry.id} entry={entry} />
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-core-primary-50 border-b border-border">
@@ -658,29 +773,36 @@ const TimesheetTab = ({ staffData }) => {
       {activeSubTab === 'expenses' && (
         <div className="space-y-4">
           {/* Statistics */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="bg-core-primary-50 border border-core-primary-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-core-primary-600">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            <div className="bg-core-primary-50 border border-core-primary-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-core-primary-600">
                 £{expenses.reduce((sum, e) => sum + parseFloat(e.amount), 0).toFixed(2)}
               </div>
-              <div className="text-sm text-core-primary-700 mt-1">Total Expenses</div>
+              <div className="text-xs sm:text-sm text-core-primary-700 mt-1">Total Expenses</div>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-green-600">
+            <div className="bg-green-50 border border-green-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-green-600">
                 £{expenses.filter(e => e.status === 'Approved').reduce((sum, e) => sum + parseFloat(e.amount), 0).toFixed(2)}
               </div>
-              <div className="text-sm text-green-700 mt-1">Approved</div>
+              <div className="text-xs sm:text-sm text-green-700 mt-1">Approved</div>
             </div>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-              <div className="text-2xl font-bold text-yellow-600">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3 sm:p-4 hover:shadow-md transition-shadow">
+              <div className="text-xl sm:text-2xl font-bold text-yellow-600">
                 £{expenses.filter(e => e.status === 'Pending').reduce((sum, e) => sum + parseFloat(e.amount), 0).toFixed(2)}
               </div>
-              <div className="text-sm text-yellow-700 mt-1">Pending</div>
+              <div className="text-xs sm:text-sm text-yellow-700 mt-1">Pending</div>
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3">
+            {filteredData.map((expense) => (
+              <ExpenseCard key={expense.id} expense={expense} />
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-core-primary-50 border-b border-border">
@@ -726,6 +848,19 @@ const TimesheetTab = ({ staffData }) => {
               </table>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {filteredData.length === 0 && (
+        <div className="text-center py-12 bg-secondary rounded-xl border border-border">
+          <div className="w-16 h-16 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            {activeSubTab === 'project-mapping' && <Briefcase className="text-core-primary-500" size={28} />}
+            {activeSubTab === 'timesheet' && <Clock className="text-core-primary-500" size={28} />}
+            {activeSubTab === 'expenses' && <DollarSign className="text-core-primary-500" size={28} />}
+          </div>
+          <p className="text-lg font-medium text-primary mb-1">No {activeSubTab === 'project-mapping' ? 'projects' : activeSubTab === 'timesheet' ? 'entries' : 'expenses'} found</p>
+          <p className="text-sm text-secondary">Try adjusting your search or add a new one</p>
         </div>
       )}
 

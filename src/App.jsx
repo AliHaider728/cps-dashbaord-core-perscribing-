@@ -8,19 +8,25 @@ import PCNProfile from './Component/Pages/PCNProfile.jsx';
 import PracticeProfile from './Component/Pages/PracticeProfile.jsx';
 import StaffList from './Component/Pages/Staff/Stafflist.jsx';
 import StaffDetails from './Component/Pages/Staff/StaffDetails.jsx';
-import RotaMangement from './Component/Pages/RotaManagement/RotaMaegment.jsx';
+import RotaManagement from './Component/Pages/RotaManagement/RotaMaegment.jsx';
+import LeaveList from './Component/Pages/Leave/LeaveList.jsx';
+import LeaveDetails from './Component/Pages/Leave/LeaveDetails.jsx';
+import AddLeaveRequest from './Component/Pages/Leave/AddLeaveRequest.jsx';
+import ComplianceDashboard from './Component/ComplianceDashboard.jsx';
+import PCNDashboard from './Component/Dashboard/PCNDashboard.jsx';
+import Invoices from './Component/Pages/Invoices.jsx';
 
 const App = () => {
   const [activePage, setActivePage] = useState('dashboard');
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
+  const [selectedLeave, setSelectedLeave] = useState(null);
 
   const renderPage = () => {
     switch(activePage) {
       case 'dashboard':
         return <Dashboard />;
       
-      // Main Clients page - shows both PCNs and Standalone practices with type selector
       case 'clients':
         return <ClientsList 
           onSelectPCN={(pcn) => {
@@ -33,7 +39,6 @@ const App = () => {
           }}
         />;
       
-      // PCNs only page
       case 'pcns':
         return <PCNsList 
           onSelectPCN={(pcn) => {
@@ -42,7 +47,6 @@ const App = () => {
           }}
         />;
       
-      // All Practices page (both PCN practices and standalone)
       case 'practices':
         return <PracticesList 
           onSelectPractice={(practice) => {
@@ -51,7 +55,6 @@ const App = () => {
           }}
         />;
       
-      // PCN Profile with 5 tabs
       case 'pcn-profile':
         return <PCNProfile 
           pcnData={selectedClient}
@@ -63,7 +66,6 @@ const App = () => {
           setActivePage={setActivePage}
         />;
       
-      // Practice Profile with 5 tabs
       case 'practice-profile':
         return <PracticeProfile 
           practiceData={selectedClient}
@@ -71,7 +73,6 @@ const App = () => {
           setActivePage={setActivePage}
         />;
       
-      // Staff List
       case 'staff-list':
         return <StaffList 
           onSelectStaff={(staff) => {
@@ -79,23 +80,78 @@ const App = () => {
             setActivePage('staff-details');
           }}
           onAddStaff={() => {
-            // Add new staff logic
             console.log('Add new staff');
           }}
         />;
       
-      // Staff Details
       case 'staff-details':
         return <StaffDetails 
           staffData={selectedStaff}
           onBack={() => setActivePage('staff-list')}
         />;
-         // Rota Management
+      
       case 'rota-management':
-        return <RotaMangement 
-          staffData={selectedStaff}
+        return <RotaManagement />;
+      
+      // Leave Management Routes
+      case 'leave-list':
+        return <LeaveList 
+          onViewDetails={(leave) => {
+            setSelectedLeave(leave);
+            setActivePage('leave-details');
+          }}
+          onAddNew={() => setActivePage('leave-add')}
+          onEdit={(leave) => {
+            setSelectedLeave(leave);
+            setActivePage('leave-edit');
+          }}
         />;
-      // Placeholder pages for other menu items
+      
+      case 'leave-details':
+        return <LeaveDetails 
+          leaveData={selectedLeave}
+          onBack={() => setActivePage('leave-list')}
+          onApprove={(id) => {
+            alert('Leave approved successfully!');
+            setActivePage('leave-list');
+          }}
+          onReject={(id) => {
+            alert('Leave rejected!');
+            setActivePage('leave-list');
+          }}
+        />;
+      
+      case 'leave-add':
+        return <AddLeaveRequest 
+          onBack={() => setActivePage('leave-list')}
+          onSave={(data) => {
+            alert('Leave request submitted successfully!');
+            setActivePage('leave-list');
+          }}
+        />;
+      
+      case 'leave-edit':
+        return <AddLeaveRequest 
+          leaveData={selectedLeave}
+          isEditMode={true}
+          onBack={() => setActivePage('leave-list')}
+          onSave={(data) => {
+            alert('Leave request updated successfully!');
+            setActivePage('leave-list');
+          }}
+        />;
+      
+      case 'compliance':
+        return <ComplianceDashboard />;
+      
+      // PCN Dashboard Route
+      case 'pcn-dashboard':
+        return <PCNDashboard />;
+      
+      // Invoices Route
+      case 'invoices':
+        return <Invoices />;
+      
       default:
         return (
           <div className="bg-secondary rounded-xl p-12 text-center shadow-sm">
@@ -119,73 +175,3 @@ const App = () => {
 };
 
 export default App;
-
-
-// import React from 'react';
-// import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// import DashboardLayout from './Component/DashboardLayout.jsx';
-// import Dashboard from './Component/Dashboard/Dashboard.jsx';
-// import ClientsList from './Component/Pages/ClientsList.jsx';
-// import PCNsList from './Component/Pages/PCNsList.jsx';
-// import PracticesList from './Component/Pages/PracticesList.jsx';
-// import PCNProfile from './Component/Pages/PCNProfile.jsx';
-// import PracticeProfile from './Component/Pages/PracticeProfile.jsx';
-// import StaffList from './Component/Pages/Staff/Stafflist.jsx';
-// import StaffDetails from './Component/Pages/Staff/StaffDetails.jsx';
-// import RotaMangement from './Component/Pages/RotaManagement/RotaMaegment.jsx';
-// import LeaveManagement from './Component/Pages/RotaManagement/LeaveManagement.jsx';
-
-// const App = () => {
-//   return (
-//     <Router>
-//       <Routes>
-//         <Route path="/" element={<DashboardLayout />}>
-//           <Route index element={<Navigate to="/" replace />} />
-//           <Route path="/" element={<Dashboard />} />
-          
-//           {/* Clients Routes */}
-//           <Route path="clients" element={<ClientsList />} />
-//           <Route path="clients/pcn/:id" element={<PCNProfile />} />
-//           <Route path="clients/practice/:id" element={<PracticeProfile />} />
-          
-//           {/* PCNs Routes */}
-//           <Route path="pcns" element={<PCNsList />} />
-          
-//           {/* Practices Routes */}
-//           <Route path="practices" element={<PracticesList />} />
-          
-//           {/* Staff Routes */}
-//           <Route path="staff/list" element={<StaffList />} />
-//           <Route path="staff/details/:id" element={<StaffDetails />} />
-          
-//           {/* Rota Management */}
-//           <Route path="rota-management" element={<RotaMangement />} />
-          
-//           {/* Leave Management */}
-//           <Route path="leave/*" element={<LeaveManagement />} />
-          
-//           {/* Other Routes */}
-//           {/* <Route path="compliance" element={<UnderConstruction page="Compliance" />} />
-//           <Route path="timesheets" element={<UnderConstruction page="Timesheets" />} />
-//           <Route path="invoices" element={<UnderConstruction page="Invoices" />} /> */}
-          
-//           {/* 404 */}
-//           <Route path="*" element={<Navigate to="/dashboard" replace />} />
-//         </Route>
-//       </Routes>
-//     </Router>
-//   );
-// };
-
-// // Under Construction Component
-// const UnderConstruction = ({ page }) => (
-//   <div className="bg-secondary rounded-xl p-12 text-center shadow-sm">
-//     <div className="w-20 h-20 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-//       <span className="text-4xl">🚧</span>
-//     </div>
-//     <h2 className="text-2xl font-bold text-primary mb-2">{page}</h2>
-//     <p className="text-secondary">This page is under construction</p>
-//   </div>
-// );
-
-// export default App;

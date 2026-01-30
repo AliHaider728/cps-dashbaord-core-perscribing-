@@ -14,7 +14,8 @@ import {
   ChevronRight,
   ChevronDown,
   UserCircle,
-  ClipboardList
+  ClipboardList,
+  BarChart
 } from 'lucide-react';
 
 const Sidebar = ({ 
@@ -34,6 +35,7 @@ const Sidebar = ({
 
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', id: 'dashboard' },
+    { icon: BarChart, label: 'PCN Performance', id: 'pcn-dashboard' },
     { 
       icon: Users, 
       label: 'Clients', 
@@ -55,14 +57,22 @@ const Sidebar = ({
         { icon: UserCircle, label: 'Staff Details', id: 'staff-details' }
       ]
     },
-    { icon: Calendar, label: 'Rota', id: 'rota-management' },
-    { icon: Umbrella, label: 'Leave', id: 'leave' },
+    { icon: Calendar, label: 'Rota Management', id: 'rota-management' },
+    { 
+      icon: Umbrella, 
+      label: 'Leave', 
+      id: 'leave',
+      hasDropdown: true,
+      subItems: [
+        { icon: ClipboardList, label: 'Leave List', id: 'leave-list' },
+        { icon: FileText, label: 'Leave Details', id: 'leave-details' }
+      ]
+    },
     { icon: CheckCircle, label: 'Compliance', id: 'compliance' },
     { icon: Clock, label: 'Timesheets', id: 'timesheets' },
     { icon: FileText, label: 'Invoices', id: 'invoices' },
   ];
 
-  // Auto-expand active dropdowns
   useEffect(() => {
     const newExpanded = {};
     menuItems.forEach((item) => {
@@ -83,7 +93,6 @@ const Sidebar = ({
 
   const toggleDropdown = (itemId) => {
     if (isCollapsed && !isHovered) {
-      // If collapsed and not hovered, expand sidebar first
       setIsCollapsed(false);
       setTimeout(() => {
         setOpenDropdowns(prev => ({
@@ -92,7 +101,6 @@ const Sidebar = ({
         }));
       }, 100);
     } else {
-      // Normal toggle
       setOpenDropdowns(prev => ({
         ...prev,
         [itemId]: !prev[itemId]
@@ -136,7 +144,7 @@ const Sidebar = ({
     if (item.id === 'clients') {
       return activePage === 'clients';
     }
-    if (item.hasDropdown && item.id === 'staff') {
+    if (item.hasDropdown) {
       return item.subItems.some(sub => activePage === sub.id);
     }
     return activePage === item.id;
@@ -148,14 +156,69 @@ const Sidebar = ({
 
   return (
     <>
+      <style>{`
+        .sidebar-scroll {
+          scrollbar-width: none;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+          width: 0;
+        }
+        .sidebar-expanded .sidebar-scroll:hover {
+          scrollbar-width: thin;
+        }
+        .sidebar-expanded .sidebar-scroll:hover::-webkit-scrollbar {
+          width: 4px;
+        }
+        .sidebar-expanded .sidebar-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .sidebar-expanded .sidebar-scroll::-webkit-scrollbar-thumb {
+          background: var(--core-primary-200);
+          border-radius: 10px;
+        }
+        .dropdown-content {
+          max-height: 0;
+          opacity: 0;
+          overflow: hidden;
+          transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                      margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .dropdown-content.open {
+          max-height: 500px;
+          opacity: 1;
+          margin-top: 0.25rem;
+        }
+        .hover-popup {
+          opacity: 0;
+          visibility: hidden;
+          transform: translateX(-8px) scale(0.96);
+          pointer-events: none;
+          transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                      visibility 0.2s;
+        }
+        .hover-popup.active {
+          opacity: 1;
+          visibility: visible;
+          transform: translateX(0) scale(1);
+          pointer-events: auto;
+        }
+        .chevron-rotate {
+          transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chevron-rotate.rotated {
+          transform: rotate(180deg);
+        }
+      `}</style>
+
       <aside
-        className={`fixed left-0 top-0 h-screen bg-secondary flex flex-col transition-all duration-300 ease-in-out z-50 border-r border-[var(--border-color)] ${
+        className={`fixed left-0 top-0 h-screen bg-secondary flex flex-col transition-all duration-300 ease-in-out z-50 border-r border-border ${
           isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        } ${isCollapsed && !isHovered ? 'w-16' : 'w-64'}`}
+        } ${isCollapsed && !isHovered ? 'w-16' : 'w-64 sidebar-expanded'}`}
         onMouseEnter={() => isCollapsed && setIsHovered(true)}
         onMouseLeave={() => isCollapsed && setIsHovered(false)}
       >
-        {/* Logo Header - Clickable */}
         <button
           onClick={handleLogoClick}
           className={`flex items-center transition-all duration-300 hover:bg-primary/50 ${
@@ -187,99 +250,9 @@ const Sidebar = ({
           )}
         </button>
         
-        {/* Subtle Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mx-4" />
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
         
-        {/* Navigation */}
-        <nav
-          className="flex-1 overflow-y-auto px-3 py-4 space-y-1 sidebar-scroll"
-          style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: 'var(--core-primary-1000) transparent'
-          }}
-        >
-          <style>{`
-            .sidebar-scroll::-webkit-scrollbar {
-              width: 1px;
-            }
-            .sidebar-scroll::-webkit-scrollbar-track {
-              background: transparent;
-            }
-            .sidebar-scroll::-webkit-scrollbar-thumb {
-              background: var(--core-primary-1000);
-              border-radius: 10px;
-            }
-            .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-              background: var(--core-primary-600);
-            }
-            @media (max-width: 767px) {
-              .sidebar-scroll::-webkit-scrollbar {
-                width: 2px;
-              }
-              .sidebar-scroll::-webkit-scrollbar-thumb {
-                background: var(--core-primary-300);
-                border-radius: 10px;
-              }
-              .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-                background: var(--core-primary-400);
-              }
-            }
-
-            /* Smooth Dropdown Animation */
-            .dropdown-content {
-              max-height: 0;
-              opacity: 0;
-              overflow: hidden;
-              transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                          opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                          margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            
-            .dropdown-content.open {
-              max-height: 500px;
-              opacity: 1;
-              margin-top: 0.25rem;
-            }
-
-            /* Hover Popup Menu Animation */
-            .hover-popup {
-              opacity: 0;
-              visibility: hidden;
-              transform: translateX(-8px) scale(0.96);
-              pointer-events: none;
-              transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                          transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-                          visibility 0.2s;
-            }
-
-            .hover-popup.active {
-              opacity: 1;
-              visibility: visible;
-              transform: translateX(0) scale(1);
-              pointer-events: auto;
-            }
-
-            /* Active Border Indicator */
-            .active-indicator {
-              transform: scaleY(0);
-              transform-origin: center;
-              transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .active-indicator.show {
-              transform: scaleY(1);
-            }
-
-            /* Chevron Rotation */
-            .chevron-rotate {
-              transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-
-            .chevron-rotate.rotated {
-              transform: rotate(180deg);
-            }
-          `}</style>
-          
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 sidebar-scroll">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
@@ -293,7 +266,6 @@ const Sidebar = ({
                 onMouseEnter={() => handleMouseEnter(item)}
                 onMouseLeave={handleMouseLeave}
               >
-                {/* Main Menu Item */}
                 <button
                   onClick={() => {
                     if (item.hasDropdown) {
@@ -316,9 +288,8 @@ const Sidebar = ({
                   } ${isCollapsed && !isHovered ? 'justify-center' : ''}`}
                   title={isCollapsed && !isHovered ? item.label : ''}
                 >
-                  {/* Active Indicator */}
                   {isActive && (!isCollapsed || isHovered) && (
-                    <div className={`absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full active-indicator ${isActive ? 'show' : ''}`} />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-core-primary-500 rounded-r-full" />
                   )}
                   
                   <Icon
@@ -350,7 +321,6 @@ const Sidebar = ({
                   )}
                 </button>
 
-                {/* Dropdown Sub-items (When Sidebar is Expanded) */}
                 {item.hasDropdown && (!isCollapsed || isHovered) && (
                   <div className={`dropdown-content ${isDropdownOpen ? 'open' : ''}`}>
                     <div className="ml-4 space-y-1 border-l-2 border-core-primary-100 pl-1">
@@ -401,15 +371,13 @@ const Sidebar = ({
                   </div>
                 )}
 
-                {/* Hover Popup Menu (When Sidebar is Collapsed and NOT Hovered) */}
                 {item.hasDropdown && isCollapsed && !isHovered && (
                   <div
-                    className={`hover-popup ${isHoverActive ? 'active' : ''} absolute left-full top-0 ml-2 bg-secondary border border-[var(--border-color)] rounded-lg shadow-xl z-50 min-w-[220px]`}
+                    className={`hover-popup ${isHoverActive ? 'active' : ''} absolute left-full top-0 ml-2 bg-secondary border border-border rounded-lg shadow-xl z-50 min-w-[220px]`}
                     onMouseEnter={handleHoverMenuEnter}
                     onMouseLeave={handleMouseLeave}
                   >
-                    {/* Popup Header */}
-                    <div className="px-4 py-3 border-b border-[var(--border-color)]">
+                    <div className="px-4 py-3 border-b border-border">
                       <div className="flex items-center gap-2">
                         <Icon size={18} className="text-core-primary-500 shrink-0" />
                         <span className="font-semibold text-sm text-primary">
@@ -418,7 +386,6 @@ const Sidebar = ({
                       </div>
                     </div>
                     
-                    {/* Popup Items */}
                     <div className="py-2">
                       {item.subItems.map((subItem) => {
                         const SubIcon = subItem.icon;
@@ -466,20 +433,18 @@ const Sidebar = ({
           })}
         </nav>
         
-        {/* Subtle Divider */}
-        <div className="h-px bg-gradient-to-r from-transparent via-[var(--border-color)] to-transparent mx-4" />
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
         
-        {/* User Profile */}
         <div className={`transition-all duration-300 ${isCollapsed && !isHovered ? 'p-3' : 'p-4'}`}>
           <div className={`flex items-center gap-3 ${isCollapsed && !isHovered ? 'justify-center' : ''}`}>
             <div className="w-9 h-9 bg-gradient-to-br from-core-primary-500 to-core-primary-600 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0 shadow-md transition-all duration-200 hover:shadow-lg">
-              JD
+              AS
             </div>
             {(!isCollapsed || isHovered) && (
               <>
                 <div className="flex-1 min-w-0">
                   <div className="text-primary text-sm font-medium truncate">
-                    John Doe
+                    Arslan Shahroz
                   </div>
                   <div className="text-secondary text-xs truncate">
                     Administrator
@@ -505,17 +470,15 @@ const Sidebar = ({
           </div>
         </div>
         
-        {/* Toggle Button - Desktop Only */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 bg-secondary border border-[var(--border-color)] rounded-full items-center justify-center text-muted hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200 shadow-sm hover:shadow-md z-10"
+          className="hidden md:flex absolute -right-3 top-20 w-6 h-6 bg-secondary border border-border rounded-full items-center justify-center text-muted hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200 shadow-sm hover:shadow-md z-10"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
       </aside>
       
-      {/* Mobile Overlay */}
       {isOpen && (
         <div
           className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300"
@@ -526,4 +489,4 @@ const Sidebar = ({
   );
 };
 
-export default Sidebar;
+export default Sidebar; 

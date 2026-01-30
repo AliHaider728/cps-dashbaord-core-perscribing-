@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DollarSign, Plus, Edit2, Trash2, Download, Search, Eye, Send, Check, X, Save, FileText, Calendar } from 'lucide-react';
+import { DollarSign, Plus, Edit2, Trash2, Download, Search, Eye, Send, Check, X, Save, FileText, Calendar, MoreVertical } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 const InvoicesTab = ({ staffData }) => {
@@ -87,6 +87,7 @@ const InvoicesTab = ({ staffData }) => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [viewingInvoice, setViewingInvoice] = useState(null);
+  const [activeActionsMenu, setActiveActionsMenu] = useState(null);
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     date: '',
@@ -203,6 +204,7 @@ const InvoicesTab = ({ staffData }) => {
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this invoice?')) {
       setInvoices(invoices.filter(invoice => invoice.id !== id));
+      setActiveActionsMenu(null);
     }
   };
 
@@ -220,12 +222,14 @@ const InvoicesTab = ({ staffData }) => {
       notes: invoice.notes
     });
     setShowModal(true);
+    setActiveActionsMenu(null);
   };
 
   // View invoice details
   const handleView = (invoice) => {
     setViewingInvoice(invoice);
     setShowViewModal(true);
+    setActiveActionsMenu(null);
   };
 
   // Mark as paid
@@ -240,6 +244,7 @@ const InvoicesTab = ({ staffData }) => {
           }
         : invoice
     ));
+    setActiveActionsMenu(null);
   };
 
   // Reset form
@@ -299,6 +304,62 @@ const InvoicesTab = ({ staffData }) => {
     pendingAmount: invoices.filter(inv => inv.status === 'Pending' || inv.status === 'Overdue').reduce((sum, inv) => sum + inv.amount, 0)
   };
 
+  // Actions Menu Component
+  const ActionsMenu = ({ invoice }) => (
+    <div className="relative">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setActiveActionsMenu(activeActionsMenu === invoice.id ? null : invoice.id);
+        }}
+        className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+      >
+        <MoreVertical size={18} className="text-muted" />
+      </button>
+
+      {activeActionsMenu === invoice.id && (
+        <>
+          <div 
+            className="fixed inset-0 z-10" 
+            onClick={() => setActiveActionsMenu(null)}
+          />
+          <div className="absolute right-0 top-10 w-48 bg-white border border-border rounded-lg shadow-xl py-1 z-20 overflow-hidden">
+            <button
+              onClick={() => handleView(invoice)}
+              className="w-full px-4 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 text-sm font-medium text-primary"
+            >
+              <Eye size={16} />
+              <span>View Details</span>
+            </button>
+            {invoice.status === 'Pending' && (
+              <button
+                onClick={() => handleMarkAsPaid(invoice.id)}
+                className="w-full px-4 py-2.5 text-left hover:bg-green-50 transition-colors flex items-center gap-2 text-sm font-medium text-green-600"
+              >
+                <Check size={16} />
+                <span>Mark as Paid</span>
+              </button>
+            )}
+            <button
+              onClick={() => handleEdit(invoice)}
+              className="w-full px-4 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center gap-2 text-sm font-medium text-blue-600"
+            >
+              <Edit2 size={16} />
+              <span>Edit</span>
+            </button>
+            <button
+              onClick={() => handleDelete(invoice.id)}
+              className="w-full px-4 py-2.5 text-left hover:bg-red-50 transition-colors flex items-center gap-2 text-sm font-medium text-red-600"
+            >
+              <Trash2 size={16} />
+              <span>Delete</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -310,41 +371,42 @@ const InvoicesTab = ({ staffData }) => {
         <div className="flex gap-2">
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium shadow-sm"
           >
             <Download size={16} />
-            <span className="font-medium">Export</span>
+            <span className="hidden sm:inline">Export</span>
           </button>
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm"
+            className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium shadow-sm"
           >
             <Plus size={16} />
-            <span className="font-medium">Create Invoice</span>
+            <span className="hidden sm:inline">Create Invoice</span>
+            <span className="sm:hidden">New</span>
           </button>
         </div>
       </div>
 
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Statistics Cards - Responsive Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="bg-primary rounded-xl border border-border p-4 hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-core-primary-500">£{stats.totalAmount.toFixed(2)}</div>
-          <div className="text-sm text-secondary mt-1">Total Amount</div>
+          <div className="text-xl sm:text-2xl font-bold text-core-primary-500">£{stats.totalAmount.toFixed(2)}</div>
+          <div className="text-xs sm:text-sm text-secondary mt-1">Total Amount</div>
           <div className="text-xs text-muted mt-1">{stats.total} invoices</div>
         </div>
         <div className="bg-green-50 rounded-xl border border-green-200 p-4 hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-green-600">£{stats.paidAmount.toFixed(2)}</div>
-          <div className="text-sm text-green-700 mt-1">Paid</div>
+          <div className="text-xl sm:text-2xl font-bold text-green-600">£{stats.paidAmount.toFixed(2)}</div>
+          <div className="text-xs sm:text-sm text-green-700 mt-1">Paid</div>
           <div className="text-xs text-green-600 mt-1">{stats.paid} invoices</div>
         </div>
         <div className="bg-yellow-50 rounded-xl border border-yellow-200 p-4 hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-yellow-600">£{stats.pendingAmount.toFixed(2)}</div>
-          <div className="text-sm text-yellow-700 mt-1">Outstanding</div>
+          <div className="text-xl sm:text-2xl font-bold text-yellow-600">£{stats.pendingAmount.toFixed(2)}</div>
+          <div className="text-xs sm:text-sm text-yellow-700 mt-1">Outstanding</div>
           <div className="text-xs text-yellow-600 mt-1">{stats.pending + stats.overdue} invoices</div>
         </div>
         <div className="bg-red-50 rounded-xl border border-red-200 p-4 hover:shadow-md transition-shadow">
-          <div className="text-2xl font-bold text-red-600">{stats.overdue}</div>
-          <div className="text-sm text-red-700 mt-1">Overdue</div>
+          <div className="text-xl sm:text-2xl font-bold text-red-600">{stats.overdue}</div>
+          <div className="text-xs sm:text-sm text-red-700 mt-1">Overdue</div>
           <div className="text-xs text-red-600 mt-1">Needs attention</div>
         </div>
       </div>
@@ -355,10 +417,10 @@ const InvoicesTab = ({ staffData }) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={18} />
           <input
             type="text"
-            placeholder="Search by invoice number, project, or practice..."
+            placeholder="Search invoices..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all duration-200"
+            className="w-full pl-10 pr-4 py-2.5 bg-primary border border-border rounded-lg text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all"
           />
         </div>
         <select
@@ -372,118 +434,132 @@ const InvoicesTab = ({ staffData }) => {
         </select>
       </div>
 
-      {/* Invoices Table */}
+      {/* Invoices - Responsive Layout */}
       {filteredInvoices.length > 0 ? (
-        <div className="bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-core-primary-50 border-b border-border">
-                <tr>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Invoice #</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Due Date</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Project</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Hours</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Amount</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Status</th>
-                  <th className="px-4 py-3 text-right text-sm font-semibold text-primary">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {filteredInvoices.map((invoice) => (
-                  <tr key={invoice.id} className="hover:bg-core-primary-50/30 transition-colors duration-150">
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <FileText size={16} className="text-core-primary-500" />
-                        <span className="font-medium text-primary">{invoice.invoiceNumber}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-secondary">{invoice.date}</td>
-                    <td className="px-4 py-3 text-secondary">{invoice.dueDate}</td>
-                    <td className="px-4 py-3 text-secondary">{invoice.project}</td>
-                    <td className="px-4 py-3 text-secondary">{invoice.hours}h</td>
-                    <td className="px-4 py-3">
-                      <span className="font-semibold text-primary">£{invoice.amount.toFixed(2)}</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(invoice.status)}`}>
-                        {invoice.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleView(invoice)}
-                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                          title="View Details"
-                        >
-                          <Eye size={16} />
-                        </button>
-                        {invoice.status === 'Pending' && (
-                          <button
-                            onClick={() => handleMarkAsPaid(invoice.id)}
-                            className="p-2 text-green-500 hover:bg-green-50 rounded-lg transition-all duration-200"
-                            title="Mark as Paid"
-                          >
-                            <Check size={16} />
-                          </button>
-                        )}
-                        <button
-                          onClick={() => handleEdit(invoice)}
-                          className="p-2 text-core-primary-500 hover:bg-core-primary-50 rounded-lg transition-all duration-200"
-                          title="Edit Invoice"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(invoice.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
-                          title="Delete Invoice"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-core-primary-50 border-b border-border">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Invoice #</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Due Date</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Project</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Hours</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Amount</th>
+                    <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Status</th>
+                    <th className="px-4 py-3 text-right text-sm font-semibold text-primary">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredInvoices.map((invoice) => (
+                    <tr key={invoice.id} className="hover:bg-core-primary-50/30 transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <FileText size={16} className="text-core-primary-500" />
+                          <span className="font-medium text-primary">{invoice.invoiceNumber}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-secondary text-sm">{new Date(invoice.date).toLocaleDateString('en-GB')}</td>
+                      <td className="px-4 py-3 text-secondary text-sm">{new Date(invoice.dueDate).toLocaleDateString('en-GB')}</td>
+                      <td className="px-4 py-3 text-secondary text-sm">{invoice.project}</td>
+                      <td className="px-4 py-3 text-secondary text-sm">{invoice.hours}h</td>
+                      <td className="px-4 py-3">
+                        <span className="font-semibold text-primary">£{invoice.amount.toFixed(2)}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(invoice.status)}`}>
+                          {invoice.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-end">
+                          <ActionsMenu invoice={invoice} />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3">
+            {filteredInvoices.map((invoice) => (
+              <div key={invoice.id} className="bg-primary rounded-xl border border-border p-4 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <FileText size={16} className="text-core-primary-500 shrink-0" />
+                      <span className="font-semibold text-primary">{invoice.invoiceNumber}</span>
+                    </div>
+                    <p className="text-sm text-secondary">{invoice.project}</p>
+                  </div>
+                  <ActionsMenu invoice={invoice} />
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted">Practice:</span>
+                    <span className="text-primary font-medium">{invoice.practice}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted">Hours:</span>
+                    <span className="text-primary font-medium">{invoice.hours}h @ £{invoice.rate}/h</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted">Due Date:</span>
+                    <span className="text-primary font-medium">{new Date(invoice.dueDate).toLocaleDateString('en-GB')}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(invoice.status)}`}>
+                    {invoice.status}
+                  </span>
+                  <span className="text-lg font-bold text-core-primary-600">£{invoice.amount.toFixed(2)}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       ) : (
-        <div className="bg-primary rounded-xl border border-border p-12 text-center">
-          <div className="w-20 h-20 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <DollarSign className="text-core-primary-500" size={40} />
+        <div className="bg-primary rounded-xl border border-border p-8 sm:p-12 text-center">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <DollarSign className="text-core-primary-500" size={32} />
           </div>
-          <h3 className="text-xl font-semibold text-primary mb-2">No Invoices Found</h3>
-          <p className="text-secondary mb-6">
+          <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2">No Invoices Found</h3>
+          <p className="text-secondary mb-6 text-sm sm:text-base">
             {searchTerm || filterStatus !== 'All' 
               ? 'No invoices match your search criteria' 
               : 'No invoices found for this staff member'}
           </p>
           <button
             onClick={() => setShowModal(true)}
-            className="px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200"
+            className="px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium"
           >
             Create First Invoice
           </button>
         </div>
       )}
 
-      {/* Add/Edit Modal */}
+      {/* Add/Edit Modal - Responsive */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-secondary rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-secondary border-b border-border px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-primary">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-secondary rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-secondary border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-bold text-primary">
                 {editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}
               </h3>
-              <button onClick={resetForm} className="p-2 hover:bg-primary rounded-lg transition-colors">
-                <X size={20} className="text-secondary" />
+              <button onClick={resetForm} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+                <X size={20} className="text-muted" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-primary mb-2">
@@ -573,7 +649,7 @@ const InvoicesTab = ({ staffData }) => {
                 <div className="bg-core-primary-50 border border-core-primary-200 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <span className="font-medium text-core-primary-700">Total Amount:</span>
-                    <span className="text-2xl font-bold text-core-primary-600">
+                    <span className="text-xl sm:text-2xl font-bold text-core-primary-600">
                       £{calculateAmount(formData.hours, formData.rate)}
                     </span>
                   </div>
@@ -592,40 +668,40 @@ const InvoicesTab = ({ staffData }) => {
               </div>
             </div>
 
-            <div className="sticky bottom-0 bg-secondary border-t border-border px-6 py-4 flex items-center justify-end gap-3">
+            <div className="sticky bottom-0 bg-secondary border-t border-border px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-end gap-3">
               <button
                 onClick={resetForm}
-                className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 hover:border-core-primary-500 transition-all duration-200"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 hover:border-core-primary-500 transition-all font-medium"
               >
                 <X size={18} />
-                <span className="font-medium">Cancel</span>
+                <span>Cancel</span>
               </button>
               <button
                 onClick={editingInvoice ? handleUpdate : handleAdd}
-                className="flex items-center gap-2 px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors duration-200 shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm font-medium"
               >
                 <Save size={18} />
-                <span className="font-medium">{editingInvoice ? 'Update' : 'Create'} Invoice</span>
+                <span>{editingInvoice ? 'Update' : 'Create'} Invoice</span>
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* View Details Modal */}
+      {/* View Details Modal - Fully Responsive */}
       {showViewModal && viewingInvoice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-secondary rounded-xl shadow-xl max-w-2xl w-full">
-            <div className="bg-core-primary-50 border-b border-border px-6 py-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-primary">Invoice Details</h3>
-              <button onClick={() => setShowViewModal(false)} className="p-2 hover:bg-primary rounded-lg transition-colors">
-                <X size={20} className="text-secondary" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-secondary rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-core-primary-50 border-b border-border px-4 sm:px-6 py-4 flex items-center justify-between">
+              <h3 className="text-lg sm:text-xl font-bold text-primary">Invoice Details</h3>
+              <button onClick={() => setShowViewModal(false)} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+                <X size={20} className="text-muted" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-5">
               <div className="text-center pb-4 border-b border-border">
-                <div className="text-3xl font-bold text-core-primary-500 mb-2">
+                <div className="text-2xl sm:text-3xl font-bold text-core-primary-500 mb-2">
                   {viewingInvoice.invoiceNumber}
                 </div>
                 <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusColor(viewingInvoice.status)}`}>
@@ -633,14 +709,14 @@ const InvoicesTab = ({ staffData }) => {
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs text-muted mb-1">Invoice Date</div>
-                  <div className="font-medium text-primary">{viewingInvoice.date}</div>
+                  <div className="font-medium text-primary">{new Date(viewingInvoice.date).toLocaleDateString('en-GB')}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Due Date</div>
-                  <div className="font-medium text-primary">{viewingInvoice.dueDate}</div>
+                  <div className="font-medium text-primary">{new Date(viewingInvoice.dueDate).toLocaleDateString('en-GB')}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Project</div>
@@ -648,32 +724,32 @@ const InvoicesTab = ({ staffData }) => {
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Practice</div>
-                  <div className="font-medium text-primary">{viewingInvoice.practice}</div>
+                  <div className="font-medium text-primary text-sm">{viewingInvoice.practice}</div>
                 </div>
               </div>
 
               <div className="bg-core-primary-50 rounded-lg p-4 space-y-2">
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span className="text-secondary">Hours:</span>
                   <span className="font-medium text-primary">{viewingInvoice.hours}h</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between text-sm">
                   <span className="text-secondary">Rate:</span>
                   <span className="font-medium text-primary">£{viewingInvoice.rate}/hour</span>
                 </div>
                 <div className="border-t border-core-primary-200 pt-2 flex justify-between">
                   <span className="font-semibold text-primary">Total Amount:</span>
-                  <span className="text-2xl font-bold text-core-primary-600">£{viewingInvoice.amount.toFixed(2)}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-core-primary-600">£{viewingInvoice.amount.toFixed(2)}</span>
                 </div>
               </div>
 
               {viewingInvoice.paidDate && (
                 <div className="bg-green-50 rounded-lg p-4 space-y-2">
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="text-green-700">Paid Date:</span>
-                    <span className="font-medium text-green-800">{viewingInvoice.paidDate}</span>
+                    <span className="font-medium text-green-800">{new Date(viewingInvoice.paidDate).toLocaleDateString('en-GB')}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex justify-between text-sm">
                     <span className="text-green-700">Payment Method:</span>
                     <span className="font-medium text-green-800">{viewingInvoice.paymentMethod}</span>
                   </div>
@@ -683,22 +759,22 @@ const InvoicesTab = ({ staffData }) => {
               {viewingInvoice.notes && (
                 <div>
                   <div className="text-xs text-muted mb-2">Notes</div>
-                  <div className="text-primary bg-primary border border-border rounded-lg p-3">
+                  <div className="text-sm text-primary bg-primary border border-border rounded-lg p-3">
                     {viewingInvoice.notes}
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="border-t border-border px-6 py-4 flex justify-end gap-3">
+            <div className="border-t border-border px-4 sm:px-6 py-4 flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="px-6 py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 transition-colors"
+                className="w-full sm:w-auto px-6 py-2.5 bg-primary border border-border rounded-lg text-secondary hover:bg-core-primary-50 transition-colors font-medium"
               >
                 Close
               </button>
-              <button className="px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors">
-                <Send size={16} className="inline mr-2" />
+              <button className="w-full sm:w-auto px-6 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium flex items-center justify-center gap-2">
+                <Send size={16} />
                 Send Invoice
               </button>
             </div>

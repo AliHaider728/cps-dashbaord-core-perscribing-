@@ -138,14 +138,14 @@ const ArchiveTab = ({ staffData }) => {
   // Get item type color
   const getItemTypeColor = (type) => {
     const colors = {
-      'Document': 'bg-blue-100 text-blue-700',
-      'Training': 'bg-purple-100 text-purple-700',
-      'Note': 'bg-yellow-100 text-yellow-700',
-      'Invoice': 'bg-green-100 text-green-700',
-      'Leave': 'bg-orange-100 text-orange-700',
-      'Timesheet': 'bg-pink-100 text-pink-700'
+      'Document': 'bg-blue-100 text-blue-700 border-blue-200',
+      'Training': 'bg-purple-100 text-purple-700 border-purple-200',
+      'Note': 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      'Invoice': 'bg-green-100 text-green-700 border-green-200',
+      'Leave': 'bg-orange-100 text-orange-700 border-orange-200',
+      'Timesheet': 'bg-pink-100 text-pink-700 border-pink-200'
     };
-    return colors[type] || 'bg-gray-100 text-gray-700';
+    return colors[type] || 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
   // Filter archived items
@@ -236,29 +236,64 @@ const ArchiveTab = ({ staffData }) => {
     restorable: archivedItems.filter(i => i.canRestore).length
   };
 
+  // Mobile Card Component
+  const ArchiveCard = ({ item }) => (
+    <div className="bg-primary rounded-lg border border-border p-4 space-y-3 hover:shadow-md transition-shadow">
+      <div className="flex justify-between items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getItemTypeColor(item.itemType)} mb-2`}>
+            {item.itemType}
+          </span>
+          <h4 className="font-medium text-sm text-primary truncate flex items-center gap-2">
+            <Archive size={14} className="text-gray-400 flex-shrink-0" />
+            <span className="truncate">{item.itemName}</span>
+          </h4>
+          <p className="text-xs text-secondary mt-1">{item.category}</p>
+        </div>
+        <div className="flex gap-1 shrink-0">
+          <button onClick={() => handleView(item)} className="text-blue-500 p-1.5 hover:bg-blue-50 rounded-lg transition-colors">
+            <Eye size={14} />
+          </button>
+          {item.canRestore && (
+            <button onClick={() => handleRestore(item.id)} className="text-green-500 p-1.5 hover:bg-green-50 rounded-lg transition-colors">
+              <RotateCcw size={14} />
+            </button>
+          )}
+          <button onClick={() => handlePermanentDelete(item.id)} className="text-red-500 p-1.5 hover:bg-red-50 rounded-lg transition-colors">
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+      <div className="text-xs text-secondary space-y-1 pt-2 border-t border-border">
+        <div>Archived: {item.archivedDate}</div>
+        <div className="line-clamp-2">Reason: {item.reason}</div>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="space-y-4 sm:space-y-6 max-w-full mx-auto">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-lg sm:text-xl font-bold text-primary">Archived Items</h2>
           <p className="text-secondary text-xs sm:text-sm mt-1">View and manage archived staff records</p>
         </div>
-        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+        <div className="flex flex-wrap gap-2">
           {archivedItems.length > 0 && (
             <button
               onClick={handleClearAll}
-              className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm text-sm"
+              className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 shadow-sm text-sm"
             >
-              <Trash2 size={14} className="sm:w-4 sm:h-4" />
+              <Trash2 size={16} />
               <span className="font-medium">Clear All</span>
             </button>
           )}
           <button
             onClick={handleExport}
-            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm text-sm"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 shadow-sm text-sm"
           >
-            <Download size={14} className="sm:w-4 sm:h-4" />
+            <Download size={16} />
             <span className="font-medium">Export</span>
           </button>
         </div>
@@ -294,7 +329,7 @@ const ArchiveTab = ({ staffData }) => {
 
       {/* Alert Banner */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-        <AlertTriangle size={18} className="sm:w-5 sm:h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+        <AlertTriangle size={18} className="text-yellow-600 mt-0.5 flex-shrink-0" />
         <div>
           <h4 className="font-medium text-yellow-800 mb-1 text-sm sm:text-base">Archived Items Information</h4>
           <p className="text-xs sm:text-sm text-yellow-700">
@@ -307,19 +342,19 @@ const ArchiveTab = ({ staffData }) => {
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16}  />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={16} />
           <input
             type="text"
             placeholder="Search archived items..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all duration-200"
+            className="w-full pl-9 pr-3 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary placeholder-muted focus:outline-none focus:ring-2 focus:ring-core-primary-500 focus:border-transparent transition-all duration-200"
           />
         </div>
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+          className="px-3 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
         >
           {itemTypes.map(type => (
             <option key={type} value={type}>{type === 'All' ? 'All Types' : type}</option>
@@ -328,7 +363,7 @@ const ArchiveTab = ({ staffData }) => {
         <select
           value={filterCategory}
           onChange={(e) => setFilterCategory(e.target.value)}
-          className="px-3 sm:px-4 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
+          className="px-3 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-primary focus:outline-none focus:ring-2 focus:ring-core-primary-500"
         >
           {categories.map(cat => (
             <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : cat}</option>
@@ -339,11 +374,18 @@ const ArchiveTab = ({ staffData }) => {
       {/* Archived Items */}
       {filteredItems.length > 0 ? (
         <>
-          {/* Table for md+ */}
-          <div className="hidden md:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
+          {/* Mobile Card View */}
+          <div className="lg:hidden space-y-3">
+            {filteredItems.map((item) => (
+              <ArchiveCard key={item.id} item={item} />
+            ))}
+          </div>
+
+          {/* Desktop Table */}
+          <div className="hidden lg:block bg-primary rounded-xl border border-border overflow-hidden shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full min-w-max">
-                <thead className="bg-gray-50 border-b border-border">
+              <table className="w-full">
+                <thead className="bg-core-primary-50 border-b border-border">
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Type</th>
                     <th className="px-4 py-3 text-left text-sm font-semibold text-primary">Item Name</th>
@@ -355,9 +397,9 @@ const ArchiveTab = ({ staffData }) => {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-gray-50 transition-colors duration-150">
+                    <tr key={item.id} className="hover:bg-core-primary-50/30 transition-colors duration-150">
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${getItemTypeColor(item.itemType)}`}>
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getItemTypeColor(item.itemType)}`}>
                           {item.itemType}
                         </span>
                       </td>
@@ -405,48 +447,14 @@ const ArchiveTab = ({ staffData }) => {
               </table>
             </div>
           </div>
-
-          {/* Cards for mobile */}
-          <div className="md:hidden space-y-3 sm:space-y-4">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="bg-primary rounded-lg sm:rounded-xl border border-border p-3 sm:p-4 space-y-3">
-                <div className="flex justify-between items-start gap-2">
-                  <div className="flex-1 min-w-0">
-                    <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getItemTypeColor(item.itemType)} mb-2`}>
-                      {item.itemType}
-                    </span>
-                    <h4 className="font-medium text-sm sm:text-base text-primary truncate">{item.itemName}</h4>
-                    <p className="text-xs sm:text-sm text-secondary">{item.category}</p>
-                  </div>
-                  <div className="flex gap-1 sm:gap-2 shrink-0">
-                    <button onClick={() => handleView(item)} className="text-blue-500 p-1.5 sm:p-2 hover:bg-blue-50 rounded-lg">
-                      <Eye size={14} className="sm:w-4 sm:h-4" />
-                    </button>
-                    {item.canRestore && (
-                      <button onClick={() => handleRestore(item.id)} className="text-green-500 p-1.5 sm:p-2 hover:bg-green-50 rounded-lg">
-                        <RotateCcw size={14} className="sm:w-4 sm:h-4" />
-                      </button>
-                    )}
-                    <button onClick={() => handlePermanentDelete(item.id)} className="text-red-500 p-1.5 sm:p-2 hover:bg-red-50 rounded-lg">
-                      <Trash2 size={14} className="sm:w-4 sm:h-4" />
-                    </button>
-                  </div>
-                </div>
-                <div className="text-xs sm:text-sm text-secondary space-y-1">
-                  <div>Archived: {item.archivedDate}</div>
-                  <div className="line-clamp-2">Reason: {item.reason}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </>
       ) : (
         <div className="bg-primary rounded-xl border border-border p-8 sm:p-12 text-center">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-            <Archive className="text-gray-400 sm:w-10 sm:h-10" size={32} />
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Archive className="text-gray-400" size={32} />
           </div>
           <h3 className="text-lg sm:text-xl font-semibold text-primary mb-2">No Archived Items</h3>
-          <p className="text-sm sm:text-base text-secondary mb-4 sm:mb-6">
+          <p className="text-sm sm:text-base text-secondary">
             {searchTerm || filterType !== 'All' || filterCategory !== 'All'
               ? 'No archived items match your current filters'
               : 'There are no archived items for this staff member'}
@@ -456,49 +464,49 @@ const ArchiveTab = ({ staffData }) => {
 
       {/* View Details Modal */}
       {showViewModal && viewingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
-          <div className="bg-secondary rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="bg-gray-100 border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 z-50 overflow-y-auto">
+          <div className="bg-secondary rounded-xl shadow-2xl max-w-2xl w-full my-4">
+            <div className="bg-core-primary-50 border-b border-border px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between sticky top-0 rounded-t-xl">
               <h3 className="text-lg sm:text-xl font-bold text-primary">Archived Item Details</h3>
-              <button onClick={() => setShowViewModal(false)} className="p-1.5 sm:p-2 hover:bg-primary rounded-lg transition-colors">
-                <X size={18} className="sm:w-5 sm:h-5 text-secondary" />
+              <button onClick={() => setShowViewModal(false)} className="p-2 hover:bg-primary rounded-lg transition-colors">
+                <X size={20} className="text-secondary" />
               </button>
             </div>
 
-            <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
-              <div className="flex items-center gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-border">
+            <div className="p-4 sm:p-6 space-y-4 max-h-[calc(90vh-140px)] overflow-y-auto">
+              <div className="flex items-center gap-3 sm:gap-4 pb-4 border-b border-border">
                 <div className="p-3 sm:p-4 rounded-lg bg-gray-100 text-gray-600">
-                  <Archive size={24} className="sm:w-8 sm:h-8" />
+                  <Archive size={24} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-lg sm:text-xl font-bold text-primary mb-1 truncate">{viewingItem.itemName}</h3>
                   <div className="flex gap-2 flex-wrap">
-                    <span className={`inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getItemTypeColor(viewingItem.itemType)}`}>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${getItemTypeColor(viewingItem.itemType)}`}>
                       {viewingItem.itemType}
                     </span>
-                    <span className="inline-flex items-center px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700 border border-gray-200">
                       {viewingItem.category}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <div className="text-xs text-muted mb-1">Original Date</div>
-                  <div className="font-medium text-sm sm:text-base text-primary">{viewingItem.originalDate}</div>
+                  <div className="font-medium text-sm text-primary">{viewingItem.originalDate}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Archived Date</div>
-                  <div className="font-medium text-sm sm:text-base text-primary">{viewingItem.archivedDate}</div>
+                  <div className="font-medium text-sm text-primary">{viewingItem.archivedDate}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Archived By</div>
-                  <div className="font-medium text-sm sm:text-base text-primary">{viewingItem.archivedBy}</div>
+                  <div className="font-medium text-sm text-primary">{viewingItem.archivedBy}</div>
                 </div>
                 <div>
                   <div className="text-xs text-muted mb-1">Can Restore</div>
-                  <div className="font-medium text-sm sm:text-base text-primary">
+                  <div className="font-medium text-sm text-primary">
                     {viewingItem.canRestore ? (
                       <span className="text-green-600">Yes</span>
                     ) : (
@@ -510,7 +518,7 @@ const ArchiveTab = ({ staffData }) => {
 
               <div>
                 <div className="text-xs text-muted mb-2">Reason for Archiving</div>
-                <div className="text-sm sm:text-base text-primary bg-yellow-50 border border-yellow-200 rounded-lg p-2 sm:p-3">
+                <div className="text-sm text-primary bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                   {viewingItem.reason}
                 </div>
               </div>
@@ -518,7 +526,7 @@ const ArchiveTab = ({ staffData }) => {
               {viewingItem.notes && (
                 <div>
                   <div className="text-xs text-muted mb-2">Additional Notes</div>
-                  <div className="text-sm sm:text-base text-primary bg-primary border border-border rounded-lg p-2 sm:p-3">
+                  <div className="text-sm text-primary bg-primary border border-border rounded-lg p-3">
                     {viewingItem.notes}
                   </div>
                 </div>
@@ -526,10 +534,10 @@ const ArchiveTab = ({ staffData }) => {
 
               {!viewingItem.canRestore && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 sm:p-4 flex items-start gap-2 sm:gap-3">
-                  <AlertTriangle size={18} className="sm:w-5 sm:h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle size={18} className="text-red-600 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-medium text-sm sm:text-base text-red-800 mb-1">Cannot Restore</h4>
-                    <p className="text-xs sm:text-sm text-red-700">
+                    <h4 className="font-medium text-sm text-red-800 mb-1">Cannot Restore</h4>
+                    <p className="text-xs text-red-700">
                       This item has been permanently superseded and cannot be restored. It is kept for historical reference only.
                     </p>
                   </div>
@@ -537,10 +545,10 @@ const ArchiveTab = ({ staffData }) => {
               )}
             </div>
 
-            <div className="border-t border-border px-4 sm:px-6 py-3 sm:py-4 flex justify-end gap-2 sm:gap-3 sticky bottom-0 bg-secondary">
+            <div className="border-t border-border px-4 sm:px-6 py-3 sm:py-4 flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 sticky bottom-0 bg-secondary rounded-b-xl">
               <button
                 onClick={() => setShowViewModal(false)}
-                className="px-4 sm:px-6 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm sm:text-base text-secondary hover:bg-gray-50 transition-colors"
+                className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-2.5 bg-primary border border-border rounded-lg text-sm text-secondary hover:bg-core-primary-50 transition-colors"
               >
                 Close
               </button>
@@ -550,9 +558,9 @@ const ArchiveTab = ({ staffData }) => {
                     setShowViewModal(false);
                     handleRestore(viewingItem.id);
                   }}
-                  className="flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm sm:text-base"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors text-sm"
                 >
-                  <RotateCcw size={14} className="sm:w-4 sm:h-4" />
+                  <RotateCcw size={16} />
                   Restore Item
                 </button>
               )}
