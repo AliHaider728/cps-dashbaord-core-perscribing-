@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from './Component/DashboardLayout.jsx';
 import Dashboard from './Component/Dashboard/Dashboard.jsx';
 import ClientsList from './Component/Pages/ClientsList.jsx';
@@ -21,6 +21,11 @@ const App = () => {
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [selectedLeave, setSelectedLeave] = useState(null);
+
+  // Har page change par scroll ko top par le jao
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activePage]);
 
   const renderPage = () => {
     switch(activePage) {
