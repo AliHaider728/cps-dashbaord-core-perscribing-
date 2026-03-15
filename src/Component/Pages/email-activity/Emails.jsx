@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useListEmails } from "../../../lib/api.js";
-import { Spinner } from "../../UI/Spinner.jsx";
+import { Spinner } from "../../ui/spinner.jsx";
 import { Search, Mail, ArrowUpRight, ArrowDownLeft, Filter, X, ChevronDown } from "lucide-react";
 import { formatSmartDate } from "../../../lib/utils.js";
 

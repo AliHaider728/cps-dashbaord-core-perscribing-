@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback } from "react";
 import { useListNotifications, useMarkNotificationRead } from "../../../lib/api.js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Spinner } from "../../UI/Spinner.jsx";
+import { Spinner } from "../../ui/spinner.jsx";
 import {
   Bell, MousePointerClick, MailOpen, Download,
   ArrowDownLeft, Check, CheckCheck, RefreshCw,

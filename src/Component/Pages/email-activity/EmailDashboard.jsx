@@ -5,7 +5,7 @@ import {
   Users, RefreshCw, BarChart3, TrendingUp, AlertCircle,
 } from "lucide-react";
 import { useGetStatsOverview } from "../../../lib/api.js";
-import { Spinner } from "../../UI/Spinner.jsx";
+import { Spinner } from "../../ui/spinner.jsx";
 import { formatRelative } from "../../../lib/utils.js";
 
 // ── Import using the CORRECT named export from ComposeEmailModal.jsx ──────────

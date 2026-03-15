@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useListClients, useCreateClient } from "../../../lib/api.js";
-import { Spinner } from "../../UI/Spinner.jsx";
+import { Spinner } from "../../ui/spinner.jsx";
 import { Search, Plus, Building2, Phone, Mail, ChevronRight, X } from "lucide-react";
 import { formatSmartDate, getInitials } from "../../../lib/utils.js";
 
