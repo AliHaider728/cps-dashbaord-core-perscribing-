@@ -1,67 +1,136 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useListClients, useCreateClient } from "../../../lib/api.js";
-import { Card, CardContent } from "../../ui/card.jsx";
-import { Button } from "../../ui/Button.jsx";
-import { Badge } from "../../ui/badge.jsx";
-import { Input } from "../../ui/input.jsx";
-import { Modal } from "../../ui/modal.jsx";
-import { Spinner } from "../../ui/spinner.jsx";
-import { Search, Plus, Building2, Phone, Mail, ChevronRight } from "lucide-react";
+import { Spinner } from "../../UI/Spinner.jsx";
+import { Search, Plus, Building2, Phone, Mail, ChevronRight, X } from "lucide-react";
 import { formatSmartDate, getInitials } from "../../../lib/utils.js";
 
-export default function Clients() {
+// ─── Add Client Modal ─────────────────────────────────────────────────────────
+function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-sm" onClick={onClose} />
+      <div
+        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200"
+        style={{ animation: "modalIn .18s ease both" }}
+      >
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+          <h3 className="font-bold text-slate-900 text-base">Add New Client</h3>
+          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <X size={15} />
+          </button>
+        </div>
+        <form
+          onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); onSave(Object.fromEntries(fd)); }}
+          className="p-6 space-y-4"
+        >
+          {[
+            { label: "Client Name *",  name: "name",        required: true,  placeholder: "e.g. North London Health" },
+            { label: "PCN Number *",   name: "pcnNumber",   required: true,  placeholder: "e.g. PCN-12345" },
+            { label: "Surgery Name",   name: "surgeryName", required: false, placeholder: "Optional" },
+          ].map((f) => (
+            <div key={f.name}>
+              <label className="block text-sm font-semibold text-slate-700 mb-1.5">{f.label}</label>
+              <input
+                name={f.name}
+                required={f.required}
+                placeholder={f.placeholder}
+                className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+              />
+            </div>
+          ))}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { label: "Email", name: "email", type: "email", placeholder: "contact@surgery.com" },
+              { label: "Phone", name: "phone", type: "text",  placeholder: "+44..." },
+            ].map((f) => (
+              <div key={f.name}>
+                <label className="block text-sm font-semibold text-slate-700 mb-1.5">{f.label}</label>
+                <input
+                  type={f.type}
+                  name={f.name}
+                  placeholder={f.placeholder}
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-60 transition-all"
+              style={{ backgroundColor: "#2563eb" }}
+              onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
+            >
+              {isSaving ? <Spinner className="w-4 h-4" /> : null}
+              Create Client
+            </button>
+          </div>
+        </form>
+      </div>
+      <style>{`@keyframes modalIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
+    </div>
+  );
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+export default function EmailClients() {
   const navigate = useNavigate();
-  const [search, setSearch]     = useState("");
-  const [modalOpen, setModalOpen] = useState(false);
+  const [search, setSearch]   = useState("");
+  const [modalOpen, setModal] = useState(false);
 
-  const { data, isLoading }                      = useListClients({ search });
-  const clients                                  = data?.clients || [];
-  const { mutate: createClient, isPending: isCreating } = useCreateClient();
+  const { data, isLoading }                        = useListClients({ search });
+  const clients                                    = data?.clients || [];
+  const { mutate: createClient, isPending: saving } = useCreateClient();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    createClient(
-      {
-        data: {
-          name:        fd.get("name"),
-          pcnNumber:   fd.get("pcnNumber"),
-          surgeryName: fd.get("surgeryName"),
-          email:       fd.get("email"),
-          phone:       fd.get("phone"),
-        },
-      },
-      { onSuccess: () => setModalOpen(false) }
-    );
+  const handleSave = (formData) => {
+    createClient({ data: formData }, { onSuccess: () => setModal(false) });
   };
 
   return (
-    <div>
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Clients & Surgeries</h1>
-          <p className="text-slate-500 mt-1">Manage accounts and track communication history.</p>
+          <h1 className="text-2xl font-bold text-slate-900">Clients & Surgeries</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage accounts and track communication history.</p>
         </div>
-        <Button onClick={() => setModalOpen(true)}>
-          <Plus className="w-5 h-5" /> Add Client
-        </Button>
+        <button
+          onClick={() => setModal(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all"
+          style={{ backgroundColor: "#2563eb" }}
+          onMouseEnter={e => e.currentTarget.style.backgroundColor = "#1d4ed8"}
+          onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
+        >
+          <Plus size={16} /> Add Client
+        </button>
       </div>
 
-      <Card className="overflow-hidden border-t-4 border-t-blue-600">
+      {/* Card */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ borderTop: "4px solid #2563eb" }}>
         {/* Toolbar */}
-        <div className="p-4 border-b bg-slate-50/50 flex items-center justify-between">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
           <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <Input
-              placeholder="Search by name, PCN, or email..."
-              className="pl-10"
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, PCN, or email…"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
             />
+            {search && (
+              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+                <X size={14} />
+              </button>
+            )}
           </div>
-          <div className="text-sm font-medium text-slate-500">{clients.length} Total Accounts</div>
+          <span className="text-sm text-slate-500 font-medium hidden sm:block">{clients.length} Accounts</span>
         </div>
 
         {/* Table */}
@@ -69,106 +138,77 @@ export default function Clients() {
           {isLoading ? (
             <div className="p-12 flex justify-center"><Spinner className="w-8 h-8" /></div>
           ) : clients.length === 0 ? (
-            <div className="p-16 text-center">
-              <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No clients found</h3>
-              <p className="text-slate-500">Add a new client to start tracking emails.</p>
+            <div className="py-16 text-center">
+              <Building2 size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
+              <h3 className="font-bold text-slate-900 mb-1">{search ? "No clients found" : "No clients yet"}</h3>
+              <p className="text-sm text-slate-500">{search ? "Try a different search." : "Add your first client to get started."}</p>
             </div>
           ) : (
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
-                  <th className="px-6 py-4 font-semibold">Client Name & PCN</th>
-                  <th className="px-6 py-4 font-semibold">Contact Info</th>
-                  <th className="px-6 py-4 font-semibold">Account Manager</th>
-                  <th className="px-6 py-4 font-semibold">Last Contacted</th>
-                  <th className="px-6 py-4 font-semibold text-right">Action</th>
+                  {["Client & PCN", "Contact", "Account Manager", "Last Contacted", ""].map((h) => (
+                    <th key={h} className="px-5 py-3.5 font-semibold">{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {clients.map((client) => (
+                {clients.map((c) => (
                   <tr
-                    key={client.id}
-                    className="hover:bg-slate-50/80 transition-colors group cursor-pointer"
-                    onClick={() => navigate(`/email-activity/clients/${client.id}`)}
+                    key={c.id}
+                    className="hover:bg-slate-50/70 transition-colors cursor-pointer group"
+                    onClick={() => navigate(`/email-activity/clients/${c.id}`)}
                   >
-                    {/* Name + PCN */}
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 font-bold flex items-center justify-center text-sm">
-                          {getInitials(client.name)}
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
+                          style={{ backgroundColor: "#eff6ff", color: "#1d4ed8" }}
+                        >
+                          {getInitials(c.name)}
                         </div>
                         <div>
-                          <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {client.name}
-                          </p>
+                          <p className="font-semibold text-sm text-slate-900 group-hover:text-blue-600 transition-colors">{c.name}</p>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <Badge color="default">{client.pcnNumber}</Badge>
-                            <span className="text-xs text-slate-500">{client.surgeryName}</span>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{c.pcnNumber}</span>
+                            {c.surgeryName && <span className="text-xs text-slate-400">{c.surgeryName}</span>}
                           </div>
                         </div>
                       </div>
                     </td>
-
-                    {/* Contact */}
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-4">
                       <div className="space-y-1">
-                        {client.email && (
-                          <div className="flex items-center text-sm text-slate-600">
-                            <Mail className="w-3.5 h-3.5 mr-2 text-slate-400" />{client.email}
-                          </div>
-                        )}
-                        {client.phone && (
-                          <div className="flex items-center text-sm text-slate-600">
-                            <Phone className="w-3.5 h-3.5 mr-2 text-slate-400" />{client.phone}
-                          </div>
-                        )}
+                        {c.email && <div className="flex items-center gap-1.5 text-xs text-slate-600"><Mail size={11} className="text-slate-400" />{c.email}</div>}
+                        {c.phone && <div className="flex items-center gap-1.5 text-xs text-slate-600"><Phone size={11} className="text-slate-400" />{c.phone}</div>}
                       </div>
                     </td>
-
-                    {/* Account manager */}
-                    <td className="px-6 py-4">
-                      {client.accountManagerName ? (
+                    <td className="px-5 py-4">
+                      {c.accountManagerName ? (
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 text-xs flex items-center justify-center font-bold text-slate-600">
-                            {getInitials(client.accountManagerName)}
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold" style={{ backgroundColor: "#eff6ff", color: "#1d4ed8" }}>
+                            {getInitials(c.accountManagerName)}
                           </div>
-                          <span className="text-sm font-medium text-slate-700">
-                            {client.accountManagerName}
-                          </span>
+                          <span className="text-sm text-slate-700 font-medium">{c.accountManagerName}</span>
                         </div>
-                      ) : (
-                        <span className="text-sm text-slate-400 italic">Unassigned</span>
-                      )}
+                      ) : <span className="text-sm text-slate-400 italic">Unassigned</span>}
                     </td>
-
-                    {/* Last contacted */}
-                    <td className="px-6 py-4">
-                      {client.lastContactedAt ? (
+                    <td className="px-5 py-4">
+                      {c.lastContactedAt ? (
                         <div>
-                          <p className="text-sm text-slate-900 font-medium">
-                            {formatSmartDate(client.lastContactedAt)}
-                          </p>
-                          <p className="text-xs text-slate-500 mt-0.5">
-                            {client.emailCount || 0} emails logged
-                          </p>
+                          <p className="text-sm text-slate-900 font-medium">{formatSmartDate(c.lastContactedAt)}</p>
+                          <p className="text-xs text-slate-400 mt-0.5">{c.emailCount || 0} emails</p>
                         </div>
-                      ) : (
-                        <span className="text-sm text-slate-400">Never</span>
-                      )}
+                      ) : <span className="text-sm text-slate-400">Never</span>}
                     </td>
-
-                    {/* Action */}
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/email-activity/clients/${client.id}`);
-                        }}
-                        className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all ml-auto"
+                    <td className="px-5 py-4 text-right">
+                      <div
+                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 group-hover:text-white transition-all ml-auto"
+                        style={{ backgroundColor: undefined }}
+                        onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#2563eb"; e.currentTarget.style.color = "white"; }}
+                        onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}
                       >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
+                        <ChevronRight size={16} />
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -176,47 +216,9 @@ export default function Clients() {
             </table>
           )}
         </div>
-      </Card>
+      </div>
 
-      {/* Add Client Modal */}
-      <Modal isOpen={modalOpen} onClose={() => setModalOpen(false)} title="Add New Client">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Client Name *</label>
-            <Input name="name" required placeholder="e.g. North London Health" />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">PCN Number *</label>
-            <Input name="pcnNumber" required placeholder="e.g. PCN-12345" />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-700">Surgery Name</label>
-            <Input name="surgeryName" placeholder="Optional" />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Email</label>
-              <Input type="email" name="email" placeholder="contact@surgery.com" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Phone</label>
-              <Input name="phone" placeholder="+44..." />
-            </div>
-          </div>
-
-          <div className="pt-4 flex justify-end gap-3 border-t border-slate-100 mt-6">
-            <Button type="button" variant="ghost" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isCreating}>
-              Create Client
-            </Button>
-          </div>
-        </form>
-      </Modal>
+      <AddClientModal isOpen={modalOpen} onClose={() => setModal(false)} onSave={handleSave} isSaving={saving} />
     </div>
   );
 }
