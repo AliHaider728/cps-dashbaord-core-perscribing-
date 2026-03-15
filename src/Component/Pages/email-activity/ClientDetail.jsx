@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetClient, useGetClientTimeline, useAddNote } from "../../../lib/api.js";
-import { Spinner } from "../../ui/spinner.jsx";
+import { Spinner } from "../../../Component/ui/spinner.jsx";
 import {
   ArrowLeft, Mail, Phone, Calendar,
   ArrowUpRight, ArrowDownLeft, StickyNote,

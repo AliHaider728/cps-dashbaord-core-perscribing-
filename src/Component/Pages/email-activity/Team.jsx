@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useListTeamMembers, useTriggerOutlookSync } from "../../../lib/api.js";
-import { Spinner } from "../../ui/spinner.jsx";
+import { Spinner } from "../../../Component/ui/spinner.jsx";
 import {
   Copy, RefreshCw, CheckCircle2, XCircle, Mail, Users,
   UserPlus, Wifi, Shield, Info, X,
