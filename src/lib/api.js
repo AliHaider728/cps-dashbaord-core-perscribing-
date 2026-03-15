@@ -9,7 +9,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-
 // ─── Helper: normalize MongoDB _id → id ─────────────────────────────────────
 function normalize(obj) {
   if (!obj) return obj;
@@ -112,6 +111,48 @@ export function useListEmails(params) {
     queryFn: async () => {
       const { data } = await api.get("/emails", { params });
       return normalizeResponse(data);
+    },
+  });
+}
+
+// ─── Email Engagements — WHO opened / clicked / downloaded ───────────────────
+// Fetches full detail per email: who opened, device, OS, location, time
+// Used by the EmailDrawer side panel
+export function useGetEmailEngagements(emailId) {
+  return useQuery({
+    queryKey: ["email-engagements", emailId],
+    queryFn: async () => {
+      const { data } = await api.get(`/emails/${emailId}/engagements`);
+      return {
+        ...data,
+        opens:     (data.opens     || []).map(normalize),
+        clicks:    (data.clicks    || []).map(normalize),
+        downloads: (data.downloads || []).map(normalize),
+      };
+    },
+    enabled:   !!emailId,
+    staleTime: 30_000, // refresh every 30s — engagements are near real-time
+  });
+}
+
+// ─── Track Email (API-based) ──────────────────────────────────────────────────
+// Call this to manually record open / click / download from frontend
+export function useTrackEmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ emailId, eventType, openedByEmail, linkUrl, fileName }) => {
+      const res = await api.post(`/emails/${emailId}/track`, {
+        eventType,
+        openedByEmail,
+        linkUrl,
+        fileName,
+      });
+      return res.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["email-engagements", variables.emailId] });
+      queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }
