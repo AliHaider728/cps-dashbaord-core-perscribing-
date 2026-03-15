@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { UserPlus, Mail, Shield, Users, Info, CheckCircle2 } from "lucide-react";
-import { Button } from "../ui/Button.jsx";
+import { Button } from "../ui/button.jsx";
 import { Input } from "../ui/input.jsx";
 import { Modal } from "../ui/modal.jsx";
 import { Spinner } from "../ui/spinner.jsx";

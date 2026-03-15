@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Mail, Send, Copy, CheckCircle2, Info, Paperclip, X, ChevronDown } from "lucide-react";
-import { Button } from "../ui/Button.jsx";
+import { Button } from "../ui/button.jsx";
 import { Input } from "../ui/input.jsx";
 import { Badge } from "../ui/badge.jsx";
 import { Modal } from "../ui/modal.jsx";
