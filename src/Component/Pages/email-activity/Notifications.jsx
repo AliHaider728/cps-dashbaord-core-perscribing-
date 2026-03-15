@@ -1,12 +1,44 @@
 import React, { useEffect, useCallback } from "react";
 import { useListNotifications, useMarkNotificationRead } from "../../../lib/api.js";
 import { useQueryClient } from "@tanstack/react-query";
-import { Spinner } from "../../../Component/ui/spinner.jsx";
 import {
   Bell, MousePointerClick, MailOpen, Download,
   ArrowDownLeft, Check, CheckCheck, RefreshCw,
 } from "lucide-react";
 import { formatRelative } from "../../../lib/utils.js";
+
+// ─── Manual loader ────────────────────────────────────────────────────────────
+
+function NotifSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes en-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {[0, 1, 2, 3].map((i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex", alignItems: "center", gap: 16,
+              padding: "16px 20px",
+              borderRadius: 16, border: "1px solid #e2e8f0",
+              backgroundColor: "#fff",
+              animation: `en-pulse 1.5s ease infinite ${i * 0.1}s`,
+            }}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: "50%", backgroundColor: "#f1f5f9", flexShrink: 0 }} />
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ width: "50%", height: 13, borderRadius: 5, backgroundColor: "#e2e8f0" }} />
+              <div style={{ width: "75%", height: 11, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+              <div style={{ width: "20%", height: 10, borderRadius: 4, backgroundColor: "#f1f5f9" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const ICON_MAP = {
   email_opened:    { bg: "#f5f3ff", color: "#7c3aed", Icon: MailOpen },
@@ -27,12 +59,14 @@ function NotifIcon({ type }) {
   );
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 export default function EmailNotifications() {
-  const queryClient              = useQueryClient();
-  const { data, isLoading }      = useListNotifications();
-  const notifications            = data?.notifications || [];
-  const unread                   = notifications.filter((n) => !n.isRead).length;
-  const { mutate: markRead }     = useMarkNotificationRead();
+  const queryClient          = useQueryClient();
+  const { data, isLoading }  = useListNotifications();
+  const notifications        = data?.notifications || [];
+  const unread               = notifications.filter((n) => !n.isRead).length;
+  const { mutate: markRead } = useMarkNotificationRead();
 
   const refetch = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
@@ -99,7 +133,7 @@ export default function EmailNotifications() {
 
       {/* Content */}
       {isLoading ? (
-        <div className="flex justify-center p-20"><Spinner className="w-10 h-10" /></div>
+        <NotifSkeleton />
       ) : notifications.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-20 text-center shadow-sm">
           <Bell size={40} className="mx-auto mb-4" style={{ color: "#e2e8f0" }} />
@@ -137,10 +171,7 @@ export default function EmailNotifications() {
                       {formatRelative(notif.createdAt)}
                     </span>
                   </div>
-                  <p
-                    className="text-sm mb-2"
-                    style={{ color: notif.isRead ? "#6b7280" : "#374151" }}
-                  >
+                  <p className="text-sm mb-2" style={{ color: notif.isRead ? "#6b7280" : "#374151" }}>
                     {notif.message}
                   </p>
                   {notif.clientName && (
