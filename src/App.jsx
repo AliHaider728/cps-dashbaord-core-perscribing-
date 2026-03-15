@@ -23,7 +23,7 @@ import Announcements       from './Component/Pages/Announcements.jsx';
 import AttendanceEmployee  from './Component/Pages/Staff/AttendanceEmployee.jsx';
 
 // ── Email Activity Module ──────────────────────────────────────────────────────
-import emDashboard        from "./Component/Pages/email-activity/emDashboard.jsx"
+import EmailDashboard from './Component/Pages/email-activity/EmailDashboard.jsx';
 import Clients       from './Component/Pages/email-activity/Clients.jsx';
 import ClientDetail  from './Component/Pages/email-activity/ClientDetail.jsx';
 import Emails         from './Component/Pages/email-activity/Emails.jsx';
@@ -113,7 +113,7 @@ const AppRoutes = () => {
         <Route path="/invoices"      element={<Invoices />} />
 
         {/* ── Email Activity Module ────────────────────────────────────────── */}
-        <Route path="/email-activity"              element={<emDashboard />} />
+        <Route path="/email-activity"              element={<EmailDashboard />} />
         <Route path="/email-activity/clients"       element={<Clients />} />
         <Route path="/email-activity/clients/:id"   element={<ClientDetail />} />
         <Route path="/email-activity/emails"        element={<Emails />} />
