@@ -1,326 +1,453 @@
-import React, { useState } from 'react';
-import { Search, Plus, Hospital, ChevronRight, MapPin, Users, MoreVertical, Edit, Trash, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Search, Plus, Filter, Hospital, MapPin, Calendar,
+  ChevronRight, AlertCircle, CheckCircle2, Clock, XCircle,
+  Building, Users, TrendingUp, RefreshCw
+} from 'lucide-react';
+import { pcnAPI } from '../../services/api.js';
 
-const PCNsList = ({ onSelectPCN }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [pcns, setPcns] = useState([
-    {
-      id: 1,
-      name: 'Bradford PCN',
-      code: 'PCN001',
-      practices: 5,
-      totalPatients: 45000,
-      status: 'Active',
-      region: 'Yorkshire',
-      accountManager: 'John Smith'
-    },
-    {
-      id: 2,
-      name: 'Leeds Medical PCN',
-      code: 'PCN002',
-      practices: 8,
-      totalPatients: 62000,
-      status: 'Onboarding',
-      region: 'Yorkshire',
-      accountManager: 'Sarah Johnson'
-    },
-    {
-      id: 3,
-      name: 'Manchester Central PCN',
-      code: 'PCN003',
-      practices: 6,
-      totalPatients: 51000,
-      status: 'Active',
-      region: 'Greater Manchester',
-      accountManager: 'Mike Davis'
+
+const statusConfig = {
+  Active:      { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
+  Expired:     { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',         icon: XCircle },
+  Pending:     { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',  icon: Clock },
+  Suspended:   { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: AlertCircle },
+  Terminated:  { color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',         icon: XCircle },
+};
+
+const StatCard = ({ label, value, icon: Icon, color }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${color}`}>
+      <Icon size={20} />
+    </div>
+    <div>
+      <p className="text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{label}</p>
+    </div>
+  </div>
+);
+
+const OnboardingBar = ({ onboarding }) => {
+  if (!onboarding) return null;
+  const keys = Object.keys(onboarding);
+  const done = keys.filter(k => onboarding[k]).length;
+  const pct = Math.round((done / keys.length) * 100);
+  const color = pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-400';
+  return (
+    <div className="flex items-center gap-2 mt-1">
+      <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-xs text-gray-400 w-8 text-right">{pct}%</span>
+    </div>
+  );
+};
+
+const PCNsList = () => {
+  const navigate = useNavigate();
+  const [pcns, setPcns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const fetchPCNs = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = { page, limit: 12 };
+      if (statusFilter) params.status = statusFilter;
+      if (search) params.search = search;
+      const res = await pcnAPI.getAll(params);
+      setPcns(res.data || []);
+      setTotalPages(res.pages || 1);
+      setTotal(res.total || 0);
+    } catch (err) {
+      setError(err.message);
+      // Use mock data in development
+      setPcns(MOCK_PCNS);
+      setTotal(MOCK_PCNS.length);
+    } finally {
+      setLoading(false);
     }
-  ]);
-  const [editingPcn, setEditingPcn] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
-
-  const filteredPCNs = pcns.filter(pcn => {
-    const matchesSearch = pcn.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         pcn.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || pcn.status.toLowerCase() === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleAddPcn = (newPcn) => {
-    const maxId = Math.max(...pcns.map(p => p.id), 0);
-    setPcns([...pcns, { ...newPcn, id: maxId + 1 }]);
-    alert('PCN added successfully!');
   };
 
-  const handleEditPcn = (updatedPcn) => {
-    setPcns(pcns.map(p => p.id === updatedPcn.id ? updatedPcn : p));
-    setEditingPcn(null);
-    alert('PCN updated successfully!');
-  };
+  useEffect(() => {
+    fetchPCNs();
+  }, [page, statusFilter]);
 
-  const handleDeletePcn = (id) => {
-    if (window.confirm('Are you sure you want to delete this PCN?')) {
-      setPcns(pcns.filter(p => p.id !== id));
-      alert('PCN deleted successfully!');
-    }
-  };
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1);
+      fetchPCNs();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
 
- 
-
-  const PcnForm = ({ pcn = {}, onSubmit }) => {
-    const [formData, setFormData] = useState({
-      name: pcn.name || '',
-      code: pcn.code || '',
-      practices: pcn.practices || '',
-      totalPatients: pcn.totalPatients || '',
-      status: pcn.status || 'Active',
-      region: pcn.region || '',
-      accountManager: pcn.accountManager || ''
-    });
-
-    const handleChange = (e) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleFormSubmit = (e) => {
-      e.preventDefault();
-      onSubmit({ ...pcn, ...formData, practices: parseInt(formData.practices), totalPatients: parseInt(formData.totalPatients) });
-    };
-
-    return (
-      <form onSubmit={handleFormSubmit} className="space-y-3">
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Name *</label>
-          <input name="name" value={formData.name} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Code *</label>
-          <input name="code" value={formData.code} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Practices *</label>
-          <input name="practices" type="number" value={formData.practices} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Total Patients *</label>
-          <input name="totalPatients" type="number" value={formData.totalPatients} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Status *</label>
-          <select name="status" value={formData.status} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg">
-            <option>Active</option>
-            <option>Onboarding</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Region *</label>
-          <input name="region" value={formData.region} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-primary mb-1">Account Manager *</label>
-          <input name="accountManager" value={formData.accountManager} onChange={handleChange} className="w-full px-4 py-2 bg-secondary border border-border rounded-lg" required />
-        </div>
-        <div className="flex gap-2 pt-2">
-          <button type="submit" className="flex-1 px-4 py-2 bg-core-primary-500 text-white rounded-lg">Save</button>
-          <button type="button" onClick={() => setEditingPcn(null)} className="flex-1 px-4 py-2 bg-secondary border border-border rounded-lg">Cancel</button>
-        </div>
-      </form>
-    );
+  const stats = {
+    total,
+    active: pcns.filter(p => p.contractStatus === 'Active').length,
+    expiring: pcns.filter(p => {
+      if (!p.contractRenewalDate) return false;
+      const days = Math.ceil((new Date(p.contractRenewalDate) - new Date()) / (1000 * 60 * 60 * 24));
+      return days <= 30 && days >= 0;
+    }).length,
+    pending: pcns.filter(p => p.contractStatus === 'Pending').length,
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-primary">PCNs</h1>
-          <p className="text-secondary mt-1">Primary Care Networks with multiple practices</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Hospital size={24} className="text-core-primary-500" />
+            PCN Management
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Primary Care Networks — {total} total records
+          </p>
         </div>
-        <button onClick={() => setEditingPcn({})} className="flex items-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm">
-          <Plus size={20} />
-          <span className="font-medium">Add PCN</span>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 bg-core-primary-500 hover:bg-core-primary-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200 shadow-sm"
+        >
+          <Plus size={16} />
+          Add PCN
         </button>
       </div>
 
+      {/* Stats Row */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Total PCNs"   value={total}         icon={Hospital}    color="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" />
+        <StatCard label="Active"        value={stats.active}  icon={CheckCircle2} color="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400" />
+        <StatCard label="Renewing Soon" value={stats.expiring} icon={Calendar}    color="bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" />
+        <StatCard label="Pending"       value={stats.pending} icon={Clock}       color="bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
+      </div>
+
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
-            placeholder="Search PCNs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all"
+            placeholder="Search PCN name, code..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-core-primary-300 focus:border-core-primary-400 transition"
           />
         </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`px-4 py-2.5 rounded-lg font-medium transition-all ${
-              statusFilter === 'all'
-                ? 'bg-core-primary-500 text-white'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setStatusFilter('active')}
-            className={`px-4 py-2.5 rounded-lg font-medium transition-all ${
-              statusFilter === 'active'
-                ? 'bg-core-primary-500 text-white'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setStatusFilter('onboarding')}
-            className={`px-4 py-2.5 rounded-lg font-medium transition-all ${
-              statusFilter === 'onboarding'
-                ? 'bg-core-primary-500 text-white'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500'
-            }`}
-          >
-            Onboarding
-          </button>
-        </div>
+        <select
+          value={statusFilter}
+          onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-core-primary-300 transition"
+        >
+          <option value="">All Statuses</option>
+          {Object.keys(statusConfig).map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <button
+          onClick={fetchPCNs}
+          className="flex items-center gap-2 px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          Refresh
+        </button>
       </div>
 
-      {/* PCNs Table */}
-      <div className="bg-secondary rounded-xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-core-primary-50/50 border-b border-border">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  PCN Details
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Practices
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Region
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Account Manager
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredPCNs.map((pcn) => (
-                <tr
-                  key={pcn.id}
-                  onClick={() => onSelectPCN(pcn)}
-                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group relative"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <Hospital className="text-blue-500" size={20} />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-primary group-hover:text-core-primary-500 transition-colors">
-                          {pcn.name}
-                        </div>
-                        <div className="text-sm text-secondary">{pcn.code}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <Users size={16} className="text-muted" />
-                      <span className="text-sm text-primary">{pcn.practices} practices</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-muted" />
-                      <span className="text-sm text-primary">{pcn.region}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-primary">{pcn.accountManager}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                      pcn.status === 'Active'
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-orange-50 text-orange-600'
-                    }`}>
-                      {pcn.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === pcn.id ? null : pcn.id);
-                        }}
-                        className="p-1 hover:bg-gray-200 rounded"
-                      >
-                        <MoreVertical size={18} className="text-muted" />
-                      </button>
-                    </div>
-                    {openMenuId === pcn.id && (
-                      <div className="absolute right-4 top-12 bg-white border border-border rounded-lg shadow-lg z-10">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingPcn(pcn);
-                            setOpenMenuId(null);
-                          }}
-                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100"
-                        >
-                          <Edit size={16} />
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeletePcn(pcn.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="flex items-center gap-2 px-4 py-2 w-full text-left hover:bg-gray-100 text-red-600"
-                        >
-                          <Trash size={16} />
-                          Delete
-                        </button>
-                        
+      {/* PCN Cards Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array(6).fill(0).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 animate-pulse">
+              <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-3/4 mb-3" />
+              <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2 mb-4" />
+              <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded w-full" />
+            </div>
+          ))}
+        </div>
+      ) : pcns.length === 0 ? (
+        <div className="text-center py-16 text-gray-400 dark:text-gray-500">
+          <Hospital size={48} className="mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No PCNs found</p>
+          <p className="text-sm mt-1">Try adjusting your filters or add a new PCN</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {pcns.map(pcn => {
+            const cfg = statusConfig[pcn.contractStatus] || statusConfig.Active;
+            const StatusIcon = cfg.icon;
+            const daysToRenewal = pcn.contractRenewalDate
+              ? Math.ceil((new Date(pcn.contractRenewalDate) - new Date()) / (1000 * 60 * 60 * 24))
+              : null;
+
+            return (
+              <div
+                key={pcn._id}
+                onClick={() => navigate(`/pcn-profile/${pcn._id}`)}
+                className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:border-core-primary-300 dark:hover:border-core-primary-600 hover:shadow-md cursor-pointer transition-all duration-200 group"
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-tight group-hover:text-core-primary-500 transition-colors truncate">
+                      {pcn.pcnName}
+                    </h3>
+                    {pcn.pcnCode && (
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Code: {pcn.pcnCode}</p>
+                    )}
+                  </div>
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-2 ${cfg.color}`}>
+                    <StatusIcon size={10} />
+                    {pcn.contractStatus}
+                  </div>
+                </div>
+
+                {/* ICB / Federation */}
+                {(pcn.icb || pcn.federation) && (
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-3 space-y-0.5">
+                    {pcn.icb && (
+                      <div className="flex items-center gap-1 truncate">
+                        <Building size={11} className="shrink-0" />
+                        <span className="truncate">{pcn.icb.name}</span>
                       </div>
                     )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                    {pcn.federation && (
+                      <div className="flex items-center gap-1 truncate">
+                        <Users size={11} className="shrink-0" />
+                        <span className="truncate">{pcn.federation.name}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-      {filteredPCNs.length === 0 && (
-        <div className="text-center py-12 bg-secondary rounded-xl">
-          <p className="text-secondary">No PCNs found</p>
+                {/* Address */}
+                {pcn.address?.city && (
+                  <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mb-3">
+                    <MapPin size={11} />
+                    <span>{pcn.address.city}{pcn.address.postCode ? `, ${pcn.address.postCode}` : ''}</span>
+                  </div>
+                )}
+
+                {/* Stats row */}
+                <div className="flex items-center gap-4 mb-3 text-xs text-gray-500 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <Hospital size={11} />
+                    <span>{pcn.practices?.length || 0} Practices</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users size={11} />
+                    <span>{pcn.activeClinicians?.length || 0} Clinicians</span>
+                  </div>
+                  {pcn.annualSpend > 0 && (
+                    <div className="flex items-center gap-1">
+                      <TrendingUp size={11} />
+                      <span>£{(pcn.annualSpend / 1000).toFixed(0)}k</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Onboarding progress */}
+                {pcn.onboarding && (
+                  <div className="mb-3">
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mb-1">Onboarding</p>
+                    <OnboardingBar onboarding={pcn.onboarding} />
+                  </div>
+                )}
+
+                {/* Renewal warning */}
+                {daysToRenewal !== null && daysToRenewal <= 30 && daysToRenewal >= 0 && (
+                  <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 rounded-lg px-2 py-1.5 mb-2">
+                    <AlertCircle size={12} />
+                    <span>Renews in {daysToRenewal} day{daysToRenewal !== 1 ? 's' : ''}</span>
+                  </div>
+                )}
+
+                {/* View button */}
+                <div className="flex items-center justify-end mt-2 pt-2 border-t border-gray-50 dark:border-gray-700/50">
+                  <span className="text-xs text-core-primary-500 group-hover:text-core-primary-600 font-medium flex items-center gap-1">
+                    View Profile <ChevronRight size={12} />
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Add/Edit Modal */}
-      {editingPcn && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-secondary rounded-xl p-6 max-w-lg w-full">
-            <h2 className="text-2xl font-bold text-primary mb-4">{editingPcn.id ? 'Edit PCN' : 'Add PCN'}</h2>
-            <PcnForm pcn={editingPcn} onSubmit={editingPcn.id ? handleEditPcn : handleAddPcn} />
-          </div>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-500 dark:text-gray-400 px-3">
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300"
+          >
+            Next
+          </button>
         </div>
+      )}
+
+      {/* Add PCN Modal */}
+      {showAddModal && (
+        <AddPCNModal onClose={() => setShowAddModal(false)} onSave={(data) => {
+          pcnAPI.create(data).then(() => { setShowAddModal(false); fetchPCNs(); }).catch(console.error);
+        }} />
       )}
     </div>
   );
 };
+
+// ─── Add PCN Modal ────────────────────────────────────────────────────────────
+const AddPCNModal = ({ onClose, onSave }) => {
+  const [form, setForm] = useState({
+    pcnName: '', pcnCode: '', contractStatus: 'Active', contractType: 'ARRS',
+    address: { street: '', city: '', postCode: '' },
+    annualSpend: '',
+    contractRenewalDate: '', contractExpiryDate: '',
+  });
+
+  const handleSubmit = () => {
+    if (!form.pcnName.trim()) return;
+    onSave({ ...form, annualSpend: parseFloat(form.annualSpend) || 0 });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add New PCN</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Primary Care Network record</p>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">PCN Name *</label>
+            <input
+              type="text"
+              value={form.pcnName}
+              onChange={e => setForm(f => ({ ...f, pcnName: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+              placeholder="e.g. Aylesbury PCN"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">PCN Code</label>
+              <input type="text" value={form.pcnCode} onChange={e => setForm(f => ({ ...f, pcnCode: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+                placeholder="e.g. PCN001" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Contract Type</label>
+              <select value={form.contractType} onChange={e => setForm(f => ({ ...f, contractType: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-core-primary-300">
+                {['ARRS', 'EA', 'Direct', 'Mixed'].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Status</label>
+              <select value={form.contractStatus} onChange={e => setForm(f => ({ ...f, contractStatus: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-core-primary-300">
+                {Object.keys(statusConfig).map(s => <option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Annual Spend (£)</label>
+              <input type="number" value={form.annualSpend} onChange={e => setForm(f => ({ ...f, annualSpend: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+                placeholder="0" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">City</label>
+            <input type="text" value={form.address.city} onChange={e => setForm(f => ({ ...f, address: { ...f.address, city: e.target.value } }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+              placeholder="e.g. Aylesbury" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Renewal Date</label>
+              <input type="date" value={form.contractRenewalDate} onChange={e => setForm(f => ({ ...f, contractRenewalDate: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Expiry Date</label>
+              <input type="date" value={form.contractExpiryDate} onChange={e => setForm(f => ({ ...f, contractExpiryDate: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300" />
+            </div>
+          </div>
+        </div>
+        <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3 justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            Cancel
+          </button>
+          <button onClick={handleSubmit} className="px-4 py-2 text-sm bg-core-primary-500 hover:bg-core-primary-600 text-white rounded-lg font-medium transition">
+            Create PCN
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── MOCK DATA for development (no backend) ───────────────────────────────────
+const MOCK_PCNS = [
+  {
+    _id: '1', pcnName: 'Aylesbury Vale PCN', pcnCode: 'AVP001',
+    contractStatus: 'Active', contractType: 'ARRS', annualSpend: 250000,
+    address: { city: 'Aylesbury', postCode: 'HP21 8TT' },
+    icb: { name: 'NHS Bucks, Oxon & Berks West ICB' },
+    federation: { name: 'Bucks Federation' },
+    practices: [{ _id: 'p1' }, { _id: 'p2' }, { _id: 'p3' }],
+    activeClinicians: [{ _id: 'c1' }, { _id: 'c2' }],
+    contractRenewalDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+    onboarding: { approvalByCCG: true, ndaSigned: true, dataSharingAgreement: true, mobilisationPlan: true, mouReceived: false, practiceForms: true, prescribingPolicies: false, systemAccessCompleted: true, templateInstalled: true, reportsImported: false, welcomePackSent: true },
+  },
+  {
+    _id: '2', pcnName: 'South Buckinghamshire PCN', pcnCode: 'SBP001',
+    contractStatus: 'Active', contractType: 'EA', annualSpend: 180000,
+    address: { city: 'High Wycombe', postCode: 'HP11 2DU' },
+    icb: { name: 'NHS Bucks, Oxon & Berks West ICB' },
+    practices: [{ _id: 'p4' }, { _id: 'p5' }],
+    activeClinicians: [{ _id: 'c3' }],
+    contractRenewalDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
+    onboarding: { approvalByCCG: true, ndaSigned: true, dataSharingAgreement: true, mobilisationPlan: true, mouReceived: true, practiceForms: true, prescribingPolicies: true, systemAccessCompleted: true, templateInstalled: true, reportsImported: true, welcomePackSent: true },
+  },
+  {
+    _id: '3', pcnName: 'Oxford North PCN', pcnCode: 'ONP001',
+    contractStatus: 'Pending', contractType: 'Direct', annualSpend: 0,
+    address: { city: 'Oxford', postCode: 'OX2 6HE' },
+    practices: [],
+    activeClinicians: [],
+    contractRenewalDate: null,
+    onboarding: { approvalByCCG: false, ndaSigned: false, dataSharingAgreement: false, mobilisationPlan: false, mouReceived: false, practiceForms: false, prescribingPolicies: false, systemAccessCompleted: false, templateInstalled: false, reportsImported: false, welcomePackSent: false },
+  },
+  {
+    _id: '4', pcnName: 'Swindon Central PCN', pcnCode: 'SCP001',
+    contractStatus: 'Expired', contractType: 'ARRS', annualSpend: 120000,
+    address: { city: 'Swindon', postCode: 'SN1 3AB' },
+    practices: [{ _id: 'p6' }],
+    activeClinicians: [],
+    contractRenewalDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+    onboarding: { approvalByCCG: true, ndaSigned: true, dataSharingAgreement: true, mobilisationPlan: true, mouReceived: true, practiceForms: true, prescribingPolicies: true, systemAccessCompleted: true, templateInstalled: true, reportsImported: true, welcomePackSent: true },
+  },
+];
 
 export default PCNsList;

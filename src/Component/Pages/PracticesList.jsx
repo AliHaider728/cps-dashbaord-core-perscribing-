@@ -1,553 +1,392 @@
-import React, { useState } from 'react';
-import { Search, Plus, Building2, ChevronRight, MapPin, Hospital, MoreVertical, Edit, Trash, X, Filter } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Search, Plus, Building2, MapPin, ChevronRight, CheckCircle2, Clock,
+  XCircle, AlertCircle, Users, Hospital, RefreshCw, Filter
+} from 'lucide-react';
+import { practiceAPI } from '../../services/api.js';
 
-const PracticesList = ({ onSelectPractice, standaloneOnly = false }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [practices, setPractices] = useState([
-    {
-      id: 1,
-      name: 'Green Street Surgery',
-      code: 'PR001',
-      type: 'standalone',
-      status: 'Active',
-      location: 'London',
-      pcnName: null,
-      manager: 'Dr. Emily Brown'
-    },
-    {
-      id: 2,
-      name: 'Oak Medical Centre',
-      code: 'PR002',
-      type: 'pcn-practice',
-      status: 'Active',
-      location: 'Bradford',
-      pcnName: 'Bradford PCN',
-      manager: 'Dr. James Wilson'
-    },
-    {
-      id: 3,
-      name: 'Riverside Practice',
-      code: 'PR003',
-      type: 'standalone',
-      status: 'Onboarding',
-      location: 'Manchester',
-      pcnName: null,
-      manager: 'Dr. Sarah Ahmed'
-    },
-    {
-      id: 4,
-      name: 'Central Health Hub',
-      code: 'PR004',
-      type: 'pcn-practice',
-      status: 'Active',
-      location: 'Leeds',
-      pcnName: 'Leeds Medical PCN',
-      manager: 'Dr. Robert Taylor'
-    }
-  ]);
-  const [editingPractice, setEditingPractice] = useState(null);
-  const [openMenuId, setOpenMenuId] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+const statusConfig = {
+  Active:      { color: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400', icon: CheckCircle2 },
+  Expired:     { color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',         icon: XCircle },
+  Pending:     { color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',  icon: Clock },
+  Suspended:   { color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400', icon: AlertCircle },
+  Terminated:  { color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',         icon: XCircle },
+};
 
-  const filteredPractices = practices.filter(practice => {
-    const matchesSearch = practice.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         practice.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || practice.status.toLowerCase() === statusFilter;
-    const matchesType = !standaloneOnly || practice.type === 'standalone';
-    return matchesSearch && matchesStatus && matchesType;
-  });
 
-  const handleAddPractice = (newPractice) => {
-    const maxId = Math.max(...practices.map(p => p.id), 0);
-    setPractices([...practices, { ...newPractice, id: maxId + 1 }]);
-    setEditingPractice(null);
-  };
-
-  const handleEditPractice = (updatedPractice) => {
-    setPractices(practices.map(p => p.id === updatedPractice.id ? updatedPractice : p));
-    setEditingPractice(null);
-  };
-
-  const handleDeletePractice = (id) => {  
-    if (window.confirm('Are you sure you want to delete this practice? This action cannot be undone.')) {
-      setPractices(practices.filter(p => p.id !== id));
-    }
-  };
-
-  const PracticeForm = ({ practice = {}, onSubmit }) => {
-    const [formData, setFormData] = useState({
-      name: practice.name || '',
-      code: practice.code || '',
-      type: practice.type || 'standalone',
-      status: practice.status || 'Active',
-      location: practice.location || '',
-      pcnName: practice.pcnName || '',
-      manager: practice.manager || ''
-    });
-
-    const handleChange = (e) => {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const validate = () => {
-      if (!formData.name || !formData.code || !formData.location || !formData.manager) {
-        alert('Please fill all required fields.');
-        return false;
-      }
-      if (formData.type === 'pcn-practice' && !formData.pcnName) {
-        alert('PCN Practice requires PCN Name.');
-        return false;
-      }
-      return true;
-    };
-
-    const handleFormSubmit = (e) => {
-      e.preventDefault();
-      if (validate()) {
-        onSubmit({ ...practice, ...formData });
-      }
-    };
-
-    return (
-      <form onSubmit={handleFormSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Practice Name *</label>
-            <input 
-              name="name" 
-              value={formData.name} 
-              onChange={handleChange} 
-              placeholder="Enter practice name"
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary" 
-              required 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Practice Code *</label>
-            <input 
-              name="code" 
-              value={formData.code} 
-              onChange={handleChange} 
-              placeholder="e.g., PR001"
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary" 
-              required 
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Type *</label>
-            <select 
-              name="type" 
-              value={formData.type} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary"
-            >
-              <option value="standalone">Standalone</option>
-              <option value="pcn-practice">PCN Practice</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Status *</label>
-            <select 
-              name="status" 
-              value={formData.status} 
-              onChange={handleChange} 
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary"
-            >
-              <option>Active</option>
-              <option>Onboarding</option>
-            </select>
-          </div>
-        </div>
-
-        {formData.type === 'pcn-practice' && (
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">PCN Name *</label>
-            <input 
-              name="pcnName" 
-              value={formData.pcnName} 
-              onChange={handleChange} 
-              placeholder="Enter PCN name"
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary" 
-              required 
-            />
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Location *</label>
-            <input 
-              name="location" 
-              value={formData.location} 
-              onChange={handleChange} 
-              placeholder="City/Town"
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary" 
-              required 
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-primary mb-1.5">Manager *</label>
-            <input 
-              name="manager" 
-              value={formData.manager} 
-              onChange={handleChange} 
-              placeholder="Manager name"
-              className="w-full px-4 py-2.5 bg-primary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary" 
-              required 
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-          <button 
-            type="button" 
-            onClick={() => setEditingPractice(null)} 
-            className="flex-1 px-4 py-2.5 bg-secondary border border-border rounded-lg text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 transition-all font-medium"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            className="flex-1 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors font-medium shadow-sm"
-          >
-            {practice.id ? 'Update Practice' : 'Add Practice'}
-          </button>
-        </div>
-      </form>
-    );
-  };
-
-  // Practice Card Component for Mobile View
-  const PracticeCard = ({ practice }) => (
-    <div 
-      onClick={() => onSelectPractice(practice)}
-      className="bg-secondary rounded-xl border border-border p-4 hover:shadow-lg hover:border-core-primary-300 transition-all cursor-pointer"
-    >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3 flex-1">
-          <div className={`w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 ${
-            practice.type === 'standalone' ? 'bg-green-50' : 'bg-blue-50'
-          }`}>
-            <Building2 className={practice.type === 'standalone' ? 'text-green-500' : 'text-blue-500'} size={22} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <h3 className="font-semibold text-primary truncate">{practice.name}</h3>
-            <p className="text-sm text-secondary">{practice.code}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 ml-2">
-          <span className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
-            practice.status === 'Active'
-              ? 'bg-green-50 text-green-600'
-              : 'bg-orange-50 text-orange-600'
-          }`}>
-            {practice.status}
-          </span>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenMenuId(openMenuId === practice.id ? null : practice.id);
-            }}
-            className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors relative"
-          >
-            <MoreVertical size={18} className="text-muted" />
-          </button>
-        </div>
+const OnboardingBar = ({ onboarding }) => {
+  if (!onboarding) return null;
+  const keys = Object.keys(onboarding);
+  const done = keys.filter(k => onboarding[k]).length;
+  const pct = Math.round((done / keys.length) * 100);
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+        <div
+          className={`h-full rounded-full ${pct === 100 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-400'}`}
+          style={{ width: `${pct}%` }}
+        />
       </div>
-
-      {openMenuId === practice.id && (
-        <div className="absolute right-4 mt-1 bg-secondary border border-border rounded-lg shadow-xl z-20 min-w-[140px]">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setEditingPractice(practice);
-              setOpenMenuId(null);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 w-full text-left hover:bg-core-primary-50 text-primary transition-colors"
-          >
-            <Edit size={16} />
-            <span className="text-sm font-medium">Edit</span>
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeletePractice(practice.id);
-              setOpenMenuId(null);
-            }}
-            className="flex items-center gap-2 px-4 py-2.5 w-full text-left hover:bg-red-50 text-red-600 transition-colors rounded-b-lg"
-          >
-            <Trash size={16} />
-            <span className="text-sm font-medium">Delete</span>
-          </button>
-        </div>
-      )}
-
-      <div className="space-y-2 pt-2 border-t border-border">
-        {practice.type === 'pcn-practice' && (
-          <div className="flex items-center gap-2">
-            <Hospital size={14} className="text-blue-500 flex-shrink-0" />
-            <span className="text-sm text-primary truncate">{practice.pcnName}</span>
-          </div>
-        )}
-        <div className="flex items-center gap-2">
-          <MapPin size={14} className="text-muted flex-shrink-0" />
-          <span className="text-sm text-primary">{practice.location}</span>
-        </div>
-        <div className="text-sm text-secondary">
-          <span className="font-medium">Manager:</span> {practice.manager}
-        </div>
-      </div>
+      <span className="text-xs text-gray-400 w-7 text-right">{pct}%</span>
     </div>
   );
+};
+
+const PracticesList = () => {
+  const navigate = useNavigate();
+  const [practices, setPractices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [standaloneFilter, setStandaloneFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  const fetchPractices = async () => {
+    setLoading(true);
+    try {
+      const params = { page, limit: 12 };
+      if (statusFilter) params.status = statusFilter;
+      if (standaloneFilter) params.standalone = standaloneFilter;
+      if (search) params.search = search;
+      const res = await practiceAPI.getAll(params);
+      setPractices(res.data || []);
+      setTotalPages(res.pages || 1);
+      setTotal(res.total || 0);
+    } catch {
+      setPractices(MOCK_PRACTICES);
+      setTotal(MOCK_PRACTICES.length);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchPractices(); }, [page, statusFilter, standaloneFilter]);
+  useEffect(() => {
+    const t = setTimeout(() => { setPage(1); fetchPractices(); }, 500);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const grouped = standaloneFilter
+    ? { all: practices }
+    : {
+        pcn: practices.filter(p => !p.isStandalone),
+        standalone: practices.filter(p => p.isStandalone),
+      };
 
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-primary">
-            {standaloneOnly ? 'Standalone Practices' : 'All Practices'}
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Building2 size={24} className="text-core-primary-500" />
+            Practices & Surgeries
           </h1>
-          <p className="text-sm text-secondary mt-1">
-            {standaloneOnly 
-              ? 'Independent practices not part of any PCN'
-              : 'All practices including PCN members and standalone'}
-          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{total} total practices</p>
         </div>
         <button
-          onClick={() => setEditingPractice({})}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-core-primary-500 text-white rounded-lg hover:bg-core-primary-600 transition-colors shadow-sm w-full sm:w-auto"
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 bg-core-primary-500 hover:bg-core-primary-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
-          <Plus size={20} />
-          <span className="font-medium">Add Practice</span>
+          <Plus size={16} />
+          Add Practice
         </button>
       </div>
 
-      {/* Search and Filters */}
-      <div className="space-y-3">
-        <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={20} />
-            <input
-              type="text"
-              placeholder="Search practices..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-secondary border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-core-primary-500/20 focus:border-core-primary-500 transition-all text-primary"
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="lg:hidden px-4 py-2.5 bg-secondary border border-border rounded-lg hover:bg-core-primary-50 hover:text-core-primary-500 transition-all"
-          >
-            <Filter size={20} />
-          </button>
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-48">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search by name or ODS code..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-core-primary-300 transition"
+          />
         </div>
-
-        {/* Filter Buttons */}
-        <div className={`${showFilters ? 'flex' : 'hidden'} lg:flex flex-wrap gap-2`}>
-          <button
-            onClick={() => setStatusFilter('all')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              statusFilter === 'all'
-                ? 'bg-core-primary-500 text-white shadow-sm'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 border border-border'
-            }`}
-          >
-            All
-          </button>
-          <button
-            onClick={() => setStatusFilter('active')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              statusFilter === 'active'
-                ? 'bg-core-primary-500 text-white shadow-sm'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 border border-border'
-            }`}
-          >
-            Active
-          </button>
-          <button
-            onClick={() => setStatusFilter('onboarding')}
-            className={`px-4 py-2 rounded-lg font-medium transition-all ${
-              statusFilter === 'onboarding'
-                ? 'bg-core-primary-500 text-white shadow-sm'
-                : 'bg-secondary text-secondary hover:bg-core-primary-50 hover:text-core-primary-500 border border-border'
-            }`}
-          >
-            Onboarding
-          </button>
-        </div>
+        <select
+          value={statusFilter}
+          onChange={e => { setStatusFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-core-primary-300 transition"
+        >
+          <option value="">All Statuses</option>
+          {Object.keys(statusConfig).map(s => <option key={s}>{s}</option>)}
+        </select>
+        <select
+          value={standaloneFilter}
+          onChange={e => { setStandaloneFilter(e.target.value); setPage(1); }}
+          className="px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-core-primary-300 transition"
+        >
+          <option value="">All Types</option>
+          <option value="false">Under PCN</option>
+          <option value="true">Standalone</option>
+        </select>
+        <button onClick={fetchPractices}
+          className="flex items-center gap-2 px-3 py-2.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+        </button>
       </div>
 
-      {/* Desktop Table View */}
-      <div className="hidden lg:block bg-secondary rounded-xl border border-border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-core-primary-50/50 border-b border-border">
-              <tr>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Practice Details
-                </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Location
-                </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Manager
-                </th>
-                <th className="px-6 py-3.5 text-left text-xs font-semibold text-secondary uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3.5"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {filteredPractices.map((practice) => (
-                <tr
-                  key={practice.id}
-                  onClick={() => onSelectPractice(practice)}
-                  className="hover:bg-core-primary-50/30 transition-colors cursor-pointer group"
-                >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        practice.type === 'standalone' ? 'bg-green-50' : 'bg-blue-50'
-                      }`}>
-                        <Building2 className={practice.type === 'standalone' ? 'text-green-500' : 'text-blue-500'} size={20} />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-primary group-hover:text-core-primary-500 transition-colors">
-                          {practice.name}
-                        </div>
-                        <div className="text-sm text-secondary">{practice.code}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    {practice.type === 'standalone' ? (
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-600">
-                        Standalone
-                      </span>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Hospital size={14} className="text-blue-500" />
-                        <span className="text-sm text-primary">{practice.pcnName}</span>
-                      </div>
-                    )}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <MapPin size={16} className="text-muted" />
-                      <span className="text-sm text-primary">{practice.location}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="text-sm text-primary">{practice.manager}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                      practice.status === 'Active'
-                        ? 'bg-green-50 text-green-600'
-                        : 'bg-orange-50 text-orange-600'
-                    }`}>
-                      {practice.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right relative">
-                    <div className="flex items-center justify-end gap-2">
-                      <ChevronRight className="text-muted group-hover:text-core-primary-500 transition-colors" size={18} />
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenMenuId(openMenuId === practice.id ? null : practice.id);
-                        }}
-                        className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
-                      >
-                        <MoreVertical size={18} className="text-muted" />
-                      </button>
-                    </div>
-                    {openMenuId === practice.id && (
-                      <div className="absolute right-4 top-12 bg-secondary border border-border rounded-lg shadow-xl z-20 min-w-[140px]">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingPractice(practice);
-                            setOpenMenuId(null);
-                          }}
-                          className="flex items-center gap-2 px-4 py-2.5 w-full text-left hover:bg-core-primary-50 text-primary transition-colors"
-                        >
-                          <Edit size={16} />
-                          <span className="text-sm font-medium">Edit</span>
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeletePractice(practice.id);
-                            setOpenMenuId(null);
-                          }}
-                          className="flex items-center gap-2 px-4 py-2.5 w-full text-left hover:bg-red-50 text-red-600 transition-colors rounded-b-lg"
-                        >
-                          <Trash size={16} />
-                          <span className="text-sm font-medium">Delete</span>
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* Practices Grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {Array(6).fill(0).map((_, i) => (
+            <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 animate-pulse">
+              <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded w-3/4 mb-3" />
+              <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded w-1/2 mb-4" />
+              <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded w-full" />
+            </div>
+          ))}
         </div>
-      </div>
+      ) : practices.length === 0 ? (
+        <div className="text-center py-16 text-gray-400">
+          <Building2 size={48} className="mx-auto mb-3 opacity-30" />
+          <p className="font-medium">No practices found</p>
+        </div>
+      ) : (
+        <>
+          {/* PCN Practices */}
+          {(!standaloneFilter || standaloneFilter === 'false') && grouped.pcn?.length > 0 && (
+            <div>
+              {!standaloneFilter && (
+                <div className="flex items-center gap-2 mb-3">
+                  <Hospital size={15} className="text-blue-500" />
+                  <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Under PCN ({grouped.pcn.length})</h2>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {(standaloneFilter ? practices : grouped.pcn).map(p => (
+                  <PracticeCard key={p._id} practice={p} onClick={() => navigate(`/practice-profile/${p._id}`)} />
+                ))}
+              </div>
+            </div>
+          )}
 
-      {/* Mobile Card View */}
-      <div className="lg:hidden grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {filteredPractices.map((practice) => (
-          <PracticeCard key={practice.id} practice={practice} />
-        ))}
-      </div>
+          {/* Standalone Practices */}
+          {(!standaloneFilter || standaloneFilter === 'true') && grouped.standalone?.length > 0 && (
+            <div>
+              {!standaloneFilter && (
+                <div className="flex items-center gap-2 mb-3 mt-6">
+                  <Building2 size={15} className="text-purple-500" />
+                  <h2 className="text-sm font-semibold text-gray-600 dark:text-gray-300">Standalone ({grouped.standalone.length})</h2>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {grouped.standalone.map(p => (
+                  <PracticeCard key={p._id} practice={p} onClick={() => navigate(`/practice-profile/${p._id}`)} />
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
 
-      {/* Empty State */}
-      {filteredPractices.length === 0 && (
-        <div className="text-center py-16 bg-secondary rounded-xl border border-border">
-          <div className="w-16 h-16 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Building2 className="text-core-primary-500" size={28} />
-          </div>
-          <p className="text-lg font-medium text-primary mb-1">No practices found</p>
-          <p className="text-sm text-secondary">Try adjusting your search or filters</p>
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+            className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300">
+            Previous
+          </button>
+          <span className="text-sm text-gray-500 dark:text-gray-400 px-3">Page {page} of {totalPages}</span>
+          <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+            className="px-3 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-gray-600 dark:text-gray-300">
+            Next
+          </button>
         </div>
       )}
 
-      {/* Add/Edit Modal */}
-      {editingPractice && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-secondary rounded-xl p-5 sm:p-6 max-w-[900px] w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-xl sm:text-2xl font-bold text-primary">
-                {editingPractice.id ? 'Edit Practice' : 'Add New Practice'}
-              </h2>
-              <button
-                onClick={() => setEditingPractice(null)}
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-              >
-                <X size={22} className="text-secondary" />
-              </button>
-            </div>
-            <PracticeForm 
-              practice={editingPractice}
-              onSubmit={editingPractice.id ? handleEditPractice : handleAddPractice}
-            />
-          </div>
-        </div>
+      {showAddModal && (
+        <AddPracticeModal
+          onClose={() => setShowAddModal(false)}
+          onSave={(data) => practiceAPI.create(data).then(() => { setShowAddModal(false); fetchPractices(); }).catch(console.error)}
+        />
       )}
     </div>
   );
 };
+
+// ─── Practice Card ─────────────────────────────────────────────────────────────
+const PracticeCard = ({ practice: p, onClick }) => {
+  const cfg = statusConfig[p.contractStatus] || statusConfig.Active;
+  const StatusIcon = cfg.icon;
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:border-core-primary-300 dark:hover:border-core-primary-600 hover:shadow-md cursor-pointer transition-all duration-200 group"
+    >
+      <div className="flex items-start justify-between mb-2">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-sm text-gray-900 dark:text-white group-hover:text-core-primary-500 transition-colors truncate leading-tight">
+            {p.practiceName}
+          </h3>
+          {p.odsCode && <p className="text-xs text-gray-400 font-mono mt-0.5">ODS: {p.odsCode}</p>}
+        </div>
+        <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ml-2 ${cfg.color}`}>
+          <StatusIcon size={10} />
+          {p.contractStatus}
+        </div>
+      </div>
+
+      {p.isStandalone ? (
+        <span className="inline-flex items-center gap-1 text-xs bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full mb-2">
+          <Building2 size={10} /> Standalone
+        </span>
+      ) : p.pcn ? (
+        <div className="flex items-center gap-1 text-xs text-blue-500 dark:text-blue-400 mb-2">
+          <Hospital size={11} />
+          <span className="truncate">{typeof p.pcn === 'object' ? p.pcn.pcnName : 'PCN'}</span>
+        </div>
+      ) : null}
+
+      {p.address?.city && (
+        <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 mb-2">
+          <MapPin size={11} />
+          <span>{p.address.city}{p.address.postCode ? `, ${p.address.postCode}` : ''}</span>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500 mb-3">
+        {p.fteAllocation && <span>FTE: {p.fteAllocation.split(' ')[0]}</span>}
+        {p.patientListSize && <span>Pts: {p.patientListSize.toLocaleString()}</span>}
+        {p.contractType && (
+          <span className="bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">{p.contractType}</span>
+        )}
+      </div>
+
+      {p.onboarding && (
+        <div className="mb-2">
+          <OnboardingBar onboarding={p.onboarding} />
+        </div>
+      )}
+
+      <div className="flex items-center justify-end pt-2 border-t border-gray-50 dark:border-gray-700/50">
+        <span className="text-xs text-core-primary-500 font-medium flex items-center gap-1">
+          View Profile <ChevronRight size={12} />
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// ─── Add Practice Modal ────────────────────────────────────────────────────────
+const AddPracticeModal = ({ onClose, onSave }) => {
+  const [form, setForm] = useState({
+    practiceName: '', odsCode: '', contractStatus: 'Active', contractType: 'ARRS',
+    isStandalone: false, gpLead: '', pmBusinessManager: '',
+    address: { street: '', city: '', postCode: '' }, icbName: '', fteAllocation: '', patientListSize: '',
+  });
+
+  return (
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Add Practice / Surgery</h2>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Practice Name *</label>
+            <input type="text" value={form.practiceName} onChange={e => setForm(f => ({ ...f, practiceName: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+              placeholder="e.g. The Mundane Medical Practice" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">ODS Code</label>
+              <input type="text" value={form.odsCode} onChange={e => setForm(f => ({ ...f, odsCode: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+                placeholder="e.g. K82011" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Contract Type</label>
+              <select value={form.contractType} onChange={e => setForm(f => ({ ...f, contractType: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-core-primary-300">
+                {['ARRS', 'EA', 'Direct', 'Mixed'].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">GP Lead</label>
+              <input type="text" value={form.gpLead} onChange={e => setForm(f => ({ ...f, gpLead: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">FTE Allocation</label>
+              <input type="text" value={form.fteAllocation} onChange={e => setForm(f => ({ ...f, fteAllocation: e.target.value }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+                placeholder="e.g. 0.5 FTE" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">ICB Name</label>
+            <input type="text" value={form.icbName} onChange={e => setForm(f => ({ ...f, icbName: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300"
+              placeholder="e.g. NHS Bucks, Oxon & Berks West ICB" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">City</label>
+              <input type="text" value={form.address.city} onChange={e => setForm(f => ({ ...f, address: { ...f.address, city: e.target.value } }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300 mb-1 block">Post Code</label>
+              <input type="text" value={form.address.postCode} onChange={e => setForm(f => ({ ...f, address: { ...f.address, postCode: e.target.value } }))}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-core-primary-300" />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={form.isStandalone} onChange={e => setForm(f => ({ ...f, isStandalone: e.target.checked }))}
+              className="w-4 h-4 rounded border-gray-300 text-core-primary-500 focus:ring-core-primary-400" />
+            <span className="text-sm text-gray-700 dark:text-gray-200">Standalone practice (not under a PCN)</span>
+          </label>
+        </div>
+        <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3 justify-end">
+          <button onClick={onClose} className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+            Cancel
+          </button>
+          <button onClick={() => { if (form.practiceName) onSave({ ...form, patientListSize: parseInt(form.patientListSize) || 0 }); }}
+            className="px-4 py-2 text-sm bg-core-primary-500 hover:bg-core-primary-600 text-white rounded-lg font-medium transition">
+            Create Practice
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+const MOCK_PRACTICES = [
+  {
+    _id: 'p1', practiceName: 'The Mundane Medical Practice', odsCode: 'K82011',
+    contractStatus: 'Active', contractType: 'ARRS', isStandalone: false,
+    pcn: { _id: '1', pcnName: 'Aylesbury Vale PCN' },
+    address: { city: 'Aylesbury', postCode: 'HP21 8TT' },
+    fteAllocation: '0.5 FTE (20HRS/WEEK)', patientListSize: 50000,
+    icbName: 'NHS Bucks, Oxon & Berks West ICB',
+    onboarding: { approvalByCCG: true, ndaSigned: true, dataSharingAgreement: true, mobilisationPlan: true, mouReceived: false, practiceForms: true, prescribingPolicies: false, systemAccessCompleted: true, templateInstalled: true, reportsImported: false, welcomePackSent: true },
+  },
+  {
+    _id: 'p2', practiceName: 'Chiltern House Medical Centre', odsCode: 'K82012',
+    contractStatus: 'Active', contractType: 'EA', isStandalone: false,
+    pcn: { _id: '1', pcnName: 'Aylesbury Vale PCN' },
+    address: { city: 'Aylesbury', postCode: 'HP20 1TR' },
+    fteAllocation: '1.0 FTE', patientListSize: 32000,
+    onboarding: { approvalByCCG: true, ndaSigned: true, dataSharingAgreement: true, mobilisationPlan: true, mouReceived: true, practiceForms: true, prescribingPolicies: true, systemAccessCompleted: true, templateInstalled: true, reportsImported: true, welcomePackSent: true },
+  },
+  {
+    _id: 'p3', practiceName: 'Oxford Direct Surgery', odsCode: 'K82020',
+    contractStatus: 'Active', contractType: 'Direct', isStandalone: true,
+    address: { city: 'Oxford', postCode: 'OX1 2JD' },
+    fteAllocation: '0.6 FTE', patientListSize: 18000,
+    onboarding: { approvalByCCG: true, ndaSigned: false, dataSharingAgreement: false, mobilisationPlan: true, mouReceived: false, practiceForms: false, prescribingPolicies: false, systemAccessCompleted: false, templateInstalled: false, reportsImported: false, welcomePackSent: false },
+  },
+];
 
 export default PracticesList;

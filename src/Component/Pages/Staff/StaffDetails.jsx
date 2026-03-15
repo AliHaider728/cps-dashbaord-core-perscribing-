@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Mail,
@@ -22,24 +23,140 @@ import {
   ChevronDown,
   MoreVertical
 } from 'lucide-react';
+import { useAppContext } from '../../../context/AuthContext.jsx';
 
 import PersonalInfoTab from '../StaffTabs/PersonalInfoTab.jsx'
-import RotaTab from '../StaffTabs/Rotatab';
+import RotaTab from '../StaffTabs/Rotatab.jsx';
 import TimesheetTab from '../StaffTabs/Timesheettab.jsx';
-import InvoicesTab from '../StaffTabs/Invoicestab';
+import InvoicesTab from '../StaffTabs/Invoicestab.jsx';
 import DocumentTab from '../StaffTabs/Documenttab.jsx';
-import TrainingTab from '../StaffTabs/Trainingtab';
-import ArchiveTab from '../StaffTabs/Archivetab';
+import TrainingTab from '../StaffTabs/Trainingtab.jsx';
+import ArchiveTab from '../StaffTabs/Archivetab.jsx';
 import LeavesTab from '../StaffTabs/Leavestab.jsx';
 import NotesTab from '../StaffTabs/Notestab.jsx';
-import LogTab from '../StaffTabs/Logtab';
+import LogTab from '../StaffTabs/Logtab.jsx';
 
-const StaffDetails = ({ staffData, onBack }) => {
+const StaffDetails = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const { selectedStaff } = useAppContext();
+  
   const [activeTab, setActiveTab] = useState('personal');
   const [isEditing, setIsEditing] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  // Early return if no staffData (prevents crash)
+  // Mock staff data - same as StaffList
+  const mockStaffData = [
+    {
+      id: 1,
+      name: 'Daniel Harper',
+      photo: null,
+      jobTitle: 'Senior Care Coordinator',
+      role: 'Standard User',
+      email: 'daniel.harper@healthmail.co.uk',
+      group: 'Care Coordination',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Compliant',
+      department: 'Primary Care'
+    },
+    {
+      id: 2,
+      name: 'Sophie Williams',
+      photo: null,
+      jobTitle: 'Practice Operations Lead',
+      role: 'Operations Lead',
+      email: 'sophie.williams@primarycare.org',
+      group: 'Practice Management',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Non-Compliant',
+      department: 'Operations'
+    },
+    {
+      id: 3,
+      name: 'Michael Turner',
+      photo: null,
+      jobTitle: 'Regional Service Manager',
+      role: 'Manager',
+      email: 'michael.turner@caregroup.co.uk',
+      group: 'Regional Management',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Compliant',
+      department: 'Central Services'
+    },
+    {
+      id: 4,
+      name: 'Ayesha Khan',
+      photo: null,
+      jobTitle: 'Healthcare Analyst',
+      role: 'Standard User',
+      email: 'ayesha.khan@healthanalytics.net',
+      group: 'Data & Insights',
+      status: 'Working',
+      compDoc: 'Non-Compliant',
+      compTraining: 'Compliant',
+      department: 'Analytics'
+    },
+    {
+      id: 5,
+      name: 'Oliver Bennett',
+      photo: null,
+      jobTitle: 'Clinical Systems Administrator',
+      role: 'System Admin',
+      email: 'oliver.bennett@clinicalsystems.io',
+      group: 'IT Services',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Compliant',
+      department: 'IT'
+    },
+    {
+      id: 6,
+      name: 'Fatima Noor',
+      photo: null,
+      jobTitle: 'Patient Engagement Officer',
+      role: 'Standard User',
+      email: 'fatima.noor@patientcare.uk',
+      group: 'Patient Services',
+      status: 'Left',
+      compDoc: 'Non-Compliant',
+      compTraining: 'Non-Compliant',
+      department: 'Patient Care'
+    },
+    {
+      id: 7,
+      name: 'James Collins',
+      photo: null,
+      jobTitle: 'Quality & Compliance Executive',
+      role: 'Compliance Officer',
+      email: 'james.collins@qualitycare.org',
+      group: 'Compliance',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Compliant',
+      department: 'Governance'
+    },
+    {
+      id: 8,
+      name: 'Hannah Lewis',
+      photo: null,
+      jobTitle: 'Workforce Planning Manager',
+      role: 'Manager',
+      email: 'hannah.lewis@workforcehealth.co.uk',
+      group: 'Workforce Planning',
+      status: 'Working',
+      compDoc: 'Compliant',
+      compTraining: 'Non-Compliant',
+      department: 'HR'
+    }
+  ];
+
+  // Get staff data: first from context, then from mock data by ID
+  const staffData = selectedStaff || (id ? mockStaffData.find(s => s.id === parseInt(id)) : null);
+
+  // Early return if no staffData
   if (!staffData) {
     return (
       <div className="bg-secondary rounded-xl sm:rounded-2xl shadow-sm p-5 sm:p-7 min-h-[400px] flex items-center justify-center border border-border">
@@ -52,7 +169,7 @@ const StaffDetails = ({ staffData, onBack }) => {
             Select a staff member from the list to view their details, rota, documents, and more.
           </p>
           <button
-            onClick={onBack}
+            onClick={() => navigate('/staff-list')}
             className="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 font-medium shadow-lg hover:shadow-xl text-sm sm:text-base"
           >
             <ArrowLeft size={16} className="sm:size-18" />
@@ -128,7 +245,7 @@ const StaffDetails = ({ staffData, onBack }) => {
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             {/* Back Button */}
             <button
-              onClick={onBack}
+              onClick={() => navigate('/staff-list')}
               className="flex items-center gap-1.5 sm:gap-2 text-secondary hover:text-core-primary-500 transition-colors duration-200 font-medium text-sm sm:text-base"
             >
               <ArrowLeft size={16} className="sm:w-5 sm:h-5" />
@@ -150,7 +267,7 @@ const StaffDetails = ({ staffData, onBack }) => {
                   <span className="hidden md:inline">Non-Compliant</span>
                 </span>
               )}
-              
+
               {/* Send Reminder Button */}
               <button className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-sm hover:shadow-md font-medium text-xs sm:text-sm">
                 <Send size={14} className="sm:w-4 sm:h-4" />
@@ -176,7 +293,7 @@ const StaffDetails = ({ staffData, onBack }) => {
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary truncate mb-1">
                   {staffData?.name || 'Unknown Staff'}
                 </h1>
-                
+
                 <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-secondary mb-1 sm:mb-2">
                   <span className="flex items-center gap-1.5 text-xs sm:text-sm">
                     <Building2 size={14} className="sm:w-4 sm:h-4 shrink-0" />
@@ -189,7 +306,7 @@ const StaffDetails = ({ staffData, onBack }) => {
                   </span>
                 </div>
 
-                <a 
+                <a
                   href={`mailto:${staffData?.email || ''}`}
                   className="flex items-center gap-1.5 text-blue-600 hover:text-blue-700 transition-colors w-fit max-w-full"
                 >
@@ -219,7 +336,7 @@ const StaffDetails = ({ staffData, onBack }) => {
           </div>
         </div>
 
-        {/* Desktop Tabs - Hidden on mobile */}
+        {/* Desktop Tabs */}
         <div className="hidden md:block border-t border-border bg-primary overflow-x-auto scrollbar-hide">
           <div className="flex min-w-max">
             {tabs.map((tab) => {
@@ -254,8 +371,8 @@ const StaffDetails = ({ staffData, onBack }) => {
               {activeTabInfo && <activeTabInfo.icon size={18} />}
               <span className="font-medium">{activeTabInfo?.label || 'Select Tab'}</span>
             </div>
-            <ChevronDown 
-              size={18} 
+            <ChevronDown
+              size={18}
               className={`transition-transform duration-200 ${showMobileMenu ? 'rotate-180' : ''}`}
             />
           </button>

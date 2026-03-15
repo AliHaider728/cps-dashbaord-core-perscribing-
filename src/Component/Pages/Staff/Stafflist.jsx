@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Filter,
@@ -12,9 +13,12 @@ import {
   ChevronDown,
   SlidersHorizontal
 } from 'lucide-react';
-import AddStaffForm from '../StaffUI/Addstaffform';
+import { useAppContext } from '../../../context/AuthContext.jsx';
+import AddStaffForm from '../StaffUI/Addstaffform.jsx';
 
-const StaffList = ({ onSelectStaff }) => {
+const StaffList = () => {
+  const navigate = useNavigate();
+  const { setSelectedStaff } = useAppContext();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterRole, setFilterRole] = useState('all');
@@ -27,7 +31,7 @@ const StaffList = ({ onSelectStaff }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const itemsPerPage = 10;
 
-  // Mock data - Initially loaded
+  // Mock data
   const [staffData, setStaffData] = useState([
     {
       id: 1,
@@ -147,7 +151,7 @@ const StaffList = ({ onSelectStaff }) => {
   };
 
   const handleUpdateStaff = (updatedStaff) => {
-    setStaffData(prev => prev.map(staff => 
+    setStaffData(prev => prev.map(staff =>
       staff.id === updatedStaff.id ? updatedStaff : staff
     ));
     setShowAddForm(false);
@@ -164,6 +168,11 @@ const StaffList = ({ onSelectStaff }) => {
     setEditingStaff(null);
   };
 
+  const handleViewDetails = (staff) => {
+    setSelectedStaff(staff);
+    navigate(`/staff-details/${staff.id}`);
+  };
+
   // Get unique values for filters
   const roles = ['all', ...new Set(staffData.map(s => s.role))];
   const departments = ['all', ...new Set(staffData.map(s => s.department))];
@@ -171,20 +180,20 @@ const StaffList = ({ onSelectStaff }) => {
   // Advanced filter logic
   const filteredStaff = staffData.filter(staff => {
     const matchesSearch = staff.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         staff.jobTitle.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      staff.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      staff.jobTitle.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesStatus = filterStatus === 'all' || staff.status === filterStatus;
     const matchesRole = filterRole === 'all' || staff.role === filterRole;
     const matchesDepartment = filterDepartment === 'all' || staff.department === filterDepartment;
-    
+
     let matchesCompliance = true;
     if (filterCompliance === 'compliant') {
       matchesCompliance = staff.compDoc === 'Compliant' && staff.compTraining === 'Compliant';
     } else if (filterCompliance === 'non-compliant') {
       matchesCompliance = staff.compDoc === 'Non-Compliant' || staff.compTraining === 'Non-Compliant';
     }
-    
+
     return matchesSearch && matchesStatus && matchesRole && matchesDepartment && matchesCompliance;
   });
 
@@ -195,14 +204,14 @@ const StaffList = ({ onSelectStaff }) => {
   const currentStaff = filteredStaff.slice(startIndex, endIndex);
 
   const getStatusBadgeClass = (status) => {
-    return status === 'Working' 
-      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+    return status === 'Working'
+      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
       : 'bg-rose-50 text-rose-700 border border-rose-200';
   };
 
   const getComplianceBadgeClass = (compliance) => {
-    return compliance === 'Compliant' 
-      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+    return compliance === 'Compliant'
+      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
       : 'bg-rose-50 text-rose-700 border border-rose-200';
   };
 
@@ -220,7 +229,7 @@ const StaffList = ({ onSelectStaff }) => {
   return (
     <div className="min-h-screen bg-primary overflow-x-hidden">
       <div className="max-w-[1600px] mx-auto space-y-4">
-        {/* Header Section - Dark mode support */}
+        {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
@@ -230,7 +239,7 @@ const StaffList = ({ onSelectStaff }) => {
               Manage and monitor your team members
             </p>
           </div>
-          <button 
+          <button
             onClick={() => setShowAddForm(true)}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg text-sm"
           >
@@ -239,7 +248,7 @@ const StaffList = ({ onSelectStaff }) => {
           </button>
         </div>
 
-        {/* Stats Cards - Dark mode support */}
+        {/* Stats Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div className="bg-secondary rounded-xl p-3.5 border border-[var(--border-color)] hover:shadow-md transition-all duration-200">
             <div className="flex items-center justify-between">
@@ -296,7 +305,7 @@ const StaffList = ({ onSelectStaff }) => {
           </div>
         </div>
 
-        {/* Search and Filters Bar - Dark mode support */}
+        {/* Search and Filters Bar */}
         <div className="bg-secondary rounded-xl p-3.5 shadow-sm border border-[var(--border-color)]">
           <div className="flex flex-col lg:flex-row gap-3">
             {/* Search */}
@@ -416,7 +425,7 @@ const StaffList = ({ onSelectStaff }) => {
           )}
         </div>
 
-        {/* Staff Table - Desktop - Dark mode support */}
+        {/* Staff Table - Desktop */}
         <div className="hidden lg:block bg-secondary rounded-xl shadow-sm border border-[var(--border-color)]">
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -476,7 +485,7 @@ const StaffList = ({ onSelectStaff }) => {
                     <td className="px-3 py-2.5">
                       <div className="flex items-center justify-end gap-0.5">
                         <button
-                          onClick={() => onSelectStaff(staff)}
+                          onClick={() => handleViewDetails(staff)}
                           className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
                           title="View Details"
                         >
@@ -525,7 +534,7 @@ const StaffList = ({ onSelectStaff }) => {
               >
                 <ChevronDown size={18} className="rotate-90" />
               </button>
-              
+
               {[...Array(Math.min(5, totalPages))].map((_, i) => {
                 let pageNum;
                 if (totalPages <= 5) {
@@ -537,7 +546,7 @@ const StaffList = ({ onSelectStaff }) => {
                 } else {
                   pageNum = currentPage - 2 + i;
                 }
-                
+
                 return (
                   <button
                     key={pageNum}
@@ -552,7 +561,7 @@ const StaffList = ({ onSelectStaff }) => {
                   </button>
                 );
               })}
-              
+
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
@@ -564,7 +573,7 @@ const StaffList = ({ onSelectStaff }) => {
           </div>
         </div>
 
-        {/* Mobile Card View - Dark mode support */}
+        {/* Mobile Card View */}
         <div className="lg:hidden space-y-3">
           {currentStaff.map((staff) => (
             <div key={staff.id} className="bg-secondary rounded-xl p-4 shadow-sm border border-[var(--border-color)] hover:shadow-md transition-shadow duration-200">
@@ -579,13 +588,13 @@ const StaffList = ({ onSelectStaff }) => {
                   </div>
                 </div>
                 <button
-                  onClick={() => onSelectStaff(staff)}
+                  onClick={() => handleViewDetails(staff)}
                   className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-200"
                 >
                   <Eye size={16} />
                 </button>
               </div>
-              
+
               <div className="space-y-1.5 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-secondary">Email:</span>
@@ -616,7 +625,7 @@ const StaffList = ({ onSelectStaff }) => {
                   </span>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--border-color)]">
                 <button
                   onClick={() => handleEditStaff(staff)}
@@ -647,7 +656,7 @@ const StaffList = ({ onSelectStaff }) => {
         />
       )}
 
-      {/* Delete Confirmation Modal - Dark mode support */}
+      {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-secondary rounded-xl shadow-2xl max-w-md w-full p-5 border border-[var(--border-color)]">
