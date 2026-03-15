@@ -1,190 +1,278 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   ArrowUpRight, ArrowDownLeft, Mail, MousePointerClick,
   Users, RefreshCw, BarChart3, TrendingUp, AlertCircle,
-  Zap, Activity, MailOpen, Download, Bell, Eye,
+  Zap, Activity, MailOpen, Download, Bell, Eye, Inbox,
 } from "lucide-react";
 import { useGetStatsOverview } from "../../../lib/api.js";
 import { formatRelative } from "../../../lib/utils.js";
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
+import { ParticleCard, GlobalSpotlight } from "../../MagicBento/MagicBento.jsx";
 
 const cv = (v) => `var(${v})`;
-const surfaceStyle  = { backgroundColor: cv("--bg-secondary"),  border: `1px solid ${cv("--border-color")}` };
+const surfaceStyle  = { backgroundColor: cv("--bg-secondary"), border: `1px solid ${cv("--border-color")}` };
 const bgStyle       = { backgroundColor: cv("--bg-primary") };
 const textPrimary   = { color: cv("--text-primary") };
 const textSecondary = { color: cv("--text-secondary") };
 const textMuted     = { color: cv("--text-muted") };
 
+/* ─── Global CSS ─────────────────────────────────────────────── */
 const GLOBAL_STYLES = `
-  @keyframes ed-pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
-  @keyframes ed-fadeUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes ed-slideIn { from{opacity:0;transform:translateX(-8px)} to{opacity:1;transform:translateX(0)} }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
-  .sc-blue   { background: rgba(30,27,143,0.18);  border-color: rgba(102,115,255,0.25); }
-  .sc-green  { background: rgba(6,78,59,0.22);    border-color: rgba(16,185,129,0.2);  }
-  .sc-violet { background: rgba(76,29,149,0.22);  border-color: rgba(139,92,246,0.2);  }
-  .sc-amber  { background: rgba(120,53,15,0.22);  border-color: rgba(245,158,11,0.2);  }
-  [data-theme="light"] .sc-blue   { background: rgba(238,240,255,0.75); border-color: #B8C0FF; }
-  [data-theme="light"] .sc-green  { background: rgba(209,250,229,0.75); border-color: #6ee7b7; }
-  [data-theme="light"] .sc-violet { background: rgba(237,233,254,0.75); border-color: #c4b5fd; }
-  [data-theme="light"] .sc-amber  { background: rgba(255,251,235,0.75); border-color: #fcd34d; }
+  @keyframes ed-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes live-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.6);opacity:.5} }
+  @keyframes shimmer  { 0%{left:-60%} 100%{left:110%} }
+  @keyframes bar-grow { from{width:0} to{width:var(--w)} }
 
-  .sc-blue   .sc-val { color: #DADFFF; } [data-theme="light"] .sc-blue   .sc-val { color: #15136B; }
-  .sc-green  .sc-val { color: #d1fae5; } [data-theme="light"] .sc-green  .sc-val { color: #064e3b; }
-  .sc-violet .sc-val { color: #ede9fe; } [data-theme="light"] .sc-violet .sc-val { color: #4c1d95; }
-  .sc-amber  .sc-val { color: #fef3c7; } [data-theme="light"] .sc-amber  .sc-val { color: #78350f; }
+  .ed-font * { font-family:'DM Sans',sans-serif !important; }
 
-  .sc-blue   .sc-sub { color: #8F9AFF; } [data-theme="light"] .sc-blue   .sc-sub { color: #6673FF; }
-  .sc-green  .sc-sub { color: #34d399; } [data-theme="light"] .sc-green  .sc-sub { color: #059669; }
-  .sc-violet .sc-sub { color: #a78bfa; } [data-theme="light"] .sc-violet .sc-sub { color: #7c3aed; }
-  .sc-amber  .sc-sub { color: #fbbf24; } [data-theme="light"] .sc-amber  .sc-sub { color: #d97706; }
+  /* ──────── Stat cards ──────── */
+  .sc-card {
+    position:relative; overflow:hidden; border-radius:18px; border:1px solid;
+    cursor:default; transition:transform .25s, box-shadow .25s;
+  }
+  .sc-card:hover { transform:translateY(-3px); }
+  .sc-card::before {
+    content:''; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);
+    animation:shimmer 2s ease infinite; pointer-events:none; z-index:1;
+  }
 
-  .act-row { transition: background-color .15s; cursor: pointer; }
-  .act-row:hover { background-color: var(--border-color); }
+  /* dark */
+  .sc-blue   { background:rgba(30,27,143,0.22);  border-color:rgba(102,115,255,0.35); }
+  .sc-green  { background:rgba(6,78,59,0.28);    border-color:rgba(16,185,129,0.3);  }
+  .sc-violet { background:rgba(76,29,149,0.28);  border-color:rgba(139,92,246,0.3);  }
+  .sc-amber  { background:rgba(120,53,15,0.28);  border-color:rgba(245,158,11,0.3);  }
 
-  .act-icon-email_sent     { background: rgba(102,115,255,0.13); }
-  .act-icon-email_received { background: rgba(16,185,129,0.13);  }
-  .act-icon-engagement     { background: rgba(139,92,246,0.13);  }
-  .act-icon-note           { background: rgba(245,158,11,0.13);  }
-  [data-theme="light"] .act-icon-email_sent     { background: #EEF0FF; }
-  [data-theme="light"] .act-icon-email_received { background: #d1fae5; }
-  [data-theme="light"] .act-icon-engagement     { background: #ede9fe; }
-  [data-theme="light"] .act-icon-note           { background: #fef3c7; }
+  /* light — rich gradient fills + strong borders */
+  [data-theme="light"] .sc-blue   { background:linear-gradient(145deg,#dde3ff,#c7d0ff); border-color:#4f46e5; border-width:1.5px; }
+  [data-theme="light"] .sc-green  { background:linear-gradient(145deg,#ccfce8,#a7f3d0); border-color:#059669; border-width:1.5px; }
+  [data-theme="light"] .sc-violet { background:linear-gradient(145deg,#ede9fe,#d8d3fe); border-color:#7c3aed; border-width:1.5px; }
+  [data-theme="light"] .sc-amber  { background:linear-gradient(145deg,#fef3c7,#fde68a); border-color:#d97706; border-width:1.5px; }
 
-  .qa-btn { transition: background-color .2s, border-color .2s, transform .15s; }
-  .qa-btn:hover { background-color: var(--bg-primary) !important; border-color: rgba(102,115,255,0.35) !important; transform: translateY(-1px); }
+  /* dark values */
+  .sc-blue   .sc-val { color:#DADFFF; }
+  .sc-green  .sc-val { color:#d1fae5; }
+  .sc-violet .sc-val { color:#ede9fe; }
+  .sc-amber  .sc-val { color:#fef3c7; }
+  .sc-blue   .sc-sub { color:#8F9AFF; }
+  .sc-green  .sc-sub { color:#34d399; }
+  .sc-violet .sc-sub { color:#a78bfa; }
+  .sc-amber  .sc-sub { color:#fbbf24; }
+
+  /* light values — deep saturated text */
+  [data-theme="light"] .sc-blue   .sc-val { color:#1e1b8f; }
+  [data-theme="light"] .sc-green  .sc-val { color:#064e3b; }
+  [data-theme="light"] .sc-violet .sc-val { color:#3b0764; }
+  [data-theme="light"] .sc-amber  .sc-val { color:#78350f; }
+  [data-theme="light"] .sc-blue   .sc-sub { color:#3730a3; }
+  [data-theme="light"] .sc-green  .sc-sub { color:#047857; }
+  [data-theme="light"] .sc-violet .sc-sub { color:#5b21b6; }
+  [data-theme="light"] .sc-amber  .sc-sub { color:#92400e; }
+
+  /* ──────── Activity timeline ──────── */
+  .act-list { position:relative; }
+  .act-list::before {
+    content:''; position:absolute; left:34px; top:0; bottom:0; width:1px;
+    background:linear-gradient(to bottom,transparent,var(--border-color) 10%,var(--border-color) 90%,transparent);
+    pointer-events:none; z-index:0;
+  }
+  [data-theme="light"] .act-list::before { background:linear-gradient(to bottom,transparent,#d1d5db 10%,#d1d5db 90%,transparent); }
+
+  .act-row {
+    display:flex; align-items:flex-start; gap:14px; padding:13px 18px;
+    cursor:pointer; transition:background .15s;
+  }
+  .act-row:hover { background-color:var(--border-color); }
+  [data-theme="light"] .act-row:hover { background-color:#f3f4f6; }
+
+  .act-icon {
+    width:30px; height:30px; border-radius:9px; display:flex; align-items:center;
+    justify-content:center; border:1.5px solid; flex-shrink:0; position:relative; z-index:1;
+  }
+
+  /* dark icons */
+  .act-icon-email_sent     { background:rgba(102,115,255,0.15); border-color:rgba(102,115,255,0.4); color:#818cf8; }
+  .act-icon-email_received { background:rgba(16,185,129,0.15);  border-color:rgba(16,185,129,0.4);  color:#34d399; }
+  .act-icon-engagement     { background:rgba(139,92,246,0.15);  border-color:rgba(139,92,246,0.4);  color:#a78bfa; }
+  .act-icon-note           { background:rgba(245,158,11,0.15);  border-color:rgba(245,158,11,0.4);  color:#fbbf24; }
+
+  /* light icons — solid fills for maximum visibility */
+  [data-theme="light"] .act-icon-email_sent     { background:#e0e7ff; border-color:#4f46e5; color:#3730a3; }
+  [data-theme="light"] .act-icon-email_received { background:#d1fae5; border-color:#059669; color:#065f46; }
+  [data-theme="light"] .act-icon-engagement     { background:#ede9fe; border-color:#7c3aed; color:#5b21b6; }
+  [data-theme="light"] .act-icon-note           { background:#fef3c7; border-color:#d97706; color:#92400e; }
+
+  /* ──────── Engagement bars ──────── */
+  .eng-track { height:8px; border-radius:99px; overflow:hidden; background:rgba(0,0,0,0.15); }
+  [data-theme="light"] .eng-track { background:#e5e7eb; }
+  .eng-fill  { height:100%; border-radius:99px; animation:bar-grow .9s cubic-bezier(.16,1,.3,1) both; }
+
+  /* ──────── Quick action rows ──────── */
+  .qa-row {
+    display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
+    border:1px solid transparent; transition:border-color .15s, background .15s, transform .15s;
+    cursor:pointer; background:transparent; width:100%; text-align:left;
+  }
+  .qa-row:hover { background:var(--bg-primary); border-color:rgba(102,115,255,0.3); transform:translateX(2px); }
+  [data-theme="light"] .qa-row:hover { background:#f5f3ff; border-color:#6673FF; }
+
+  /* ──────── Live dot ──────── */
+  .live-dot {
+    width:7px; height:7px; border-radius:50%; background:#10b981;
+    animation:live-dot 2s ease-in-out infinite; display:inline-block;
+  }
+
+  /* ──────── Skeleton ──────── */
+  .skel { border-radius:12px; background:var(--border-color); animation:ed-pulse 1.5s ease infinite; }
+
+  /* ──────── Particle card z-fix ──────── */
+  .ed-pc-content { position:relative; z-index:1; }
+
+  /* ──────── Light mode card surfaces ──────── */
+  [data-theme="light"] .ed-surface {
+    background:#ffffff !important;
+    border:1.5px solid #d1d5db !important;
+    box-shadow:0 1px 6px rgba(0,0,0,0.07) !important;
+  }
 `;
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+/* ─── Skeleton ───────────────────────────────────────────────── */
 function DashboardSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[0,1,2,3].map((i) => (
-          <div key={i} className="h-28 rounded-2xl" style={{ backgroundColor: cv("--border-color"), animation: `ed-pulse 1.5s ease infinite ${i*0.1}s` }} />
-        ))}
+    <div className="space-y-5 ed-font">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[0,1,2,3].map(i => <div key={i} className="skel" style={{ height:100, animationDelay:`${i*0.1}s` }} />)}
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-72 rounded-2xl" style={{ backgroundColor: cv("--border-color"), animation: "ed-pulse 1.5s ease infinite" }} />
-        <div className="space-y-4">
-          {[0,1].map(i => <div key={i} className="h-32 rounded-2xl" style={{ backgroundColor: cv("--border-color"), animation: `ed-pulse 1.5s ease infinite ${i*0.15}s` }} />)}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 skel" style={{ height:320 }} />
+        <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+          {[0,1,2].map(i => <div key={i} className="skel" style={{ height:90, animationDelay:`${i*0.15}s` }} />)}
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
+/* ─── Stat Card ─────────────────────────────────────────────── */
 const STAT_THEMES = {
-  blue:   { cls: "sc-blue",   icon: "linear-gradient(135deg,#6673FF,#2F2CCB)", glow: "0 8px 28px rgba(102,115,255,0.35)" },
-  green:  { cls: "sc-green",  icon: "linear-gradient(135deg,#10b981,#0d9488)", glow: "0 8px 28px rgba(16,185,129,0.3)"  },
-  violet: { cls: "sc-violet", icon: "linear-gradient(135deg,#8b5cf6,#7c3aed)", glow: "0 8px 28px rgba(139,92,246,0.3)" },
-  amber:  { cls: "sc-amber",  icon: "linear-gradient(135deg,#f59e0b,#ea580c)", glow: "0 8px 28px rgba(245,158,11,0.3)" },
+  blue:   { cls:"sc-blue",   grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", glow:"0 8px 28px rgba(102,115,255,0.45)" },
+  green:  { cls:"sc-green",  grad:"linear-gradient(135deg,#10b981,#0d9488)", glow:"0 8px 28px rgba(16,185,129,0.4)"  },
+  violet: { cls:"sc-violet", grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", glow:"0 8px 28px rgba(139,92,246,0.4)" },
+  amber:  { cls:"sc-amber",  grad:"linear-gradient(135deg,#f59e0b,#ea580c)", glow:"0 8px 28px rgba(245,158,11,0.4)" },
 };
 
-function StatCard({ title, value, Icon, theme, sub, delay = 0 }) {
+function StatCard({ title, value, Icon, theme, sub }) {
   const t = STAT_THEMES[theme];
-  const [hovered, setHovered] = useState(false);
+  const [hov, setHov] = useState(false);
   return (
-    <div
-      className={`${t.cls} group relative rounded-2xl border shadow-sm cursor-default overflow-hidden transition-all duration-300 ease-out`}
-      style={{ transform: hovered ? "translateY(-6px) scale(1.02)" : "translateY(0)", boxShadow: hovered ? t.glow : "0 1px 6px rgba(0,0,0,0.12)" }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className="absolute -top-6 -right-6 w-24 h-24 rounded-full pointer-events-none opacity-10" style={{ background: "radial-gradient(circle,rgba(255,255,255,0.9),transparent)" }} />
-      <div className="relative p-5 flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 shadow-md" style={{ background: t.icon }}>
-          <Icon size={20} className="text-white" />
+    <div className={`sc-card ${t.cls}`}
+      style={{ boxShadow: hov ? t.glow : "0 2px 6px rgba(0,0,0,0.12)" }}
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}>
+      <div style={{ position:"absolute", top:-24, right:-24, width:90, height:90, borderRadius:"50%",
+                    background:"radial-gradient(circle,rgba(255,255,255,0.08),transparent)", pointerEvents:"none" }} />
+      <div style={{ padding:"18px 20px", display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
+        {/* icon */}
+        <div style={{ width:46, height:46, borderRadius:12, background:t.grad, flexShrink:0,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      boxShadow:"0 4px 12px rgba(0,0,0,0.28)" }}>
+          <Icon size={20} color="white" />
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="sc-sub text-[11px] font-semibold uppercase tracking-widest mb-1">{title}</p>
-          <p className="sc-val text-3xl font-extrabold leading-none tracking-tight">{value}</p>
-          {sub && <p className="sc-sub text-[11px] mt-1 opacity-80">{sub}</p>}
+        <div style={{ flex:1, minWidth:0 }}>
+          <p className="sc-sub" style={{ fontSize:"0.75rem", fontWeight:700, textTransform:"uppercase",
+                                          letterSpacing:"0.07em", marginBottom:3 }}>{title}</p>
+          <p className="sc-val" style={{ fontSize:"1.875rem", fontWeight:800, lineHeight:1, letterSpacing:"-0.025em" }}>{value}</p>
+          {sub && <p className="sc-sub" style={{ fontSize:"0.75rem", marginTop:3, opacity:0.8 }}>{sub}</p>}
         </div>
       </div>
-      <div className="h-px w-full opacity-20" style={{ background: `linear-gradient(to right,transparent,white,transparent)` }} />
     </div>
   );
 }
 
-// ─── Engagement Bar ───────────────────────────────────────────────────────────
-function EngagementBar({ label, value, gradient, sub }) {
+/* ─── Engagement Bar ─────────────────────────────────────────── */
+function EngBar({ label, value, gradient, sub }) {
   return (
     <div>
-      <div className="flex justify-between items-center mb-1.5">
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:7 }}>
         <div>
-          <span style={{ ...textSecondary, fontSize: "0.875rem", fontWeight: 600 }}>{label}</span>
-          {sub && <span style={{ ...textMuted, fontSize: "0.7rem", marginLeft:6 }}>{sub}</span>}
+          <span style={{ ...textSecondary, fontSize:"0.9375rem", fontWeight:600 }}>{label}</span>
+          {sub && <span style={{ ...textMuted, fontSize:"0.8125rem", marginLeft:6 }}>{sub}</span>}
         </div>
-        <span style={{ ...textPrimary, fontSize: "0.9375rem", fontWeight: 700 }} className="tabular-nums">{value}%</span>
+        <span style={{ ...textPrimary, fontSize:"1rem", fontWeight:800 }} className="tabular-nums">{value}%</span>
       </div>
-      <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: cv("--border-color") }}>
-        <div className="h-full rounded-full transition-all duration-1000 ease-out" style={{ width: `${Math.min(value,100)}%`, background: gradient }} />
+      <div className="eng-track">
+        <div className="eng-fill" style={{ "--w":`${Math.min(value,100)}%`, width:`${Math.min(value,100)}%`, background:gradient }} />
       </div>
     </div>
   );
 }
 
-// ─── Activity Row ─────────────────────────────────────────────────────────────
+/* ─── Activity Row ───────────────────────────────────────────── */
 const TYPE_META = {
-  email_sent:     { iconColor: "#6673FF", dot: "#6673FF", Icon: <ArrowUpRight size={16} />,       label: "Email Sent"     },
-  email_received: { iconColor: "#10b981", dot: "#10b981", Icon: <ArrowDownLeft size={16} />,      label: "Reply Received" },
-  engagement:     { iconColor: "#8b5cf6", dot: "#8b5cf6", Icon: <MousePointerClick size={16} />,  label: "Engagement"     },
-  note:           { iconColor: "#f59e0b", dot: "#f59e0b", Icon: <MailOpen size={16} />,           label: "Note"           },
+  email_sent:     { dot:"#818cf8", Icon:<ArrowUpRight size={15} />,      label:"Sent"  },
+  email_received: { dot:"#34d399", Icon:<ArrowDownLeft size={15} />,     label:"Reply" },
+  engagement:     { dot:"#a78bfa", Icon:<MousePointerClick size={15} />, label:"Click" },
+  note:           { dot:"#fbbf24", Icon:<MailOpen size={15} />,          label:"Note"  },
 };
 
 function ActivityRow({ a, onClick }) {
-  const meta   = TYPE_META[a.type] || TYPE_META.engagement;
+  const meta    = TYPE_META[a.type] || TYPE_META.engagement;
   const typeKey = a.type || "engagement";
   return (
-    <div
-      className={`act-row flex items-center gap-4 px-5 py-4 border-b last:border-0 transition-colors duration-150`}
-      style={{ borderColor: cv("--border-color") }}
-      onClick={() => onClick && onClick(a)}
-    >
-      <div className={`act-icon-${typeKey} w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors`}
-        style={{ color: meta.iconColor, border: `1px solid ${meta.iconColor}30` }}>
-        {meta.Icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-semibold truncate leading-snug" style={{ ...textPrimary, fontSize: "0.9375rem" }}>
+    <div className="act-row" onClick={() => onClick?.(a)}>
+      <div className={`act-icon act-icon-${typeKey}`}>{meta.Icon}</div>
+      <div style={{ flex:1, minWidth:0, paddingTop:2 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6, flexWrap:"wrap" }}>
+          <span style={{ ...textPrimary, fontWeight:700, fontSize:"0.9375rem" }} className="truncate">
             {a.subject || meta.label}
-          </p>
+          </span>
           {a.type === "email_received" && (
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor:"rgba(16,185,129,0.12)", color:"#10b981" }}>Reply</span>
+            <span style={{ fontSize:"0.6875rem", fontWeight:700, padding:"2px 7px", borderRadius:99,
+                           background:"rgba(16,185,129,0.14)", color:"#10b981" }}>Reply</span>
+          )}
+          {a.openCount > 0 && (
+            <span style={{ fontSize:"0.6875rem", fontWeight:700, padding:"2px 6px", borderRadius:99,
+                           display:"flex", alignItems:"center", gap:2,
+                           background:"rgba(139,92,246,0.14)", color:"#8b5cf6" }}>
+              <MailOpen size={9}/>{a.openCount}
+            </span>
+          )}
+          {a.clickCount > 0 && (
+            <span style={{ fontSize:"0.6875rem", fontWeight:700, padding:"2px 6px", borderRadius:99,
+                           display:"flex", alignItems:"center", gap:2,
+                           background:"rgba(245,158,11,0.14)", color:"#f59e0b" }}>
+              <MousePointerClick size={9}/>{a.clickCount}
+            </span>
           )}
         </div>
-        <p className="truncate mt-0.5" style={{ ...textSecondary, fontSize: "0.8125rem" }}>
+        <p style={{ ...textMuted, fontSize:"0.875rem", marginTop:2 }} className="truncate">
           {a.clientName ? `${a.clientName} · ` : ""}{a.preview || a.content || ""}
         </p>
       </div>
-      <div className="shrink-0 flex flex-col items-end gap-1.5">
-        <span className="whitespace-nowrap font-medium" style={{ ...textMuted, fontSize: "0.75rem" }}>{formatRelative(a.occurredAt)}</span>
-        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: meta.dot, opacity: 0.7 }} />
+      <div style={{ flexShrink:0, display:"flex", flexDirection:"column", alignItems:"flex-end", gap:5 }}>
+        <span style={{ ...textMuted, fontSize:"0.8125rem", whiteSpace:"nowrap" }}>{formatRelative(a.occurredAt)}</span>
+        <span style={{ width:6, height:6, borderRadius:"50%", background:meta.dot, opacity:.8 }} />
       </div>
     </div>
   );
 }
 
-function SectionCard({ children, className = "", style: extraStyle = {} }) {
+/* ─── Card Header ────────────────────────────────────────────── */
+function CardHead({ iconGrad, IconEl, title, sub, action }) {
   return (
-    <div className={`rounded-2xl shadow-sm overflow-hidden ${className}`} style={{ ...surfaceStyle, ...extraStyle }}>
-      {children}
-    </div>
-  );
-}
-
-function CardHeader({ iconBg, IconEl, title, subtitle, action }) {
-  return (
-    <div className="flex items-center justify-between px-5 py-4 border-b" style={{ ...bgStyle, borderColor: cv("--border-color") }}>
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-sm" style={{ background: iconBg }}>{IconEl}</div>
+    <div style={{ ...bgStyle, borderBottom:`1px solid ${cv("--border-color")}`,
+                  padding:"14px 18px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <div style={{ display:"flex", alignItems:"center", gap:11 }}>
+        <div style={{ width:32, height:32, borderRadius:9, background:iconGrad, flexShrink:0,
+                      display:"flex", alignItems:"center", justifyContent:"center",
+                      boxShadow:"0 2px 8px rgba(0,0,0,0.2)" }}>
+          {IconEl}
+        </div>
         <div>
-          <p className="font-bold leading-none" style={{ ...textPrimary, fontSize: "0.9375rem" }}>{title}</p>
-          {subtitle && <p className="mt-0.5" style={{ ...textMuted, fontSize: "0.75rem" }}>{subtitle}</p>}
+          <p style={{ ...textPrimary, fontWeight:700, fontSize:"1rem", lineHeight:1.2 }}>{title}</p>
+          {sub && <p style={{ ...textMuted, fontSize:"0.8125rem", marginTop:2 }}>{sub}</p>}
         </div>
       </div>
       {action}
@@ -192,11 +280,15 @@ function CardHeader({ iconBg, IconEl, title, subtitle, action }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+/* ─── Shared ParticleCard props ──────────────────────────────── */
+const PC = { glowColor:"102, 115, 255", clickEffect:true, particleCount:10, innerGlow:true };
+
+/* ══════════════════════════════════════════════════════════════ */
 export default function EmailDashboard() {
   const navigate = useNavigate();
   const { data: stats, isLoading, isError, refetch } = useGetStatsOverview();
   const [composeOpen, setComposeOpen] = useState(false);
+  const gridRef = useRef(null);
 
   if (isLoading) return <><style>{GLOBAL_STYLES}</style><DashboardSkeleton /></>;
 
@@ -204,207 +296,276 @@ export default function EmailDashboard() {
     return (
       <>
         <style>{GLOBAL_STYLES}</style>
-        <div className="p-12 text-center rounded-2xl" style={surfaceStyle}>
-          <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle size={28} className="text-red-500" />
+        <div className="ed-font p-10 text-center rounded-2xl" style={surfaceStyle}>
+          <div style={{ width:52, height:52, borderRadius:14, background:"rgba(239,68,68,0.1)",
+                        display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
+            <AlertCircle size={26} color="#ef4444" />
           </div>
-          <h3 className="text-lg font-bold mb-1 text-red-500">Could not load dashboard</h3>
-          <p className="text-sm mb-5 text-red-400">Check that the backend API is running.</p>
-          <button onClick={() => refetch()} className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl text-sm font-semibold transition-colors">
-            Retry
-          </button>
+          <h3 style={{ color:"#ef4444", fontWeight:700, fontSize:"1.125rem", marginBottom:6 }}>Dashboard unavailable</h3>
+          <p style={{ color:"#f87171", fontSize:"0.9375rem", marginBottom:18 }}>Check that the backend API is running.</p>
+          <button onClick={() => refetch()}
+            style={{ padding:"10px 22px", background:"#ef4444", color:"#fff", borderRadius:10,
+                     fontSize:"0.9375rem", fontWeight:600, border:"none", cursor:"pointer" }}>Retry</button>
         </div>
       </>
     );
   }
 
   const STATS = [
-    { title:"Emails Sent",     value: stats?.totalEmailsSent     || 0, sub: "Via Outlook + BCC",    Icon: ArrowUpRight,      theme:"blue",   delay:0    },
-    { title:"Emails Received", value: stats?.totalEmailsReceived || 0, sub: "Replies captured",     Icon: ArrowDownLeft,     theme:"green",  delay:0.05 },
-    { title:"Avg Open Rate",   value: `${stats?.openRate  || 0}%`,     sub: "Engagement tracking",  Icon: Eye,               theme:"violet", delay:0.1  },
-    { title:"Avg Click Rate",  value: `${stats?.clickRate || 0}%`,     sub: "Link interactions",    Icon: MousePointerClick, theme:"amber",  delay:0.15 },
+    { title:"Emails Sent",     value:stats?.totalEmailsSent     || 0, sub:"Outlook + BCC",     Icon:ArrowUpRight,      theme:"blue"   },
+    { title:"Emails Received", value:stats?.totalEmailsReceived || 0, sub:"Replies captured",  Icon:ArrowDownLeft,     theme:"green"  },
+    { title:"Avg Open Rate",   value:`${stats?.openRate  || 0}%`,     sub:"Engagement",        Icon:Eye,               theme:"violet" },
+    { title:"Avg Click Rate",  value:`${stats?.clickRate || 0}%`,     sub:"Link interactions", Icon:MousePointerClick, theme:"amber"  },
   ];
 
+  const hasActivity = stats?.recentActivity?.length > 0;
+
   return (
-    <div className="space-y-6">
+    <div className="ed-font space-y-5">
       <style>{GLOBAL_STYLES}</style>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <GlobalSpotlight containerRef={gridRef} spotlightRadius={420} glowColor="102, 115, 255" />
+
+      {/* ── Header ── */}
+      <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"space-between", alignItems:"center", gap:12 }}>
         <div>
-          <div className="flex items-center gap-2.5 mb-0.5">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-md" style={{ background:"linear-gradient(135deg,#6673FF,#2F2CCB)", boxShadow:"0 4px 10px rgba(102,115,255,0.4)" }}>
-              <Activity size={14} className="text-white" />
+          <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:3 }}>
+            <div style={{ width:32, height:32, borderRadius:9, background:"linear-gradient(135deg,#6673FF,#2F2CCB)",
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          boxShadow:"0 4px 12px rgba(102,115,255,0.45)" }}>
+              <Activity size={16} color="white" />
             </div>
-            <h1 className="text-2xl font-extrabold tracking-tight" style={textPrimary}>Email Activity</h1>
+            <h1 style={{ ...textPrimary, fontSize:"1.5rem", fontWeight:800, letterSpacing:"-0.025em" }}>Email Activity</h1>
+            <span style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 9px", borderRadius:99,
+                           background:"rgba(16,185,129,0.12)", border:"1px solid rgba(16,185,129,0.25)" }}>
+              <span className="live-dot" />
+              <span style={{ color:"#10b981", fontSize:"0.6875rem", fontWeight:700,
+                             letterSpacing:"0.07em", textTransform:"uppercase" }}>Live</span>
+            </span>
           </div>
-          <p className="ml-9 text-sm" style={textMuted}>Overview of all client communications — Outlook + BCC synced.</p>
+          <p style={{ ...textMuted, fontSize:"0.9375rem", paddingLeft:41 }}>Outlook + BCC sync — all client comms in one view</p>
         </div>
-        <div className="flex items-center gap-2.5">
-          <button onClick={() => navigate("/email-activity/clients")} className="px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm"
-            style={{ ...surfaceStyle, ...textSecondary }}
+
+        <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+          {/* Clients btn */}
+          <button onClick={() => navigate("/email-activity/clients")}
+            style={{ ...surfaceStyle, ...textSecondary, padding:"8px 16px", borderRadius:10,
+                     fontSize:"0.9375rem", fontWeight:600, cursor:"pointer", transition:"all .15s" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor="#6673FF"; e.currentTarget.style.color="#6673FF"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=cv("--border-color"); e.currentTarget.style.color=cv("--text-secondary"); }}>
-            View Clients
+            Clients
           </button>
-          <button onClick={() => navigate("/email-activity/notifications")} className="relative px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 shadow-sm flex items-center gap-2"
-            style={{ ...surfaceStyle, ...textSecondary }}
+
+          {/* Notifications btn */}
+          <button onClick={() => navigate("/email-activity/notifications")}
+            style={{ ...surfaceStyle, ...textSecondary, padding:"8px 16px", borderRadius:10, fontSize:"0.9375rem",
+                     fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:7,
+                     transition:"all .15s", position:"relative" }}
             onMouseEnter={e => { e.currentTarget.style.borderColor="#6673FF"; e.currentTarget.style.color="#6673FF"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=cv("--border-color"); e.currentTarget.style.color=cv("--text-secondary"); }}>
-            <Bell size={14} /> Notifications
+            <Bell size={15} /> Notifications
             {stats?.unreadNotifications > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-bold text-white flex items-center justify-center" style={{ background:"#ef4444" }}>
+              <span style={{ position:"absolute", top:-5, right:-5, width:17, height:17, borderRadius:"50%",
+                             background:"#ef4444", fontSize:"0.625rem", fontWeight:700, color:"#fff",
+                             display:"flex", alignItems:"center", justifyContent:"center" }}>
                 {stats.unreadNotifications}
               </span>
             )}
           </button>
+
+          {/* Compose btn */}
           <button onClick={() => setComposeOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl text-white transition-all duration-200 hover:-translate-y-px"
-            style={{ background:"linear-gradient(135deg,#6673FF,#2F2CCB)", boxShadow:"0 4px 14px rgba(102,115,255,0.4)" }}>
+            style={{ background:"linear-gradient(135deg,#6673FF,#2F2CCB)", color:"#fff",
+                     padding:"8px 18px", borderRadius:10, fontSize:"0.9375rem", fontWeight:700,
+                     border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:7,
+                     boxShadow:"0 4px 14px rgba(102,115,255,0.45)", transition:"transform .15s" }}
+            onMouseEnter={e => e.currentTarget.style.transform="translateY(-1px)"}
+            onMouseLeave={e => e.currentTarget.style.transform="translateY(0)"}>
             <Mail size={15} /> Compose
           </button>
         </div>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {STATS.map((s) => <StatCard key={s.title} {...s} />)}
+      {/* ── Stat Cards ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {STATS.map(s => <StatCard key={s.title} {...s} />)}
       </div>
 
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* ── Main Grid ── */}
+      <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Activity Feed */}
-        <SectionCard className="lg:col-span-2">
-          <CardHeader
-            iconBg="linear-gradient(135deg,#6673FF,#2F2CCB)"
-            IconEl={<BarChart3 size={15} className="text-white" />}
-            title="Recent Activity"
-            subtitle="Latest across all accounts — sent, received, engagement"
-            action={
-              <button onClick={() => navigate("/email-activity/emails")}
-                className="text-xs font-bold flex items-center gap-1 transition-colors" style={{ color:"#6673FF" }}
-                onMouseEnter={e => e.currentTarget.style.color="#2F2CCB"}
-                onMouseLeave={e => e.currentTarget.style.color="#6673FF"}>
-                View All <ArrowUpRight size={12} />
-              </button>
-            }
-          />
-          {stats?.recentActivity?.length > 0 ? (
-            <div>
-              {stats.recentActivity.map((a) => (
-                <ActivityRow key={a.id} a={a} onClick={() => navigate(`/email-activity/clients/${a.clientId}`)} />
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 text-center">
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: cv("--border-color") }}>
-                <TrendingUp size={24} style={textMuted} />
+        {/* Recent Activity */}
+        <ParticleCard {...PC} className="lg:col-span-2 ed-surface"
+          style={{ ...surfaceStyle, borderRadius:18, overflow:"hidden" }}>
+          <div className="ed-pc-content">
+            <CardHead
+              iconGrad="linear-gradient(135deg,#6673FF,#2F2CCB)"
+              IconEl={<BarChart3 size={15} color="white" />}
+              title="Recent Activity"
+              sub="Sent · received · engagement across all accounts"
+              action={
+                <button onClick={() => navigate("/email-activity/emails")}
+                  style={{ color:"#6673FF", fontSize:"0.875rem", fontWeight:700,
+                           background:"none", border:"none", cursor:"pointer",
+                           display:"flex", alignItems:"center", gap:4 }}
+                  onMouseEnter={e => e.currentTarget.style.color="#2F2CCB"}
+                  onMouseLeave={e => e.currentTarget.style.color="#6673FF"}>
+                  View All <ArrowUpRight size={13} />
+                </button>
+              }
+            />
+            {hasActivity ? (
+              <div className="act-list" style={{ paddingLeft:4 }}>
+                {stats.recentActivity.map(a => (
+                  <ActivityRow key={a.id} a={a}
+                    onClick={() => a.clientId && navigate(`/email-activity/clients/${a.clientId}`)} />
+                ))}
               </div>
-              <p className="text-sm font-medium" style={textSecondary}>No recent activity.</p>
-              <p className="text-xs mt-1" style={textMuted}>Connect Outlook or send via BCC to get started.</p>
-            </div>
-          )}
-        </SectionCard>
-
-        {/* Sidebar */}
-        <div className="space-y-5">
-
-          {/* Engagement Overview */}
-          <SectionCard className="p-5">
-            <div className="flex items-center gap-2.5 mb-5">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm" style={{ background:"linear-gradient(135deg,#8b5cf6,#7c3aed)" }}>
-                <TrendingUp size={13} className="text-white" />
-              </div>
-              <p className="font-bold text-sm" style={textPrimary}>Engagement Overview</p>
-            </div>
-            <div className="space-y-5">
-              <EngagementBar label="Open rate"     value={stats?.openRate    || 0} gradient="linear-gradient(90deg,#8b5cf6,#7c3aed)" sub="emails opened" />
-              <EngagementBar label="Click rate"    value={stats?.clickRate   || 0} gradient="linear-gradient(90deg,#f59e0b,#ea580c)" sub="links clicked" />
-              <EngagementBar label="Reply rate"    value={stats?.replyRate   || 0} gradient="linear-gradient(90deg,#10b981,#0d9488)" sub="replies received" />
-            </div>
-            <div className="mt-5 pt-4 grid grid-cols-3 gap-2" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
-              {[
-                { label:"Opens",     val: stats?.totalOpens     || 0, color:"#8b5cf6", Icon: MailOpen },
-                { label:"Clicks",    val: stats?.totalClicks    || 0, color:"#f59e0b", Icon: MousePointerClick },
-                { label:"Downloads", val: stats?.totalDownloads || 0, color:"#10b981", Icon: Download },
-              ].map((s) => (
-                <div key={s.label} className="rounded-xl p-3 text-center" style={{ backgroundColor: cv("--bg-primary"), border:`1px solid ${cv("--border-color")}` }}>
-                  <s.Icon size={14} style={{ color:s.color, margin:"0 auto 4px" }} />
-                  <p className="text-lg font-extrabold" style={{ color:s.color }}>{s.val}</p>
-                  <p className="text-[10px] font-bold uppercase" style={textMuted}>{s.label}</p>
+            ) : (
+              <div style={{ display:"flex", alignItems:"center", gap:12, padding:"16px 18px",
+                            borderTop:`1px solid ${cv("--border-color")}` }}>
+                <div style={{ width:32, height:32, borderRadius:9, display:"flex", alignItems:"center",
+                              justifyContent:"center", background:cv("--border-color"), flexShrink:0 }}>
+                  <Inbox size={16} style={textMuted} />
                 </div>
-              ))}
-            </div>
-          </SectionCard>
-
-          {/* Outlook Sync Banner */}
-          <div className="relative rounded-2xl overflow-hidden" style={{ boxShadow:"0 8px 28px rgba(47,44,203,0.4)" }}>
-            <div className="absolute inset-0" style={{ background:"linear-gradient(135deg,#2F2CCB 0%,#6673FF 55%,#4f46e5 100%)" }} />
-            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full" style={{ background:"rgba(255,255,255,0.05)" }} />
-            <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full" style={{ background:"rgba(255,255,255,0.05)" }} />
-            <div className="relative p-5">
-              <div className="flex items-center gap-2 mb-1">
-                <Zap size={14} style={{ color:"#DADFFF" }} />
-                <h3 className="font-bold text-base text-white">Outlook Sync Active</h3>
+                <div style={{ flex:1 }}>
+                  <p style={{ ...textSecondary, fontSize:"0.9375rem", fontWeight:700 }}>No activity yet</p>
+                  <p style={{ ...textMuted, fontSize:"0.875rem" }}>Connect Outlook or BCC an email to get started.</p>
+                </div>
+                <button onClick={() => navigate("/email-activity/team")}
+                  style={{ background:"linear-gradient(135deg,#6673FF,#2F2CCB)", color:"#fff",
+                           padding:"7px 14px", borderRadius:9, fontSize:"0.875rem", fontWeight:600,
+                           border:"none", cursor:"pointer", display:"flex", alignItems:"center", gap:6, flexShrink:0 }}>
+                  <RefreshCw size={13} /> Connect
+                </button>
               </div>
-              <p className="mb-4 ml-5" style={{ color:"#B8C0FF", fontSize:"0.6875rem" }}>
-                Inbox syncing + BCC tracking enabled.
-              </p>
-              <div className="grid grid-cols-2 gap-2 mb-3">
+            )}
+          </div>
+        </ParticleCard>
+
+        {/* ── Sidebar ── */}
+        <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+
+          {/* Engagement */}
+          <ParticleCard {...PC} className="ed-surface"
+            style={{ ...surfaceStyle, borderRadius:18, padding:18 }}>
+            <div className="ed-pc-content">
+              <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:16 }}>
+                <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#8b5cf6,#7c3aed)",
+                              display:"flex", alignItems:"center", justifyContent:"center",
+                              boxShadow:"0 2px 8px rgba(139,92,246,0.35)" }}>
+                  <TrendingUp size={14} color="white" />
+                </div>
+                <p style={{ ...textPrimary, fontWeight:700, fontSize:"1rem" }}>Engagement</p>
+              </div>
+              <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+                <EngBar label="Open rate"  value={stats?.openRate  || 0} gradient="linear-gradient(90deg,#8b5cf6,#7c3aed)" sub="opened" />
+                <EngBar label="Click rate" value={stats?.clickRate || 0} gradient="linear-gradient(90deg,#f59e0b,#ea580c)" sub="clicked" />
+                <EngBar label="Reply rate" value={stats?.replyRate || 0} gradient="linear-gradient(90deg,#10b981,#0d9488)" sub="replied" />
+              </div>
+              {/* mini totals */}
+              <div style={{ marginTop:16, paddingTop:14, borderTop:`1px solid ${cv("--border-color")}`,
+                            display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
                 {[
-                  { label:"BCC Tracked",    val: stats?.bccTrackedCount    || 0 },
-                  { label:"Inbox Synced",   val: stats?.inboxSyncedCount   || 0 },
-                ].map((s) => (
-                  <div key={s.label} className="rounded-xl p-3" style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.12)" }}>
-                    <p className="font-extrabold text-xl text-white">{s.val}</p>
-                    <p style={{ color:"#B8C0FF", fontSize:"0.625rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.06em" }}>{s.label}</p>
+                  { label:"Opens",     val:stats?.totalOpens     || 0, color:"#8b5cf6", lcol:"#5b21b6", Icon:MailOpen          },
+                  { label:"Clicks",    val:stats?.totalClicks    || 0, color:"#f59e0b", lcol:"#b45309", Icon:MousePointerClick  },
+                  { label:"Downloads", val:stats?.totalDownloads || 0, color:"#10b981", lcol:"#065f46", Icon:Download           },
+                ].map(s => (
+                  <div key={s.label} style={{ borderRadius:11, padding:"10px 6px", textAlign:"center",
+                                              background:cv("--bg-primary"), border:`1px solid ${cv("--border-color")}` }}>
+                    <div style={{ display:"flex", justifyContent:"center", marginBottom:4 }}>
+                      <s.Icon size={14} style={{ color:s.color }} />
+                    </div>
+                    <p style={{ fontSize:"1.25rem", fontWeight:800, color:s.color, lineHeight:1 }}>{s.val}</p>
+                    <p style={{ ...textMuted, fontSize:"0.625rem", fontWeight:700, textTransform:"uppercase",
+                                 letterSpacing:"0.06em", marginTop:3 }}>{s.label}</p>
                   </div>
                 ))}
               </div>
-              <div className="flex items-center gap-3 rounded-xl p-3.5" style={{ background:"rgba(255,255,255,0.1)", border:"1px solid rgba(255,255,255,0.12)" }}>
-                <div className="relative shrink-0">
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background:"rgba(255,255,255,0.15)" }}>
-                    <Users size={18} className="text-white" />
+            </div>
+          </ParticleCard>
+
+          {/* Outlook Sync */}
+          <ParticleCard {...PC} innerGlow={false}
+            style={{ borderRadius:18, overflow:"hidden", position:"relative",
+                     boxShadow:"0 8px 30px rgba(47,44,203,0.5)" }}>
+            <div style={{ position:"absolute", inset:0, zIndex:0,
+                          background:"linear-gradient(135deg,#1e1c8a 0%,#4f4bef 55%,#3730d9 100%)" }} />
+            <div className="ed-pc-content" style={{ position:"relative", zIndex:1, padding:16 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:3 }}>
+                <Zap size={14} color="#c7d2fe" />
+                <span style={{ color:"#fff", fontWeight:700, fontSize:"1rem" }}>Outlook Sync</span>
+              </div>
+              <p style={{ color:"#c7d2fe", fontSize:"0.8125rem", marginBottom:12, paddingLeft:21 }}>
+                Inbox syncing + BCC tracking active
+              </p>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
+                {[
+                  { label:"BCC Tracked",  val:stats?.bccTrackedCount  || 0 },
+                  { label:"Inbox Synced", val:stats?.inboxSyncedCount || 0 },
+                ].map(s => (
+                  <div key={s.label} style={{ borderRadius:11, padding:"10px 12px",
+                                              background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.15)" }}>
+                    <p style={{ color:"#fff", fontWeight:800, fontSize:"1.375rem", lineHeight:1 }}>{s.val}</p>
+                    <p style={{ color:"#c7d2fe", fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase",
+                                 letterSpacing:"0.07em", marginTop:3 }}>{s.label}</p>
                   </div>
-                  <span className="absolute -top-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-blue-700 bg-emerald-400" />
+                ))}
+              </div>
+              <div style={{ display:"flex", alignItems:"center", gap:11, borderRadius:11, padding:"10px 12px",
+                             background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.15)" }}>
+                <div style={{ position:"relative", flexShrink:0 }}>
+                  <div style={{ width:36, height:36, borderRadius:10, background:"rgba(255,255,255,0.18)",
+                                display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <Users size={17} color="white" />
+                  </div>
+                  <span style={{ position:"absolute", top:-1, right:-1, width:11, height:11, borderRadius:"50%",
+                                  border:"2px solid #1e1c8a", background:"#10b981" }} />
                 </div>
                 <div>
-                  <p className="font-bold uppercase tracking-widest" style={{ color:"#B8C0FF", fontSize:"0.625rem" }}>Active Members</p>
-                  <p className="font-extrabold text-2xl text-white leading-tight">{stats?.teamMembersActive || 0}</p>
+                  <p style={{ color:"#c7d2fe", fontSize:"0.6875rem", fontWeight:700,
+                               textTransform:"uppercase", letterSpacing:"0.07em" }}>Active Members</p>
+                  <p style={{ color:"#fff", fontWeight:800, fontSize:"1.5rem", lineHeight:1 }}>
+                    {stats?.teamMembersActive || 0}
+                  </p>
                 </div>
               </div>
             </div>
-          </div>
+          </ParticleCard>
 
           {/* Quick Actions */}
-          <SectionCard>
-            <div className="px-5 py-3.5 border-b" style={{ ...bgStyle, borderColor: cv("--border-color") }}>
-              <p className="font-bold text-sm" style={textPrimary}>Quick Actions</p>
+          <ParticleCard {...PC} className="ed-surface"
+            style={{ ...surfaceStyle, borderRadius:18, overflow:"hidden" }}>
+            <div className="ed-pc-content">
+              <div style={{ ...bgStyle, borderBottom:`1px solid ${cv("--border-color")}`,
+                            padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+                <p style={{ ...textPrimary, fontWeight:700, fontSize:"1rem" }}>Quick Actions</p>
+                <span style={{ ...textMuted, fontSize:"0.8125rem" }}>4 shortcuts</span>
+              </div>
+              <div style={{ padding:"8px" }}>
+                {[
+                  { label:"Add New Client",  sub:"Create PCN / Surgery",        path:"/email-activity/clients",       grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", Icon:Users     },
+                  { label:"Compose Email",   sub:"Send to any client",           action:() => setComposeOpen(true),    grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", Icon:Mail      },
+                  { label:"Team & Sync",     sub:"Manage Outlook connections",   path:"/email-activity/team",          grad:"linear-gradient(135deg,#10b981,#0d9488)", Icon:RefreshCw },
+                  { label:"Notifications",   sub:"View alerts & engagements",    path:"/email-activity/notifications", grad:"linear-gradient(135deg,#f59e0b,#ea580c)", Icon:Bell      },
+                ].map(q => (
+                  <button key={q.label} className="qa-row"
+                    onClick={() => q.action ? q.action() : navigate(q.path)}>
+                    <div style={{ width:36, height:36, borderRadius:10, background:q.grad, flexShrink:0,
+                                  display:"flex", alignItems:"center", justifyContent:"center",
+                                  boxShadow:"0 3px 10px rgba(0,0,0,0.22)" }}>
+                      <q.Icon size={16} color="white" />
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ ...textPrimary, fontSize:"0.9375rem", fontWeight:700, lineHeight:1.2 }}>{q.label}</p>
+                      <p style={{ ...textMuted, fontSize:"0.8125rem", marginTop:1 }}>{q.sub}</p>
+                    </div>
+                    <ArrowUpRight size={14} style={textMuted} />
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="p-3 space-y-1.5">
-              {[
-                { label:"Add New Client",    sub:"Create a PCN / Surgery",           path:"/email-activity/clients",       grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", Icon:Users        },
-                { label:"Compose Email",     sub:"Send to any client",               action:() => setComposeOpen(true),    grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", Icon:Mail         },
-                { label:"Team & Sync",       sub:"Manage Outlook connections",       path:"/email-activity/team",          grad:"linear-gradient(135deg,#10b981,#0d9488)", Icon:RefreshCw    },
-                { label:"Notifications",     sub:"View alerts & engagements",        path:"/email-activity/notifications", grad:"linear-gradient(135deg,#f59e0b,#ea580c)", Icon:Bell         },
-              ].map((q) => (
-                <button key={q.label} onClick={() => q.action ? q.action() : navigate(q.path)}
-                  className="qa-btn w-full flex items-center gap-3 p-3 rounded-xl border text-left group"
-                  style={{ borderColor:cv("--border-color"), backgroundColor:"transparent" }}>
-                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200"
-                    style={{ background:q.grad, boxShadow:`0 4px 12px rgba(0,0,0,0.2)` }}>
-                    <q.Icon size={15} className="text-white" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold" style={textPrimary}>{q.label}</p>
-                    <p className="text-xs" style={textMuted}>{q.sub}</p>
-                  </div>
-                  <ArrowUpRight size={13} className="ml-auto" style={textMuted} />
-                </button>
-              ))}
-            </div>
-          </SectionCard>
+          </ParticleCard>
 
         </div>
       </div>
