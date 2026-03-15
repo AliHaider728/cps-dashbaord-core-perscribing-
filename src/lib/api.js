@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Axios Instance ──────────────────────────────────────────────────────────
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL).replace(/\/$/, ""),
+  baseURL: (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/$/, ""),
   headers: { "Content-Type": "application/json" },
 });
 
