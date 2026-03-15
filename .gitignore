@@ -1,4 +1,19 @@
-# Logs
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules
+
+# ─── Build output ─────────────────────────────────────────────────────────────
+dist
+dist-ssr
+
+# ─── Environment files ────────────────────────────────────────────────────────
+# .env.development  → commit karo (sirf public API URL hai, koi secret nahi)
+# .env.production   → commit karo (sirf public API URL hai, koi secret nahi)
+# .env.local        → kabhi commit mat karo (real secrets hote hain)
+# .env.*.local      → kabhi commit mat karo
+.env.local
+.env.*.local
+
+# ─── Logs ─────────────────────────────────────────────────────────────────────
 logs
 *.log
 npm-debug.log*
@@ -7,18 +22,16 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
+# ─── Editor ───────────────────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# ─── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db

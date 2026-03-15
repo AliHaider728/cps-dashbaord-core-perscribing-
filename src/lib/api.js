@@ -15,7 +15,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 // ─── Axios Instance ──────────────────────────────────────────────────────────
 // VITE_API_URL is injected by Vite at build time from the matching .env file.
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:4000/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://crm-email-backend.vercel.app//api",
   headers: { "Content-Type": "application/json" },
   withCredentials: true,   // needed if backend uses credentials: true in CORS
 });
