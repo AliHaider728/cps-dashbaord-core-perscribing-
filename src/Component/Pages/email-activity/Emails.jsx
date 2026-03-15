@@ -1,11 +1,41 @@
 import React, { useState, useMemo } from "react";
 import { useListEmails } from "../../../lib/api.js";
-import { Spinner } from "../../../Component/ui/spinner.jsx";
 import { Search, Mail, ArrowUpRight, ArrowDownLeft, Filter, X, ChevronDown } from "lucide-react";
 import { formatSmartDate } from "../../../lib/utils.js";
-
-// ── Correct named export ──────────────────────────────────────────────────────
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
+
+// ─── Manual loader ────────────────────────────────────────────────────────────
+
+function EmailSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes el-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex", alignItems: "center", gap: 14,
+              padding: "14px 16px",
+              borderRadius: 12, border: "1px solid #e2e8f0",
+              backgroundColor: "#fff",
+              animation: `el-pulse 1.5s ease infinite ${i * 0.1}s`,
+            }}
+          >
+            <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "#f1f5f9", flexShrink: 0 }} />
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+              <div style={{ width: "45%", height: 13, borderRadius: 5, backgroundColor: "#e2e8f0" }} />
+              <div style={{ width: "70%", height: 11, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+            </div>
+            <div style={{ width: 60, height: 20, borderRadius: 999, backgroundColor: "#f1f5f9" }} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const DIRECTIONS = [
   { value: "all",      label: "All emails" },
@@ -13,13 +43,15 @@ const DIRECTIONS = [
   { value: "inbound",  label: "Received" },
 ];
 
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EmailList() {
   const { data, isLoading } = useListEmails();
   const allEmails = data?.emails || [];
 
-  const [search, setSearch]       = useState("");
-  const [direction, setDir]       = useState("all");
-  const [filterOpen, setFilter]   = useState(false);
+  const [search,      setSearch]  = useState("");
+  const [direction,   setDir]     = useState("all");
+  const [filterOpen,  setFilter]  = useState(false);
   const [composeOpen, setCompose] = useState(false);
 
   const filtered = useMemo(() => allEmails.filter((e) => {
@@ -79,10 +111,7 @@ export default function EmailList() {
           <button
             onClick={() => setFilter((v) => !v)}
             className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl border transition-all bg-white"
-            style={hasFilters
-              ? { borderColor: "#93c5fd", color: "#2563eb" }
-              : { borderColor: "#e2e8f0", color: "#475569" }
-            }
+            style={hasFilters ? { borderColor: "#93c5fd", color: "#2563eb" } : { borderColor: "#e2e8f0", color: "#475569" }}
           >
             <Filter size={14} />
             {direction === "all" ? "Filter" : DIRECTIONS.find((d) => d.value === direction)?.label}
@@ -96,10 +125,7 @@ export default function EmailList() {
                   key={opt.value}
                   onClick={() => { setDir(opt.value); setFilter(false); }}
                   className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors"
-                  style={direction === opt.value
-                    ? { backgroundColor: "#eff6ff", color: "#1d4ed8", fontWeight: 600 }
-                    : { color: "#475569" }
-                  }
+                  style={direction === opt.value ? { backgroundColor: "#eff6ff", color: "#1d4ed8", fontWeight: 600 } : { color: "#475569" }}
                   onMouseEnter={e => { if (direction !== opt.value) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
                   onMouseLeave={e => { if (direction !== opt.value) e.currentTarget.style.backgroundColor = "transparent"; }}
                 >
@@ -133,13 +159,11 @@ export default function EmailList() {
 
       {/* List */}
       {isLoading ? (
-        <div className="flex justify-center p-20"><Spinner className="w-10 h-10" /></div>
+        <EmailSkeleton />
       ) : filtered.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center shadow-sm">
           <Mail size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
-          <h3 className="font-bold text-slate-900 mb-1">
-            {hasFilters ? "No results found" : "Inbox Empty"}
-          </h3>
+          <h3 className="font-bold text-slate-900 mb-1">{hasFilters ? "No results found" : "Inbox Empty"}</h3>
           <p className="text-sm text-slate-500 max-w-xs mx-auto">
             {hasFilters
               ? "Try adjusting your search or filter."
@@ -166,17 +190,11 @@ export default function EmailList() {
               onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.08)"; e.currentTarget.style.borderColor = "#93c5fd"; }}
               onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.06)"; e.currentTarget.style.borderColor = "#e2e8f0"; }}
             >
-              <div
-                className="w-1 shrink-0"
-                style={{ backgroundColor: email.direction === "outbound" ? "#3b82f6" : "#10b981" }}
-              />
+              <div className="w-1 shrink-0" style={{ backgroundColor: email.direction === "outbound" ? "#3b82f6" : "#10b981" }} />
               <div className="flex-1 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 {/* From/To */}
                 <div className="flex items-center gap-3 w-full sm:w-56 shrink-0">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: "#f1f5f9" }}
-                  >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
                     {email.direction === "outbound"
                       ? <ArrowUpRight size={16} style={{ color: "#2563eb" }} />
                       : <ArrowDownLeft size={16} style={{ color: "#059669" }} />}
@@ -209,18 +227,12 @@ export default function EmailList() {
                     </span>
                   )}
                   {email.openCount > 0 && (
-                    <span
-                      className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ backgroundColor: "#f5f3ff", color: "#7c3aed" }}
-                    >
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full" style={{ backgroundColor: "#f5f3ff", color: "#7c3aed" }}>
                       Opened
                     </span>
                   )}
                   {email.clickCount > 0 && (
-                    <span
-                      className="text-[10px] font-bold px-2.5 py-0.5 rounded-full"
-                      style={{ backgroundColor: "#fffbeb", color: "#d97706" }}
-                    >
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full" style={{ backgroundColor: "#fffbeb", color: "#d97706" }}>
                       Clicked
                     </span>
                   )}
@@ -231,7 +243,6 @@ export default function EmailList() {
         </div>
       )}
 
-      {/* ── Compose modal — correct export name ──────────────────────── */}
       <ComposeEmailModal isOpen={composeOpen} onClose={() => setCompose(false)} />
 
       <style>{`

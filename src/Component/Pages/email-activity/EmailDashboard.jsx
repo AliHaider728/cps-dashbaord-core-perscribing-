@@ -5,25 +5,42 @@ import {
   Users, RefreshCw, BarChart3, TrendingUp, AlertCircle,
 } from "lucide-react";
 import { useGetStatsOverview } from "../../../lib/api.js";
-import { Spinner } from "../../ui/spinner.jsx";
 import { formatRelative } from "../../../lib/utils.js";
-
-// ── Import using the CORRECT named export from ComposeEmailModal.jsx ──────────
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
 
-// ─── Stat card ────────────────────────────────────────────────────────────────
+// ─── Manual loaders ───────────────────────────────────────────────────────────
+
+function DashboardSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes ed-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        {/* stat cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 16 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} style={{ height: 96, borderRadius: 16, backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", animation: `ed-pulse 1.5s ease infinite ${i * 0.1}s` }} />
+          ))}
+        </div>
+        {/* content rows */}
+        {[120, 80].map((h, i) => (
+          <div key={i} style={{ height: h, borderRadius: 16, backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", animation: `ed-pulse 1.5s ease infinite ${i * 0.2}s` }} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+// ─── Stat Card ────────────────────────────────────────────────────────────────
+
 function StatCard({ title, value, Icon, iconBg, iconColor, delay = 0 }) {
   return (
     <div
-      className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex items-center gap-4 hover:shadow-md transition-all duration-200"
-      style={{ animation: `fadeUp 0.5s ease ${delay}s both`, transform: "translateY(0)" }}
+      className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex items-center gap-4 transition-all duration-200"
+      style={{ animation: `fadeUp 0.5s ease ${delay}s both` }}
       onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
       onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
     >
-      <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0"
-        style={{ backgroundColor: iconBg, color: iconColor }}
-      >
+      <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: iconBg, color: iconColor }}>
         <Icon size={24} />
       </div>
       <div>
@@ -35,6 +52,7 @@ function StatCard({ title, value, Icon, iconBg, iconColor, delay = 0 }) {
 }
 
 // ─── Engagement bar ───────────────────────────────────────────────────────────
+
 function EngagementBar({ label, value, color }) {
   return (
     <div className="flex-1">
@@ -43,35 +61,20 @@ function EngagementBar({ label, value, color }) {
         <span className="text-sm font-bold text-slate-900">{value}%</span>
       </div>
       <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
-        <div
-          className="h-full rounded-full"
-          style={{
-            width: `${Math.min(value, 100)}%`,
-            backgroundColor: color,
-            transition: "width 1s ease",
-          }}
-        />
+        <div className="h-full rounded-full" style={{ width: `${Math.min(value, 100)}%`, backgroundColor: color, transition: "width 1s ease" }} />
       </div>
     </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EmailDashboard() {
   const navigate = useNavigate();
   const { data: stats, isLoading, isError } = useGetStatsOverview();
   const [composeOpen, setComposeOpen] = useState(false);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-60 items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-slate-400">
-          <Spinner className="w-8 h-8" />
-          <p className="text-sm font-medium animate-pulse">Loading dashboard…</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <DashboardSkeleton />;
 
   if (isError) {
     return (
@@ -101,13 +104,11 @@ export default function EmailDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ──────────────────────────────────────────────────────── */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Email Activity</h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            Overview of all client communications and engagement.
-          </p>
+          <p className="text-sm text-slate-500 mt-0.5">Overview of all client communications and engagement.</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -130,18 +131,15 @@ export default function EmailDashboard() {
         </div>
       </div>
 
-      {/* ── Stat cards ──────────────────────────────────────────────────── */}
+      {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map((s) => <StatCard key={s.title} {...s} />)}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* ── Activity feed ────────────────────────────────────────────── */}
+        {/* Activity feed */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-          <div
-            className="flex items-center justify-between px-5 py-4 border-b border-slate-100"
-            style={{ backgroundColor: "#f8fafc" }}
-          >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100" style={{ backgroundColor: "#f8fafc" }}>
             <div>
               <p className="font-semibold text-slate-900 flex items-center gap-2">
                 <BarChart3 size={17} style={{ color: "#2563eb" }} /> Recent Activity
@@ -175,12 +173,8 @@ export default function EmailDashboard() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
-                      <p className="font-semibold text-sm text-slate-900 truncate">
-                        {a.subject || "Activity Update"}
-                      </p>
-                      <span className="text-xs text-slate-400 whitespace-nowrap ml-3">
-                        {formatRelative(a.occurredAt)}
-                      </span>
+                      <p className="font-semibold text-sm text-slate-900 truncate">{a.subject || "Activity Update"}</p>
+                      <span className="text-xs text-slate-400 whitespace-nowrap ml-3">{formatRelative(a.occurredAt)}</span>
                     </div>
                     <p className="text-xs text-slate-500 mt-0.5 truncate">{a.preview || a.content}</p>
                   </div>
@@ -195,7 +189,7 @@ export default function EmailDashboard() {
           )}
         </div>
 
-        {/* ── Right sidebar ─────────────────────────────────────────────── */}
+        {/* Right sidebar */}
         <div className="space-y-5">
           {/* Engagement overview */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
@@ -209,32 +203,16 @@ export default function EmailDashboard() {
           </div>
 
           {/* Outlook sync banner */}
-          <div
-            className="rounded-2xl text-white p-6 shadow-lg"
-            style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)" }}
-          >
+          <div className="rounded-2xl text-white p-6 shadow-lg" style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)" }}>
             <h3 className="font-bold text-base mb-1">Outlook Sync Active</h3>
-            <p className="text-xs mb-5" style={{ color: "#bfdbfe" }}>
-              Inbox syncing automatically. BCC tracking is on.
-            </p>
-            <div
-              className="flex items-center gap-3 rounded-xl p-3"
-              style={{ backgroundColor: "rgba(0,0,0,0.18)" }}
-            >
+            <p className="text-xs mb-5" style={{ color: "#bfdbfe" }}>Inbox syncing automatically. BCC tracking is on.</p>
+            <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: "rgba(0,0,0,0.18)" }}>
               <div className="relative">
                 <Users size={20} className="text-white" />
-                <span
-                  className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2"
-                  style={{ backgroundColor: "#34d399", borderColor: "#4f46e5" }}
-                />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border-2" style={{ backgroundColor: "#34d399", borderColor: "#4f46e5" }} />
               </div>
               <div>
-                <p
-                  className="text-[10px] uppercase tracking-widest font-semibold"
-                  style={{ color: "#bfdbfe" }}
-                >
-                  Active Members
-                </p>
+                <p className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "#bfdbfe" }}>Active Members</p>
                 <p className="font-bold text-lg leading-tight">{stats?.teamMembersActive || 0}</p>
               </div>
             </div>
@@ -247,9 +225,9 @@ export default function EmailDashboard() {
             </div>
             <div className="p-3 space-y-2">
               {[
-                { label: "Add New Client", sub: "Create a PCN / Surgery",    path: "/email-activity/clients", iconBg: "#eff6ff", iconColor: "#2563eb", Icon: Users },
-                { label: "Compose Email",  sub: "Send to any client",         action: () => setComposeOpen(true), iconBg: "#f5f3ff", iconColor: "#7c3aed", Icon: Mail },
-                { label: "Team & Sync",    sub: "Manage Outlook connections",  path: "/email-activity/team",   iconBg: "#ecfdf5", iconColor: "#059669", Icon: RefreshCw },
+                { label: "Add New Client", sub: "Create a PCN / Surgery",   path: "/email-activity/clients", iconBg: "#eff6ff", iconColor: "#2563eb", Icon: Users },
+                { label: "Compose Email",  sub: "Send to any client",        action: () => setComposeOpen(true), iconBg: "#f5f3ff", iconColor: "#7c3aed", Icon: Mail },
+                { label: "Team & Sync",    sub: "Manage Outlook connections", path: "/email-activity/team",   iconBg: "#ecfdf5", iconColor: "#059669", Icon: RefreshCw },
               ].map((q) => (
                 <button
                   key={q.label}
@@ -258,10 +236,7 @@ export default function EmailDashboard() {
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "#93c5fd"; e.currentTarget.style.backgroundColor = "#eff6ff"; }}
                   onMouseLeave={e => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.backgroundColor = "transparent"; }}
                 >
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: q.iconBg, color: q.iconColor }}
-                  >
+                  <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: q.iconBg, color: q.iconColor }}>
                     <q.Icon size={15} />
                   </div>
                   <div>
@@ -275,14 +250,10 @@ export default function EmailDashboard() {
         </div>
       </div>
 
-      {/* ── Compose modal ─────────────────────────────────────────────── */}
       <ComposeEmailModal isOpen={composeOpen} onClose={() => setComposeOpen(false)} />
 
       <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
       `}</style>
     </div>
   );

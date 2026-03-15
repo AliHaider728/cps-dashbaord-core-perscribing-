@@ -1,11 +1,57 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useListClients, useCreateClient } from "../../../lib/api.js";
-import { Spinner } from "../../../Component/ui/spinner.jsx";
 import { Search, Plus, Building2, Phone, Mail, ChevronRight, X } from "lucide-react";
 import { formatSmartDate, getInitials } from "../../../lib/utils.js";
 
+// ─── Manual loader ────────────────────────────────────────────────────────────
+
+function TableSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes ec-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ padding: "12px 0" }}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            style={{
+              display: "flex", alignItems: "center", gap: 16,
+              padding: "14px 20px",
+              borderBottom: "1px solid #f1f5f9",
+              animation: `ec-pulse 1.5s ease infinite ${i * 0.1}s`,
+            }}
+          >
+            <div style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: "#e2e8f0", flexShrink: 0 }} />
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 7 }}>
+              <div style={{ width: "40%", height: 13, borderRadius: 5, backgroundColor: "#e2e8f0" }} />
+              <div style={{ width: "25%", height: 11, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+            </div>
+            <div style={{ width: 100, height: 12, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+            <div style={{ width: 80,  height: 12, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function SaveLoader() {
+  return (
+    <>
+      <style>{`
+        @keyframes ec-bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+        .ecl-dot{width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:ec-bounce 1.2s ease infinite}
+        .ecl-dot:nth-child(2){animation-delay:.16s}.ecl-dot:nth-child(3){animation-delay:.32s}
+      `}</style>
+      <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
+        <span className="ecl-dot" /><span className="ecl-dot" /><span className="ecl-dot" />
+      </span>
+    </>
+  );
+}
+
 // ─── Add Client Modal ─────────────────────────────────────────────────────────
+
 function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
   if (!isOpen) return null;
   return (
@@ -17,7 +63,12 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
       >
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
           <h3 className="font-bold text-slate-900 text-base">Add New Client</h3>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 transition-colors"
+            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f1f5f9"}
+            onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
+          >
             <X size={15} />
           </button>
         </div>
@@ -36,7 +87,9 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
                 name={f.name}
                 required={f.required}
                 placeholder={f.placeholder}
-                className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                onFocus={e => { e.currentTarget.style.borderColor = "#2563eb"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(37,99,235,0.1)"; }}
+                onBlur={e  => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; }}
               />
             </div>
           ))}
@@ -51,13 +104,21 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
                   type={f.type}
                   name={f.name}
                   placeholder={f.placeholder}
-                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+                  className="w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+                  onFocus={e => { e.currentTarget.style.borderColor = "#2563eb"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(37,99,235,0.1)"; }}
+                  onBlur={e  => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; }}
                 />
               </div>
             ))}
           </div>
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 mt-2">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-100 transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-semibold text-slate-600 rounded-xl transition-colors"
+              onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f1f5f9"}
+              onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
+            >
               Cancel
             </button>
             <button
@@ -68,25 +129,25 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
               onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
             >
-              {isSaving ? <Spinner className="w-4 h-4" /> : null}
-              Create Client
+              {isSaving ? <SaveLoader /> : "Create Client"}
             </button>
           </div>
         </form>
       </div>
-      <style>{`@keyframes modalIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }`}</style>
+      <style>{`@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}`}</style>
     </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EmailClients() {
   const navigate = useNavigate();
   const [search, setSearch]   = useState("");
   const [modalOpen, setModal] = useState(false);
 
-  const { data, isLoading }                        = useListClients({ search });
-  const clients                                    = data?.clients || [];
+  const { data, isLoading }                         = useListClients({ search });
+  const clients                                     = data?.clients || [];
   const { mutate: createClient, isPending: saving } = useCreateClient();
 
   const handleSave = (formData) => {
@@ -122,10 +183,17 @@ export default function EmailClients() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, PCN, or email…"
-              className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all"
+              className="w-full pl-9 pr-8 py-2 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 outline-none transition-all"
+              onFocus={e => { e.currentTarget.style.borderColor = "#2563eb"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(37,99,235,0.1)"; }}
+              onBlur={e  => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; }}
             />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 transition-colors"
+                onMouseEnter={e => e.currentTarget.style.color = "#374151"}
+                onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
+              >
                 <X size={14} />
               </button>
             )}
@@ -136,7 +204,7 @@ export default function EmailClients() {
         {/* Table */}
         <div className="overflow-x-auto">
           {isLoading ? (
-            <div className="p-12 flex justify-center"><Spinner className="w-8 h-8" /></div>
+            <TableSkeleton />
           ) : clients.length === 0 ? (
             <div className="py-16 text-center">
               <Building2 size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
@@ -161,10 +229,7 @@ export default function EmailClients() {
                   >
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
-                          style={{ backgroundColor: "#eff6ff", color: "#1d4ed8" }}
-                        >
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: "#eff6ff", color: "#1d4ed8" }}>
                           {getInitials(c.name)}
                         </div>
                         <div>
@@ -202,8 +267,8 @@ export default function EmailClients() {
                     </td>
                     <td className="px-5 py-4 text-right">
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 group-hover:text-white transition-all ml-auto"
-                        style={{ backgroundColor: undefined }}
+                        className="w-8 h-8 rounded-full flex items-center justify-center ml-auto transition-all"
+                        style={{ color: "#94a3b8" }}
                         onMouseEnter={e => { e.currentTarget.style.backgroundColor = "#2563eb"; e.currentTarget.style.color = "white"; }}
                         onMouseLeave={e => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "#94a3b8"; }}
                       >

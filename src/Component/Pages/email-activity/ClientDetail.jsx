@@ -1,16 +1,68 @@
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useGetClient, useGetClientTimeline, useAddNote } from "../../../lib/api.js";
-import { Spinner } from "../../../Component/ui/spinner.jsx";
 import {
   ArrowLeft, Mail, Phone, Calendar,
   ArrowUpRight, ArrowDownLeft, StickyNote,
   MousePointerClick, Send,
 } from "lucide-react";
 import { formatSmartDate, getInitials } from "../../../lib/utils.js";
-
-// ── Correct named export ──────────────────────────────────────────────────────
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
+
+// ─── Manual loaders (no Spinner import) ──────────────────────────────────────
+
+function PageSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes cd-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "#e2e8f0", animation: "cd-pulse 1.5s ease infinite" }} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ width: 180, height: 20, borderRadius: 6, backgroundColor: "#e2e8f0", animation: "cd-pulse 1.5s ease infinite" }} />
+            <div style={{ width: 120, height: 14, borderRadius: 6, backgroundColor: "#f1f5f9", animation: "cd-pulse 1.5s ease infinite 0.2s" }} />
+          </div>
+        </div>
+        {[0, 1, 2].map((i) => (
+          <div key={i} style={{ height: 90, borderRadius: 16, backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", animation: `cd-pulse 1.5s ease infinite ${i * 0.15}s` }} />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function TimelineLoader() {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
+      {[0, 1, 2].map((i) => (
+        <div key={i} style={{ display: "flex", gap: 14, alignItems: "center" }}>
+          <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "#e2e8f0", flexShrink: 0, animation: `cd-pulse 1.5s ease infinite ${i * 0.1}s` }} />
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ height: 13, borderRadius: 6, width: "60%", backgroundColor: "#e2e8f0", animation: `cd-pulse 1.5s ease infinite ${i * 0.1}s` }} />
+            <div style={{ height: 11, borderRadius: 6, width: "85%", backgroundColor: "#f1f5f9", animation: `cd-pulse 1.5s ease infinite ${i * 0.1 + 0.15}s` }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DotsLoader() {
+  return (
+    <>
+      <style>{`
+        @keyframes cd-bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+        .cd-dot{width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:cd-bounce 1.2s ease infinite}
+        .cd-dot:nth-child(2){animation-delay:.16s}.cd-dot:nth-child(3){animation-delay:.32s}
+      `}</style>
+      <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
+        <span className="cd-dot" /><span className="cd-dot" /><span className="cd-dot" />
+      </span>
+    </>
+  );
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
   { value: "all",            label: "All" },
@@ -30,10 +82,7 @@ const TYPE_CFG = {
 function InfoRow({ Icon, value }) {
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-        style={{ backgroundColor: "#f1f5f9" }}
-      >
+      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
         <Icon size={14} style={{ color: "#64748b" }} />
       </div>
       <span className="text-sm text-slate-600 font-medium">{value}</span>
@@ -41,17 +90,19 @@ function InfoRow({ Icon, value }) {
   );
 }
 
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
 export default function EmailClientDetail() {
   const { id: clientId } = useParams();
   const navigate         = useNavigate();
 
-  const [note,          setNote]     = useState("");
-  const [filter,        setFilter]   = useState("all");
-  const [composeOpen, setCompose]    = useState(false);
+  const [note,        setNote]    = useState("");
+  const [filter,      setFilter]  = useState("all");
+  const [composeOpen, setCompose] = useState(false);
 
-  const { data: client,   isLoading: loadingClient }                    = useGetClient(clientId);
-  const { data: timeline, isLoading: loadingTimeline, refetch }         = useGetClientTimeline(clientId, { type: filter });
-  const { mutate: addNote, isPending: addingNote }                      = useAddNote();
+  const { data: client,   isLoading: loadingClient }            = useGetClient(clientId);
+  const { data: timeline, isLoading: loadingTimeline, refetch } = useGetClientTimeline(clientId, { type: filter });
+  const { mutate: addNote, isPending: addingNote }              = useAddNote();
 
   const entries = timeline?.entries || [];
 
@@ -63,18 +114,14 @@ export default function EmailClientDetail() {
     );
   };
 
-  if (loadingClient) {
-    return <div className="flex justify-center p-20"><Spinner className="w-10 h-10" /></div>;
-  }
+  if (loadingClient) return <PageSkeleton />;
 
   if (!client) {
     return (
       <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm">
         <Mail size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
         <h3 className="font-bold text-slate-900 mb-2">Client not found</h3>
-        <p className="text-sm text-slate-500 mb-4">
-          This client may have been removed or the URL is incorrect.
-        </p>
+        <p className="text-sm text-slate-500 mb-4">This client may have been removed or the URL is incorrect.</p>
         <button
           onClick={() => navigate("/email-activity/clients")}
           className="text-sm font-semibold transition-colors"
@@ -90,7 +137,7 @@ export default function EmailClientDetail() {
 
   return (
     <div className="space-y-6">
-      {/* ── Back + header ─────────────────────────────────────────────── */}
+      {/* Back + header */}
       <div>
         <button
           onClick={() => navigate("/email-activity/clients")}
@@ -112,19 +159,13 @@ export default function EmailClientDetail() {
             <div>
               <h1 className="text-2xl font-bold text-slate-900">{client.name}</h1>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span
-                  className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white"
-                  style={{ backgroundColor: "#1e293b" }}
-                >
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style={{ backgroundColor: "#1e293b" }}>
                   {client.pcnNumber}
                 </span>
-                {client.surgeryName && (
-                  <span className="text-sm text-slate-500">{client.surgeryName}</span>
-                )}
+                {client.surgeryName && <span className="text-sm text-slate-500">{client.surgeryName}</span>}
               </div>
             </div>
           </div>
-
           <button
             onClick={() => setCompose(true)}
             className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all"
@@ -138,14 +179,10 @@ export default function EmailClientDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* ── Left sidebar ─────────────────────────────────────────────── */}
+        {/* Left sidebar */}
         <div className="space-y-5 lg:sticky lg:top-24">
-
           {/* Contact info */}
-          <div
-            className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
-            style={{ borderTop: "4px solid #2563eb" }}
-          >
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ borderTop: "4px solid #2563eb" }}>
             <div className="px-5 py-4 border-b border-slate-100">
               <p className="font-semibold text-sm text-slate-900">Contact Information</p>
             </div>
@@ -163,14 +200,8 @@ export default function EmailClientDetail() {
             </div>
             <div className="px-5 py-4">
               {client.accountManagerName ? (
-                <div
-                  className="flex items-center gap-3 p-3 rounded-xl border border-slate-200"
-                  style={{ backgroundColor: "#f8fafc" }}
-                >
-                  <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                    style={{ backgroundColor: "#dbeafe", color: "#1d4ed8" }}
-                  >
+                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200" style={{ backgroundColor: "#f8fafc" }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: "#dbeafe", color: "#1d4ed8" }}>
                     {getInitials(client.accountManagerName)}
                   </div>
                   <div>
@@ -207,16 +238,12 @@ export default function EmailClientDetail() {
           </div>
         </div>
 
-        {/* ── Right: note + timeline ─────────────────────────────────── */}
+        {/* Right: note + timeline */}
         <div className="lg:col-span-2 space-y-5">
-
           {/* Note input */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
             <div className="flex gap-4">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
-                style={{ backgroundColor: "#f1f5f9" }}
-              >
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
                 <StickyNote size={15} style={{ color: "#64748b" }} />
               </div>
               <div className="flex-1 relative">
@@ -239,15 +266,14 @@ export default function EmailClientDetail() {
                     onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
                     onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
                   >
-                    {addingNote ? <Spinner className="w-3.5 h-3.5" /> : <Send size={12} />}
-                    Log Note
+                    {addingNote ? <DotsLoader /> : <><Send size={12} /> Log Note</>}
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Timeline header + filter tabs */}
+          {/* Timeline */}
           <div>
             <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
               <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
@@ -256,11 +282,7 @@ export default function EmailClientDetail() {
                   {timeline?.total || 0}
                 </span>
               </h3>
-
-              <div
-                className="flex items-center gap-1 rounded-xl p-1"
-                style={{ backgroundColor: "#f1f5f9" }}
-              >
+              <div className="flex items-center gap-1 rounded-xl p-1" style={{ backgroundColor: "#f1f5f9" }}>
                 {TABS.map((tab) => (
                   <button
                     key={tab.value}
@@ -279,28 +301,19 @@ export default function EmailClientDetail() {
             </div>
 
             {loadingTimeline ? (
-              <div className="py-10 flex justify-center"><Spinner className="w-8 h-8" /></div>
+              <TimelineLoader />
             ) : entries.length > 0 ? (
-              <div
-                className="relative pl-8 space-y-6 pb-8"
-                style={{ borderLeft: "2px solid #e2e8f0" }}
-              >
+              <div className="relative pl-8 space-y-6 pb-8" style={{ borderLeft: "2px solid #e2e8f0" }}>
                 {entries.map((entry, i) => {
                   const cfg = TYPE_CFG[entry.type] || TYPE_CFG.note;
                   return (
-                    <div
-                      key={entry.id}
-                      className="relative group"
-                      style={{ animation: `slideIn 0.3s ease ${i * 0.06}s both` }}
-                    >
-                      {/* Timeline dot */}
+                    <div key={entry.id} className="relative group" style={{ animation: `slideIn 0.3s ease ${i * 0.06}s both` }}>
                       <div
                         className="absolute -left-[43px] top-1 w-9 h-9 rounded-full border-4 border-white flex items-center justify-center shadow-sm z-10 group-hover:scale-110 transition-transform"
                         style={{ backgroundColor: cfg.bg, color: cfg.color }}
                       >
                         <cfg.Icon size={14} />
                       </div>
-
                       <div
                         className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 transition-colors"
                         onMouseEnter={e => e.currentTarget.style.borderColor = "#93c5fd"}
@@ -319,35 +332,22 @@ export default function EmailClientDetail() {
                                   : "Note Added"}
                               </span>
                               {entry.type === "email_sent" && entry.openCount > 0 && (
-                                <span
-                                  className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                                  style={{ backgroundColor: "#f5f3ff", color: "#7c3aed" }}
-                                >
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#f5f3ff", color: "#7c3aed" }}>
                                   Opened
                                 </span>
                               )}
                             </div>
                             {entry.subject && (
-                              <p className="text-xs font-semibold text-slate-600 mt-0.5">
-                                Subject: {entry.subject}
-                              </p>
+                              <p className="text-xs font-semibold text-slate-600 mt-0.5">Subject: {entry.subject}</p>
                             )}
                           </div>
-                          <span
-                            className="text-[11px] font-medium text-slate-400 px-2.5 py-1 rounded-full whitespace-nowrap"
-                            style={{ backgroundColor: "#f1f5f9" }}
-                          >
+                          <span className="text-[11px] font-medium text-slate-400 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: "#f1f5f9" }}>
                             {formatSmartDate(entry.occurredAt)}
                           </span>
                         </div>
-
-                        <div
-                          className="mt-2 text-sm text-slate-600 p-3 rounded-lg whitespace-pre-wrap leading-relaxed"
-                          style={{ backgroundColor: "#f8fafc", border: "1px solid #f1f5f9" }}
-                        >
+                        <div className="mt-2 text-sm text-slate-600 p-3 rounded-lg whitespace-pre-wrap leading-relaxed" style={{ backgroundColor: "#f8fafc", border: "1px solid #f1f5f9" }}>
                           {entry.content || entry.preview || "—"}
                         </div>
-
                         {(entry.type === "email_sent" || entry.type === "email_received") && (
                           <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
                             <span className="text-[11px] text-slate-400">Logged via Outlook Sync</span>
@@ -367,16 +367,11 @@ export default function EmailClientDetail() {
                 })}
               </div>
             ) : (
-              <div
-                className="py-14 text-center rounded-2xl border border-dashed border-slate-200"
-                style={{ backgroundColor: "#f8fafc" }}
-              >
+              <div className="py-14 text-center rounded-2xl border border-dashed border-slate-200" style={{ backgroundColor: "#f8fafc" }}>
                 <Mail size={36} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
                 <p className="font-medium text-slate-500 text-sm">No activity found.</p>
                 <p className="text-xs text-slate-400 mt-1">
-                  {filter !== "all"
-                    ? "Try switching to 'All'."
-                    : "Send an email or add a note to get started."}
+                  {filter !== "all" ? "Try switching to 'All'." : "Send an email or add a note to get started."}
                 </p>
               </div>
             )}
@@ -384,13 +379,6 @@ export default function EmailClientDetail() {
         </div>
       </div>
 
-      {/*
-        ── ComposeEmailModal ─────────────────────────────────────────────────
-        Props use the names defined in ComposeEmailModal.jsx:
-          defaultToEmail  (not defaultTo)
-          defaultToName
-          defaultClientId
-      */}
       <ComposeEmailModal
         isOpen={composeOpen}
         onClose={() => setCompose(false)}
@@ -400,10 +388,7 @@ export default function EmailClientDetail() {
       />
 
       <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-12px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
+        @keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
       `}</style>
     </div>
   );

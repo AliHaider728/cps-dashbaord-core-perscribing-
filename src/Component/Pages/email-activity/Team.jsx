@@ -1,13 +1,56 @@
 import React, { useState } from "react";
 import { useListTeamMembers, useTriggerOutlookSync } from "../../../lib/api.js";
-import { Spinner } from "../../../Component/ui/spinner.jsx";
 import {
   Copy, RefreshCw, CheckCircle2, XCircle, Mail, Users,
   UserPlus, Wifi, Shield, Info, X,
 } from "lucide-react";
 import { getInitials, formatSmartDate } from "../../../lib/utils.js";
 
-// ─── Inline Invite Modal ──────────────────────────────────────────────────────
+// ─── Manual loaders ───────────────────────────────────────────────────────────
+
+function TeamSkeleton() {
+  return (
+    <>
+      <style>{`@keyframes et-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 20 }}>
+        {[0, 1].map((i) => (
+          <div key={i} style={{ borderRadius: 16, border: "1px solid #e2e8f0", padding: 24, display: "flex", flexDirection: "column", gap: 16, animation: `et-pulse 1.5s ease infinite ${i * 0.2}s` }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+              <div style={{ width: 48, height: 48, borderRadius: "50%", backgroundColor: "#e2e8f0" }} />
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ width: "60%", height: 14, borderRadius: 5, backgroundColor: "#e2e8f0" }} />
+                <div style={{ width: "80%", height: 11, borderRadius: 5, backgroundColor: "#f1f5f9" }} />
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ height: 64, borderRadius: 12, backgroundColor: "#f8fafc" }} />
+              <div style={{ height: 64, borderRadius: 12, backgroundColor: "#f8fafc" }} />
+            </div>
+            <div style={{ height: 40, borderRadius: 8, backgroundColor: "#f1f5f9" }} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function DotsLoader({ color = "white" }) {
+  return (
+    <>
+      <style>{`
+        @keyframes et-bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
+        .etd{width:5px;height:5px;border-radius:50%;background:${color};display:inline-block;animation:et-bounce 1.2s ease infinite}
+        .etd:nth-child(2){animation-delay:.16s}.etd:nth-child(3){animation-delay:.32s}
+      `}</style>
+      <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
+        <span className="etd" /><span className="etd" /><span className="etd" />
+      </span>
+    </>
+  );
+}
+
+// ─── Invite Modal ─────────────────────────────────────────────────────────────
+
 function InviteModal({ isOpen, onClose }) {
   const [name,  setName]  = useState("");
   const [email, setEmail] = useState("");
@@ -25,23 +68,10 @@ function InviteModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        style={{ backdropFilter: "blur(4px)" }}
-        onClick={() => { reset(); onClose(); }}
-      />
-
-      <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden"
-        style={{ animation: "modalIn .18s ease both" }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+      <div className="absolute inset-0" style={{ backdropFilter: "blur(4px)" }} onClick={() => { reset(); onClose(); }} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 overflow-hidden" style={{ animation: "modalIn .18s ease both" }}>
         {done ? (
-          /* Success */
           <div className="p-12 flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#d1fae5" }}>
               <CheckCircle2 size={28} style={{ color: "#059669" }} />
@@ -72,7 +102,6 @@ function InviteModal({ isOpen, onClose }) {
                 <X size={15} />
               </button>
             </div>
-
             <div className="p-6 space-y-5">
               <div className="grid grid-cols-2 gap-4">
                 {[
@@ -93,7 +122,6 @@ function InviteModal({ isOpen, onClose }) {
                   </div>
                 ))}
               </div>
-
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Role</label>
                 <div className="space-y-2">
@@ -103,18 +131,9 @@ function InviteModal({ isOpen, onClose }) {
                       type="button"
                       onClick={() => setRole(r.id)}
                       className="w-full flex items-start gap-3 p-3.5 rounded-xl border-2 text-left transition-all"
-                      style={role === r.id
-                        ? { backgroundColor: r.bg, borderColor: r.border }
-                        : { backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }
-                      }
+                      style={role === r.id ? { backgroundColor: r.bg, borderColor: r.border } : { backgroundColor: "#f8fafc", borderColor: "#e2e8f0" }}
                     >
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                        style={role === r.id
-                          ? { backgroundColor: r.bg, color: r.color }
-                          : { backgroundColor: "#f1f5f9", color: "#94a3b8" }
-                        }
-                      >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={role === r.id ? { backgroundColor: r.bg, color: r.color } : { backgroundColor: "#f1f5f9", color: "#94a3b8" }}>
                         <r.Icon size={15} />
                       </div>
                       <div className="flex-1">
@@ -126,18 +145,13 @@ function InviteModal({ isOpen, onClose }) {
                   ))}
                 </div>
               </div>
-
-              <div
-                className="flex items-start gap-2.5 p-3.5 rounded-xl border"
-                style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe" }}
-              >
+              <div className="flex items-start gap-2.5 p-3.5 rounded-xl border" style={{ backgroundColor: "#eff6ff", borderColor: "#bfdbfe" }}>
                 <Info size={14} style={{ color: "#2563eb", marginTop: 1, flexShrink: 0 }} />
                 <p className="text-xs" style={{ color: "#1d4ed8" }}>
                   {name || "This member"} will need to connect their Outlook account after accepting.
                 </p>
               </div>
             </div>
-
             <div className="flex gap-3 px-6 pb-6 border-t border-slate-100 pt-4">
               <button
                 onClick={() => { reset(); onClose(); }}
@@ -161,15 +175,13 @@ function InviteModal({ isOpen, onClose }) {
           </>
         )}
       </div>
-
-      <style>{`
-        @keyframes modalIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
-      `}</style>
+      <style>{`@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}`}</style>
     </div>
   );
 }
 
-// ─── Inline Outlook Connect Modal ─────────────────────────────────────────────
+// ─── Outlook Modal ────────────────────────────────────────────────────────────
+
 function OutlookModal({ isOpen, member, onClose }) {
   const [step, setStep] = useState("overview");
   const reset = () => { setStep("overview"); onClose(); };
@@ -177,31 +189,13 @@ function OutlookModal({ isOpen, member, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        style={{ backdropFilter: "blur(4px)" }}
-        onClick={reset}
-      />
-
-      <div
-        className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden"
-        style={{ animation: "modalIn .18s ease both" }}
-      >
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
+      <div className="absolute inset-0" style={{ backdropFilter: "blur(4px)" }} onClick={reset} />
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md border border-slate-200 overflow-hidden" style={{ animation: "modalIn .18s ease both" }}>
         {step === "overview" && (
           <>
-            <div
-              className="p-8 text-white"
-              style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)" }}
-            >
-              <div
-                className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
-                style={{ backgroundColor: "rgba(255,255,255,0.15)" }}
-              >
+            <div className="p-8 text-white" style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)" }}>
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: "rgba(255,255,255,0.15)" }}>
                 <Mail size={22} className="text-white" />
               </div>
               <h3 className="text-xl font-bold mb-1">Connect Outlook</h3>
@@ -214,10 +208,7 @@ function OutlookModal({ isOpen, member, onClose }) {
                 Connect Microsoft Outlook to automatically log sent emails and capture replies.
               </p>
               {member?.outlookConnected && (
-                <div
-                  className="flex items-center gap-3 p-3 rounded-xl border"
-                  style={{ backgroundColor: "#f0fdf4", borderColor: "#86efac" }}
-                >
+                <div className="flex items-center gap-3 p-3 rounded-xl border" style={{ backgroundColor: "#f0fdf4", borderColor: "#86efac" }}>
                   <CheckCircle2 size={18} style={{ color: "#16a34a", flexShrink: 0 }} />
                   <div>
                     <p className="text-sm font-semibold" style={{ color: "#14532d" }}>Already connected</p>
@@ -251,11 +242,19 @@ function OutlookModal({ isOpen, member, onClose }) {
         {step === "connecting" && (
           <div className="p-12 flex flex-col items-center text-center">
             <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: "#eff6ff" }}>
-              <Spinner className="w-7 h-7" />
+              {/* Manual spinning ring */}
+              <style>{`@keyframes ot-spin{to{transform:rotate(360deg)}}`}</style>
+              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ animation: "ot-spin .8s linear infinite" }}>
+                <circle cx="14" cy="14" r="11" stroke="#dbeafe" strokeWidth="3" />
+                <path d="M14 3a11 11 0 0 1 11 11" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" />
+              </svg>
             </div>
             <h3 className="font-bold text-slate-900 mb-2">Connecting to Microsoft…</h3>
             <p className="text-sm text-slate-500">Authenticating and requesting permissions.</p>
-            <button className="mt-6 text-xs transition-colors" style={{ color: "#2563eb" }} onClick={() => setStep("success")}
+            <button
+              className="mt-6 text-xs transition-colors"
+              style={{ color: "#2563eb" }}
+              onClick={() => setStep("success")}
               onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
               onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
             >
@@ -285,22 +284,20 @@ function OutlookModal({ isOpen, member, onClose }) {
           </div>
         )}
       </div>
-
-      <style>{`
-        @keyframes modalIn { from { opacity:0; transform:translateY(10px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
-      `}</style>
+      <style>{`@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}`}</style>
     </div>
   );
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function EmailTeam() {
-  const { data, isLoading, refetch }                              = useListTeamMembers();
-  const members                                                   = data?.members || [];
-  const { mutate: syncOutlook, isPending: isSyncing }             = useTriggerOutlookSync();
-  const [copiedId, setCopied]                                     = useState(null);
-  const [inviteOpen, setInvite]                                   = useState(false);
-  const [outlookModal, setOutlook]                                = useState({ open: false, member: null });
+  const { data, isLoading, refetch }                  = useListTeamMembers();
+  const members                                       = data?.members || [];
+  const { mutate: syncOutlook, isPending: isSyncing } = useTriggerOutlookSync();
+  const [copiedId, setCopied]                         = useState(null);
+  const [inviteOpen, setInvite]                       = useState(false);
+  const [outlookModal, setOutlook]                    = useState({ open: false, member: null });
 
   const copyBcc = (id, bcc) => {
     navigator.clipboard.writeText(bcc);
@@ -309,9 +306,9 @@ export default function EmailTeam() {
   };
 
   const SUMMARY = [
-    { Icon: Users, label: "Members",      value: members.length,                                        bg: "#eff6ff", color: "#2563eb" },
-    { Icon: Wifi,  label: "Synced",       value: members.filter((m) => m.outlookConnected).length,       bg: "#ecfdf5", color: "#059669" },
-    { Icon: Mail,  label: "Total Emails", value: members.reduce((a, m) => a + (m.emailCount || 0), 0),  bg: "#f5f3ff", color: "#7c3aed" },
+    { Icon: Users, label: "Members",      value: members.length,                                       bg: "#eff6ff", color: "#2563eb" },
+    { Icon: Wifi,  label: "Synced",       value: members.filter((m) => m.outlookConnected).length,      bg: "#ecfdf5", color: "#059669" },
+    { Icon: Mail,  label: "Total Emails", value: members.reduce((a, m) => a + (m.emailCount || 0), 0), bg: "#f5f3ff", color: "#7c3aed" },
   ];
 
   return (
@@ -350,7 +347,7 @@ export default function EmailTeam() {
 
       {/* Members */}
       {isLoading ? (
-        <div className="flex justify-center p-20"><Spinner className="w-10 h-10" /></div>
+        <TeamSkeleton />
       ) : members.length === 0 ? (
         <div className="bg-white rounded-2xl border border-dashed border-slate-200 p-16 text-center shadow-sm">
           <Users size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
@@ -378,10 +375,7 @@ export default function EmailTeam() {
                     </div>
                   </div>
                   {m.outlookConnected ? (
-                    <span
-                      className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: "#d1fae5", color: "#065f46" }}
-                    >
+                    <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: "#d1fae5", color: "#065f46" }}>
                       <CheckCircle2 size={12} /> Synced
                     </span>
                   ) : (
@@ -416,10 +410,7 @@ export default function EmailTeam() {
                       Unique BCC Address
                     </label>
                     <div className="flex items-center gap-2">
-                      <code
-                        className="flex-1 p-2.5 rounded-lg text-xs break-all font-mono"
-                        style={{ backgroundColor: "#0f172a", color: "#34d399" }}
-                      >
+                      <code className="flex-1 p-2.5 rounded-lg text-xs break-all font-mono" style={{ backgroundColor: "#0f172a", color: "#34d399" }}>
                         {m.bccAddress || `activity+${m.id}@ourcrm.com`}
                       </code>
                       <button
@@ -456,7 +447,7 @@ export default function EmailTeam() {
                           onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#f8fafc"; }}
                           onMouseLeave={e => e.currentTarget.style.backgroundColor = "white"}
                         >
-                          <RefreshCw size={12} className={isSyncing ? "animate-spin" : ""} /> Sync
+                          {isSyncing ? <DotsLoader color="#64748b" /> : <><RefreshCw size={12} /> Sync</>}
                         </button>
                       )}
                     </div>
@@ -475,7 +466,7 @@ export default function EmailTeam() {
         onClose={() => setOutlook({ open: false, member: null })}
       />
 
-      <style>{`@keyframes fadeUp { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }`}</style>
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:scale(0.97)}to{opacity:1;transform:scale(1)}}`}</style>
     </div>
   );
 }
