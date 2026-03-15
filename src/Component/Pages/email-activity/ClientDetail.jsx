@@ -9,37 +9,81 @@ import {
 import { formatSmartDate, getInitials } from "../../../lib/utils.js";
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
 
-// ─── Manual loaders (no Spinner import) ──────────────────────────────────────
+// ─── CSS var helpers ──────────────────────────────────────────────────────────
+const cv = (v) => `var(${v})`;
+const surfaceStyle  = { backgroundColor: cv("--bg-secondary"), border: `1px solid ${cv("--border-color")}` };
+const bgStyle       = { backgroundColor: cv("--bg-primary") };
+const textPrimary   = { color: cv("--text-primary") };
+const textSecondary = { color: cv("--text-secondary") };
+const textMuted     = { color: cv("--text-muted") };
 
+const BRAND      = "#6673FF";
+const BRAND_DARK = "#2F2CCB";
+const BRAND_GRAD = `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})`;
+
+// ─── Global styles ────────────────────────────────────────────────────────────
+const GLOBAL = `
+  @keyframes cd-pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
+  @keyframes cd-bounce { 0%,80%,100%{transform:scale(0)} 40%{transform:scale(1)} }
+  @keyframes slideIn   { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+
+  .cd-dot { width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:cd-bounce 1.2s ease infinite }
+  .cd-dot:nth-child(2){animation-delay:.16s}.cd-dot:nth-child(3){animation-delay:.32s}
+
+  .cd-card { background-color:var(--bg-secondary); border:1px solid var(--border-color); border-radius:14px; transition: border-color .2s; }
+  .cd-card:hover { border-color: ${BRAND}55; }
+
+  .cd-tab-active { background-color:var(--bg-secondary); color:var(--text-primary); box-shadow:0 1px 4px rgba(0,0,0,0.15); font-weight:700; }
+  .cd-tab-idle   { background:transparent; color:var(--text-muted); font-weight:600; }
+  .cd-tab-idle:hover { color:var(--text-secondary); }
+
+  .cd-back { background:transparent; transition:color .15s; }
+  .cd-back:hover { color: ${BRAND}; }
+
+  .cd-textarea {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: 12px;
+    padding: 14px;
+    font-size: 0.875rem;
+    resize: none;
+    outline: none;
+    width: 100%;
+    transition: border-color .2s, box-shadow .2s;
+    line-height: 1.6;
+  }
+  .cd-textarea::placeholder { color: var(--text-muted); }
+  .cd-textarea:focus { border-color: ${BRAND}; box-shadow: 0 0 0 4px rgba(102,115,255,0.12); }
+`;
+
+// ─── Loaders ──────────────────────────────────────────────────────────────────
 function PageSkeleton() {
   return (
-    <>
-      <style>{`@keyframes cd-pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
-      <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "#e2e8f0", animation: "cd-pulse 1.5s ease infinite" }} />
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ width: 180, height: 20, borderRadius: 6, backgroundColor: "#e2e8f0", animation: "cd-pulse 1.5s ease infinite" }} />
-            <div style={{ width: 120, height: 14, borderRadius: 6, backgroundColor: "#f1f5f9", animation: "cd-pulse 1.5s ease infinite 0.2s" }} />
-          </div>
+    <div style={{ display:"flex", flexDirection:"column", gap:24 }}>
+      <div style={{ display:"flex", alignItems:"center", gap:16 }}>
+        <div style={{ width:56, height:56, borderRadius:16, backgroundColor: cv("--border-color"), animation:"cd-pulse 1.5s ease infinite" }} />
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          <div style={{ width:180, height:20, borderRadius:6, backgroundColor: cv("--border-color"), animation:"cd-pulse 1.5s ease infinite" }} />
+          <div style={{ width:120, height:14, borderRadius:6, backgroundColor: cv("--border-color"), animation:"cd-pulse 1.5s ease infinite .2s", opacity:.6 }} />
         </div>
-        {[0, 1, 2].map((i) => (
-          <div key={i} style={{ height: 90, borderRadius: 16, backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", animation: `cd-pulse 1.5s ease infinite ${i * 0.15}s` }} />
-        ))}
       </div>
-    </>
+      {[0,1,2].map((i) => (
+        <div key={i} style={{ height:90, borderRadius:16, backgroundColor: cv("--border-color"), animation:`cd-pulse 1.5s ease infinite ${i*0.15}s`, opacity:.7 }} />
+      ))}
+    </div>
   );
 }
 
 function TimelineLoader() {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 8 }}>
-      {[0, 1, 2].map((i) => (
-        <div key={i} style={{ display: "flex", gap: 14, alignItems: "center" }}>
-          <div style={{ width: 36, height: 36, borderRadius: "50%", backgroundColor: "#e2e8f0", flexShrink: 0, animation: `cd-pulse 1.5s ease infinite ${i * 0.1}s` }} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-            <div style={{ height: 13, borderRadius: 6, width: "60%", backgroundColor: "#e2e8f0", animation: `cd-pulse 1.5s ease infinite ${i * 0.1}s` }} />
-            <div style={{ height: 11, borderRadius: 6, width: "85%", backgroundColor: "#f1f5f9", animation: `cd-pulse 1.5s ease infinite ${i * 0.1 + 0.15}s` }} />
+    <div style={{ display:"flex", flexDirection:"column", gap:14, paddingTop:8 }}>
+      {[0,1,2].map((i) => (
+        <div key={i} style={{ display:"flex", gap:14, alignItems:"center" }}>
+          <div style={{ width:36, height:36, borderRadius:"50%", backgroundColor: cv("--border-color"), flexShrink:0, animation:`cd-pulse 1.5s ease infinite ${i*0.1}s` }} />
+          <div style={{ flex:1, display:"flex", flexDirection:"column", gap:8 }}>
+            <div style={{ height:13, borderRadius:6, width:"60%", backgroundColor: cv("--border-color"), animation:`cd-pulse 1.5s ease infinite ${i*0.1}s` }} />
+            <div style={{ height:11, borderRadius:6, width:"85%", backgroundColor: cv("--border-color"), animation:`cd-pulse 1.5s ease infinite ${i*0.1+0.15}s`, opacity:.6 }} />
           </div>
         </div>
       ))}
@@ -49,52 +93,59 @@ function TimelineLoader() {
 
 function DotsLoader() {
   return (
-    <>
-      <style>{`
-        @keyframes cd-bounce{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-        .cd-dot{width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:cd-bounce 1.2s ease infinite}
-        .cd-dot:nth-child(2){animation-delay:.16s}.cd-dot:nth-child(3){animation-delay:.32s}
-      `}</style>
-      <span style={{ display: "flex", gap: 3, alignItems: "center" }}>
-        <span className="cd-dot" /><span className="cd-dot" /><span className="cd-dot" />
-      </span>
-    </>
+    <span style={{ display:"flex", gap:3, alignItems:"center" }}>
+      <span className="cd-dot" /><span className="cd-dot" /><span className="cd-dot" />
+    </span>
   );
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
 const TABS = [
-  { value: "all",            label: "All" },
-  { value: "email_sent",     label: "Sent" },
-  { value: "email_received", label: "Received" },
-  { value: "note",           label: "Notes" },
-  { value: "engagement",     label: "Engagement" },
+  { value:"all",            label:"All"        },
+  { value:"email_sent",     label:"Sent"       },
+  { value:"email_received", label:"Received"   },
+  { value:"note",           label:"Notes"      },
+  { value:"engagement",     label:"Engagement" },
 ];
 
 const TYPE_CFG = {
-  email_sent:     { bg: "#eff6ff", color: "#2563eb", Icon: ArrowUpRight },
-  email_received: { bg: "#ecfdf5", color: "#059669", Icon: ArrowDownLeft },
-  engagement:     { bg: "#f5f3ff", color: "#7c3aed", Icon: MousePointerClick },
-  note:           { bg: "#fffbeb", color: "#d97706", Icon: StickyNote },
+  email_sent:     { bg:"rgba(102,115,255,0.12)", color:BRAND,     lightBg:"#EEF0FF", Icon: ArrowUpRight       },
+  email_received: { bg:"rgba(16,185,129,0.12)",  color:"#10b981", lightBg:"#d1fae5", Icon: ArrowDownLeft      },
+  engagement:     { bg:"rgba(139,92,246,0.12)",  color:"#8b5cf6", lightBg:"#ede9fe", Icon: MousePointerClick  },
+  note:           { bg:"rgba(245,158,11,0.12)",  color:"#f59e0b", lightBg:"#fef3c7", Icon: StickyNote         },
 };
+
+const TYPE_CFG_STYLES = `
+  .tl-icon-email_sent     { background: rgba(102,115,255,0.12); }
+  .tl-icon-email_received { background: rgba(16,185,129,0.12);  }
+  .tl-icon-engagement     { background: rgba(139,92,246,0.12);  }
+  .tl-icon-note           { background: rgba(245,158,11,0.12);  }
+  [data-theme="light"] .tl-icon-email_sent     { background: #EEF0FF; }
+  [data-theme="light"] .tl-icon-email_received { background: #d1fae5; }
+  [data-theme="light"] .tl-icon-engagement     { background: #ede9fe; }
+  [data-theme="light"] .tl-icon-note           { background: #fef3c7; }
+
+  .tl-body { background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius:12px; }
+  .tl-body:hover { border-color: ${BRAND}55; }
+
+  .tl-content-block { background-color: var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px; padding:12px; font-size:0.875rem; white-space:pre-wrap; line-height:1.6; }
+`;
 
 function InfoRow({ Icon, value }) {
   return (
     <div className="flex items-center gap-3">
-      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
-        <Icon size={14} style={{ color: "#64748b" }} />
+      <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cv("--border-color") }}>
+        <Icon size={14} style={textMuted} />
       </div>
-      <span className="text-sm text-slate-600 font-medium">{value}</span>
+      <span className="text-sm font-medium" style={textSecondary}>{value}</span>
     </div>
   );
 }
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
-
 export default function EmailClientDetail() {
   const { id: clientId } = useParams();
-  const navigate         = useNavigate();
+  const navigate = useNavigate();
 
   const [note,        setNote]    = useState("");
   const [filter,      setFilter]  = useState("all");
@@ -108,70 +159,56 @@ export default function EmailClientDetail() {
 
   const handleAddNote = () => {
     if (!note.trim()) return;
-    addNote(
-      { data: { clientId, content: note } },
-      { onSuccess: () => { setNote(""); refetch(); } }
-    );
+    addNote({ data: { clientId, content: note } }, { onSuccess: () => { setNote(""); refetch(); } });
   };
 
-  if (loadingClient) return <PageSkeleton />;
+  if (loadingClient) return <><style>{GLOBAL + TYPE_CFG_STYLES}</style><PageSkeleton /></>;
 
   if (!client) {
     return (
-      <div className="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <Mail size={40} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
-        <h3 className="font-bold text-slate-900 mb-2">Client not found</h3>
-        <p className="text-sm text-slate-500 mb-4">This client may have been removed or the URL is incorrect.</p>
-        <button
-          onClick={() => navigate("/email-activity/clients")}
-          className="text-sm font-semibold transition-colors"
-          style={{ color: "#2563eb" }}
-          onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
-          onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
-        >
-          ← Back to Clients
-        </button>
-      </div>
+      <>
+        <style>{GLOBAL + TYPE_CFG_STYLES}</style>
+        <div className="p-12 text-center rounded-2xl" style={surfaceStyle}>
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: cv("--border-color") }}>
+            <Mail size={26} style={textMuted} />
+          </div>
+          <h3 className="font-bold mb-2" style={textPrimary}>Client not found</h3>
+          <p className="text-sm mb-4" style={textSecondary}>This client may have been removed.</p>
+          <button onClick={() => navigate("/email-activity/clients")} className="text-sm font-semibold transition-colors" style={{ color: BRAND }}>
+            ← Back to Clients
+          </button>
+        </div>
+      </>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Back + header */}
+      <style>{GLOBAL + TYPE_CFG_STYLES}</style>
+
+      {/* Back + Header */}
       <div>
-        <button
-          onClick={() => navigate("/email-activity/clients")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-slate-500 mb-3 transition-colors"
-          onMouseEnter={e => e.currentTarget.style.color = "#2563eb"}
-          onMouseLeave={e => e.currentTarget.style.color = "#64748b"}
-        >
+        <button onClick={() => navigate("/email-activity/clients")} className="cd-back flex items-center gap-1.5 text-sm font-semibold mb-3" style={textMuted}>
           <ArrowLeft size={15} /> Back to Clients
         </button>
 
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div
-              className="w-14 h-14 rounded-2xl text-white font-bold text-xl flex items-center justify-center shadow-md shrink-0"
-              style={{ background: "linear-gradient(135deg, #2563eb 0%, #4f46e5 100%)" }}
-            >
+            <div className="w-14 h-14 rounded-2xl text-white font-bold text-xl flex items-center justify-center shadow-lg shrink-0" style={{ background: BRAND_GRAD, boxShadow:`0 8px 20px rgba(102,115,255,0.4)` }}>
               {getInitials(client.name)}
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">{client.name}</h1>
+              <h1 className="text-2xl font-extrabold tracking-tight" style={textPrimary}>{client.name}</h1>
               <div className="flex items-center gap-2 mt-1 flex-wrap">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style={{ backgroundColor: "#1e293b" }}>
-                  {client.pcnNumber}
-                </span>
-                {client.surgeryName && <span className="text-sm text-slate-500">{client.surgeryName}</span>}
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full text-white" style={{ background: BRAND_GRAD }}>{client.pcnNumber}</span>
+                {client.surgeryName && <span className="text-sm" style={textMuted}>{client.surgeryName}</span>}
               </div>
             </div>
           </div>
           <button
             onClick={() => setCompose(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all"
-            style={{ backgroundColor: "#2563eb" }}
-            onMouseEnter={e => e.currentTarget.style.backgroundColor = "#1d4ed8"}
-            onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-px"
+            style={{ background: BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}
           >
             <Mail size={15} /> Email Client
           </button>
@@ -179,12 +216,12 @@ export default function EmailClientDetail() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        {/* Left sidebar */}
+        {/* Sidebar */}
         <div className="space-y-5 lg:sticky lg:top-24">
-          {/* Contact info */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden" style={{ borderTop: "4px solid #2563eb" }}>
-            <div className="px-5 py-4 border-b border-slate-100">
-              <p className="font-semibold text-sm text-slate-900">Contact Information</p>
+          {/* Contact Info */}
+          <div className="rounded-2xl overflow-hidden" style={{ ...surfaceStyle, borderTop:`3px solid ${BRAND}` }}>
+            <div className="px-5 py-4" style={{ borderBottom:`1px solid ${cv("--border-color")}` }}>
+              <p className="font-bold text-sm" style={textPrimary}>Contact Information</p>
             </div>
             <div className="px-5 py-4 space-y-3">
               <InfoRow Icon={Mail}     value={client.email || "No email provided"} />
@@ -193,44 +230,44 @@ export default function EmailClientDetail() {
             </div>
           </div>
 
-          {/* Account manager */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <p className="font-semibold text-sm text-slate-900">Account Manager</p>
+          {/* Account Manager */}
+          <div className="rounded-2xl overflow-hidden" style={surfaceStyle}>
+            <div className="px-5 py-4" style={{ borderBottom:`1px solid ${cv("--border-color")}` }}>
+              <p className="font-bold text-sm" style={textPrimary}>Account Manager</p>
             </div>
             <div className="px-5 py-4">
               {client.accountManagerName ? (
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-200" style={{ backgroundColor: "#f8fafc" }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0" style={{ backgroundColor: "#dbeafe", color: "#1d4ed8" }}>
+                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ ...bgStyle, border:`1px solid ${cv("--border-color")}` }}>
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-sm shrink-0" style={{ background: BRAND_GRAD }}>
                     {getInitials(client.accountManagerName)}
                   </div>
                   <div>
-                    <p className="font-bold text-sm text-slate-900">{client.accountManagerName}</p>
-                    <p className="text-xs text-slate-500">Primary Contact</p>
+                    <p className="font-bold text-sm" style={textPrimary}>{client.accountManagerName}</p>
+                    <p className="text-xs" style={textMuted}>Primary Contact</p>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-slate-400 italic text-center py-3 rounded-xl border border-dashed border-slate-200">
+                <p className="text-sm italic text-center py-3 rounded-xl" style={{ ...textMuted, border:`1px dashed ${cv("--border-color")}` }}>
                   No account manager assigned
                 </p>
               )}
             </div>
           </div>
 
-          {/* Activity summary */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <p className="font-semibold text-sm text-slate-900">Activity Summary</p>
+          {/* Activity Summary */}
+          <div className="rounded-2xl overflow-hidden" style={surfaceStyle}>
+            <div className="px-5 py-4" style={{ borderBottom:`1px solid ${cv("--border-color")}` }}>
+              <p className="font-bold text-sm" style={textPrimary}>Activity Summary</p>
             </div>
-            <div className="px-5 py-4 space-y-2.5">
+            <div className="px-5 py-4 space-y-3">
               {[
-                { label: "Total events",     value: timeline?.total || 0,                                      color: "#0f172a" },
-                { label: "Emails sent",      value: entries.filter((e) => e.type === "email_sent").length,     color: "#2563eb" },
-                { label: "Replies received", value: entries.filter((e) => e.type === "email_received").length, color: "#059669" },
-                { label: "Notes logged",     value: entries.filter((e) => e.type === "note").length,           color: "#d97706" },
+                { label:"Total events",     value: timeline?.total || 0,                                      color: textPrimary.color  },
+                { label:"Emails sent",      value: entries.filter((e) => e.type==="email_sent").length,      color: BRAND              },
+                { label:"Replies received", value: entries.filter((e) => e.type==="email_received").length,  color: "#10b981"          },
+                { label:"Notes logged",     value: entries.filter((e) => e.type==="note").length,            color: "#f59e0b"          },
               ].map((s) => (
                 <div key={s.label} className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500">{s.label}</span>
+                  <span style={textMuted}>{s.label}</span>
                   <span className="font-bold" style={{ color: s.color }}>{s.value}</span>
                 </div>
               ))}
@@ -238,13 +275,13 @@ export default function EmailClientDetail() {
           </div>
         </div>
 
-        {/* Right: note + timeline */}
+        {/* Right: Note + Timeline */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Note input */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          {/* Note Input */}
+          <div className="rounded-2xl p-5" style={surfaceStyle}>
             <div className="flex gap-4">
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: "#f1f5f9" }}>
-                <StickyNote size={15} style={{ color: "#64748b" }} />
+              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: cv("--border-color") }}>
+                <StickyNote size={15} style={textMuted} />
               </div>
               <div className="flex-1 relative">
                 <textarea
@@ -252,19 +289,14 @@ export default function EmailClientDetail() {
                   onChange={(e) => setNote(e.target.value)}
                   placeholder="Log a note or internal update…"
                   rows={4}
-                  className="w-full p-4 text-sm text-slate-900 placeholder:text-slate-400 rounded-xl resize-none outline-none transition-all leading-relaxed border border-slate-200"
-                  style={{ backgroundColor: "#f8fafc" }}
-                  onFocus={e => { e.currentTarget.style.borderColor = "#2563eb"; e.currentTarget.style.boxShadow = "0 0 0 4px rgba(37,99,235,0.1)"; }}
-                  onBlur={e  => { e.currentTarget.style.borderColor = "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; }}
+                  className="cd-textarea"
                 />
                 <div className="absolute bottom-3 right-3">
                   <button
                     onClick={handleAddNote}
                     disabled={!note.trim() || addingNote}
                     className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    style={{ backgroundColor: "#2563eb" }}
-                    onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
-                    onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
+                    style={{ background: BRAND_GRAD }}
                   >
                     {addingNote ? <DotsLoader /> : <><Send size={12} /> Log Note</>}
                   </button>
@@ -276,23 +308,18 @@ export default function EmailClientDetail() {
           {/* Timeline */}
           <div>
             <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-              <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+              <h3 className="font-bold text-lg flex items-center gap-2" style={textPrimary}>
                 Activity Timeline
-                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full" style={{ backgroundColor: cv("--border-color"), ...textMuted }}>
                   {timeline?.total || 0}
                 </span>
               </h3>
-              <div className="flex items-center gap-1 rounded-xl p-1" style={{ backgroundColor: "#f1f5f9" }}>
+              <div className="flex items-center gap-1 rounded-xl p-1" style={{ backgroundColor: cv("--bg-primary") }}>
                 {TABS.map((tab) => (
                   <button
                     key={tab.value}
                     onClick={() => setFilter(tab.value)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                    style={
-                      filter === tab.value
-                        ? { backgroundColor: "white", color: "#0f172a", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }
-                        : { backgroundColor: "transparent", color: "#64748b" }
-                    }
+                    className={`px-3 py-1.5 rounded-lg text-xs transition-all ${filter === tab.value ? "cd-tab-active" : "cd-tab-idle"}`}
                   >
                     {tab.label}
                   </button>
@@ -303,60 +330,47 @@ export default function EmailClientDetail() {
             {loadingTimeline ? (
               <TimelineLoader />
             ) : entries.length > 0 ? (
-              <div className="relative pl-8 space-y-6 pb-8" style={{ borderLeft: "2px solid #e2e8f0" }}>
+              <div className="relative pl-8 space-y-5 pb-8" style={{ borderLeft:`2px solid ${cv("--border-color")}` }}>
                 {entries.map((entry, i) => {
                   const cfg = TYPE_CFG[entry.type] || TYPE_CFG.note;
+                  const typeKey = entry.type || "note";
                   return (
-                    <div key={entry.id} className="relative group" style={{ animation: `slideIn 0.3s ease ${i * 0.06}s both` }}>
+                    <div key={entry.id} className="relative group" style={{ animation:`slideIn 0.3s ease ${i*0.06}s both` }}>
                       <div
-                        className="absolute -left-[43px] top-1 w-9 h-9 rounded-full border-4 border-white flex items-center justify-center shadow-sm z-10 group-hover:scale-110 transition-transform"
-                        style={{ backgroundColor: cfg.bg, color: cfg.color }}
+                        className={`tl-icon-${typeKey} absolute -left-[43px] top-1 w-9 h-9 rounded-full flex items-center justify-center shadow-sm z-10 group-hover:scale-110 transition-transform`}
+                        style={{ color: cfg.color, border:`2px solid ${cv("--bg-secondary")}` }}
                       >
                         <cfg.Icon size={14} />
                       </div>
-                      <div
-                        className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 transition-colors"
-                        onMouseEnter={e => e.currentTarget.style.borderColor = "#93c5fd"}
-                        onMouseLeave={e => e.currentTarget.style.borderColor = "#e2e8f0"}
-                      >
+                      <div className="tl-body p-5 transition-colors">
                         <div className="flex justify-between items-start mb-2 flex-wrap gap-2">
                           <div>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-bold text-sm text-slate-900">
-                                {entry.type === "email_sent"
-                                  ? "You sent an email"
-                                  : entry.type === "email_received"
-                                  ? `${entry.fromName || entry.fromEmail || "Client"} replied`
-                                  : entry.type === "engagement"
-                                  ? "Client Engagement"
+                              <span className="font-bold text-sm" style={textPrimary}>
+                                {entry.type==="email_sent" ? "You sent an email"
+                                  : entry.type==="email_received" ? `${entry.fromName || entry.fromEmail || "Client"} replied`
+                                  : entry.type==="engagement" ? "Client Engagement"
                                   : "Note Added"}
                               </span>
-                              {entry.type === "email_sent" && entry.openCount > 0 && (
-                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor: "#f5f3ff", color: "#7c3aed" }}>
-                                  Opened
-                                </span>
+                              {entry.type==="email_sent" && entry.openCount > 0 && (
+                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ backgroundColor:"rgba(139,92,246,0.12)", color:"#8b5cf6" }}>Opened</span>
                               )}
                             </div>
-                            {entry.subject && (
-                              <p className="text-xs font-semibold text-slate-600 mt-0.5">Subject: {entry.subject}</p>
-                            )}
+                            {entry.subject && <p className="text-xs font-semibold mt-0.5" style={textSecondary}>Subject: {entry.subject}</p>}
                           </div>
-                          <span className="text-[11px] font-medium text-slate-400 px-2.5 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: "#f1f5f9" }}>
+                          <span className="text-[11px] font-medium px-2.5 py-1 rounded-full whitespace-nowrap" style={{ backgroundColor: cv("--border-color"), ...textMuted }}>
                             {formatSmartDate(entry.occurredAt)}
                           </span>
                         </div>
-                        <div className="mt-2 text-sm text-slate-600 p-3 rounded-lg whitespace-pre-wrap leading-relaxed" style={{ backgroundColor: "#f8fafc", border: "1px solid #f1f5f9" }}>
+                        <div className="tl-content-block mt-2" style={textSecondary}>
                           {entry.content || entry.preview || "—"}
                         </div>
-                        {(entry.type === "email_sent" || entry.type === "email_received") && (
-                          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
-                            <span className="text-[11px] text-slate-400">Logged via Outlook Sync</span>
-                            <button
-                              className="text-xs font-semibold transition-colors"
-                              style={{ color: "#2563eb" }}
-                              onMouseEnter={e => e.currentTarget.style.textDecoration = "underline"}
-                              onMouseLeave={e => e.currentTarget.style.textDecoration = "none"}
-                            >
+                        {(entry.type==="email_sent" || entry.type==="email_received") && (
+                          <div className="mt-3 pt-3 flex items-center justify-between" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
+                            <span className="text-[11px]" style={textMuted}>Logged via Outlook Sync</span>
+                            <button className="text-xs font-semibold transition-colors" style={{ color: BRAND }}
+                              onMouseEnter={e => e.currentTarget.style.textDecoration="underline"}
+                              onMouseLeave={e => e.currentTarget.style.textDecoration="none"}>
                               View Full Email
                             </button>
                           </div>
@@ -367,29 +381,19 @@ export default function EmailClientDetail() {
                 })}
               </div>
             ) : (
-              <div className="py-14 text-center rounded-2xl border border-dashed border-slate-200" style={{ backgroundColor: "#f8fafc" }}>
-                <Mail size={36} className="mx-auto mb-3" style={{ color: "#cbd5e1" }} />
-                <p className="font-medium text-slate-500 text-sm">No activity found.</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {filter !== "all" ? "Try switching to 'All'." : "Send an email or add a note to get started."}
-                </p>
+              <div className="py-14 text-center rounded-2xl" style={{ ...bgStyle, border:`1px dashed ${cv("--border-color")}` }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: cv("--border-color") }}>
+                  <Mail size={24} style={textMuted} />
+                </div>
+                <p className="font-medium text-sm" style={textSecondary}>No activity found.</p>
+                <p className="text-xs mt-1" style={textMuted}>{filter !== "all" ? "Try switching to 'All'." : "Send an email or add a note to get started."}</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <ComposeEmailModal
-        isOpen={composeOpen}
-        onClose={() => setCompose(false)}
-        defaultClientId={clientId}
-        defaultToEmail={client.email || ""}
-        defaultToName={client.name}
-      />
-
-      <style>{`
-        @keyframes slideIn { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
-      `}</style>
+      <ComposeEmailModal isOpen={composeOpen} onClose={() => setCompose(false)} defaultClientId={clientId} defaultToEmail={client.email || ""} defaultToName={client.name} />
     </div>
   );
 }
