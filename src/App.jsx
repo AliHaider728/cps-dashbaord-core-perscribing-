@@ -9,7 +9,7 @@ import ClientsList         from './Component/Pages/ClientsList.jsx';
 import PCNsList            from './Component/Pages/PCNsList.jsx';
 import PracticesList       from './Component/Pages/PracticesList.jsx';
 import PCNProfile          from './Component/Pages/PCNProfile.jsx';
-import PracticeProfile from './Component/Pages/Practiceprofile.jsx';
+import PracticeProfile     from './Component/Pages/Practiceprofile.jsx';
 import StaffList           from './Component/Pages/Staff/Stafflist.jsx';
 import StaffDetails        from './Component/Pages/Staff/StaffDetails.jsx';
 import RotaManagement      from './Component/Pages/RotaManagement/RotaMaegment.jsx';
@@ -39,8 +39,8 @@ const queryClient = new QueryClient({
     queries: {
       refetchOnWindowFocus: false,
       retry: 1,
-      staleTime: 30_000,   // 30 s — matches notification polling interval
-      gcTime:   5 * 60_000, // 5 min cache
+      staleTime: 30_000,
+      gcTime:   5 * 60_000,
     },
     mutations: { retry: 0 },
   },
@@ -59,7 +59,6 @@ const AppRoutes = () => {
     setActivePage(pathname || 'dashboard');
   }, [location.pathname]);
 
-  // ── Leave handlers (unchanged) ────────────────────────────────────────────
   const handleViewLeaveDetails = (leave) => { setSelectedLeave(leave); navigate(`/leave-details/${leave.id}`); };
   const handleAddLeave         = ()       => { setSelectedLeave(null);  navigate('/leave-add'); };
   const handleEditLeave        = (leave) => { setSelectedLeave(leave); navigate(`/leave-edit/${leave.id}`); };
@@ -140,13 +139,6 @@ const AppRoutes = () => {
 // ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
-    /**
-     * ORDER matters:
-     *  1. QueryClientProvider  — outermost, so ALL routes can use React Query
-     *  2. Router               — provides useLocation / useNavigate
-     *  3. AuthContextProvider  — can now call React Query hooks safely
-     *  4. AppRoutes            — renders actual pages
-     */
     <QueryClientProvider client={queryClient}>
       <Router>
         <AuthContextProvider>
