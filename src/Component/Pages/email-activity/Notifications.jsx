@@ -195,6 +195,7 @@ export default function EmailNotifications() {
             </div>
           ))}
         </div>
+        
       )}
     </div>
   );

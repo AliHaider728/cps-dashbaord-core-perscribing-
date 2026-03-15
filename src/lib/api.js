@@ -2,10 +2,13 @@ import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Axios Instance ──────────────────────────────────────────────────────────
+const BASE_URL = "https://crm-email-backend.vercel.app/api";
+
 const api = axios.create({
-  baseURL: (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/$/, ""),
+  baseURL: BASE_URL,
   headers: { "Content-Type": "application/json" },
 });
+
 
 // ─── Helper: normalize MongoDB _id → id ─────────────────────────────────────
 function normalize(obj) {
