@@ -9,7 +9,7 @@ import ClientsList         from './Component/Pages/ClientsList.jsx';
 import PCNsList            from './Component/Pages/PCNsList.jsx';
 import PracticesList       from './Component/Pages/PracticesList.jsx';
 import PCNProfile          from './Component/Pages/PCNProfile.jsx';
-import PracticeProfile     from './Component/Pages/Practiceprofile.jsx';
+import PracticeProfile from './Component/Pages/Practiceprofile.jsx';
 import StaffList           from './Component/Pages/Staff/Stafflist.jsx';
 import StaffDetails        from './Component/Pages/Staff/StaffDetails.jsx';
 import RotaManagement      from './Component/Pages/RotaManagement/RotaMaegment.jsx';
