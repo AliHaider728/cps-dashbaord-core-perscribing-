@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import DashboardLayout from './Component/DashboardLayout.jsx';
 
-// ── Existing pages (unchanged) ────────────────────────────────────────────────
 import Dashboard           from "./Component/Dashboard/Dashboard.jsx";
 import ClientsList         from './Component/Pages/ClientsList.jsx';
 import PCNsList            from './Component/Pages/PCNsList.jsx';
@@ -22,31 +21,21 @@ import Invoices            from './Component/Pages/Invoices.jsx';
 import Announcements       from './Component/Pages/Announcements.jsx';
 import AttendanceEmployee  from './Component/Pages/Staff/AttendanceEmployee.jsx';
 
-// ── Email Activity Module ──────────────────────────────────────────────────────
 import EmailDashboard     from './Component/Pages/email-activity/Dashboard.jsx';
 import EmailClients       from './Component/Pages/email-activity/Clients.jsx';
 import EmailClientDetail  from './Component/Pages/email-activity/ClientDetail.jsx';
 import EmailList          from './Component/Pages/email-activity/Emails.jsx';
 import EmailTeam          from './Component/Pages/email-activity/Team.jsx';
 import EmailNotifications from './Component/Pages/email-activity/Notifications.jsx';
-// ──────────────────────────────────────────────────────────────────────────────
 
 import AuthContextProvider from './context/AuthContext.jsx';
 
-// ── Shared QueryClient — created ONCE outside the component tree ──────────────
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 30_000,
-      gcTime:   5 * 60_000,
-    },
+    queries: { refetchOnWindowFocus: false, retry: 1, staleTime: 30_000, gcTime: 5 * 60_000 },
     mutations: { retry: 0 },
   },
 });
-
-// ─────────────────────────────────────────────────────────────────────────────
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -70,30 +59,22 @@ const AppRoutes = () => {
   return (
     <DashboardLayout activePage={activePage} setActivePage={setActivePage}>
       <Routes>
-
-        {/* ── Main ────────────────────────────────────────────────────────── */}
         <Route path="/"          element={<Dashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
-
-        {/* ── Announcements ───────────────────────────────────────────────── */}
         <Route path="/announcements" element={<Announcements />} />
 
-        {/* ── Clients ─────────────────────────────────────────────────────── */}
-        <Route path="/clients"               element={<ClientsList />} />
-        <Route path="/pcns"                  element={<PCNsList />} />
-        <Route path="/practices"             element={<PracticesList />} />
-        <Route path="/pcn-profile/:id"       element={<PCNProfile />} />
-        <Route path="/practice-profile/:id"  element={<PracticeProfile />} />
+        <Route path="/clients"              element={<ClientsList />} />
+        <Route path="/pcns"                 element={<PCNsList />} />
+        <Route path="/practices"            element={<PracticesList />} />
+        <Route path="/pcn-profile/:id"      element={<PCNProfile />} />
+        <Route path="/practice-profile/:id" element={<PracticeProfile />} />
 
-        {/* ── Staff ───────────────────────────────────────────────────────── */}
         <Route path="/staff-list"        element={<StaffList />} />
         <Route path="/staff-details/:id" element={<StaffDetails />} />
         <Route path="/attendance"        element={<AttendanceEmployee />} />
 
-        {/* ── Rota ────────────────────────────────────────────────────────── */}
         <Route path="/rota-management" element={<RotaManagement />} />
 
-        {/* ── Leave ───────────────────────────────────────────────────────── */}
         <Route path="/leave-list"
           element={<LeaveList onViewDetails={handleViewLeaveDetails} onAddNew={handleAddLeave} onEdit={handleEditLeave} />}
         />
@@ -107,20 +88,17 @@ const AppRoutes = () => {
           element={<AddLeaveRequest leaveData={selectedLeave} isEditMode={true} onBack={handleBackFromLeave} onSave={handleSaveLeave} />}
         />
 
-        {/* ── Other ───────────────────────────────────────────────────────── */}
         <Route path="/compliance"    element={<ComplianceDashboard />} />
         <Route path="/pcn-dashboard" element={<PCNDashboard />} />
         <Route path="/invoices"      element={<Invoices />} />
 
-        {/* ── Email Activity Module ────────────────────────────────────────── */}
         <Route path="/email-activity"              element={<EmailDashboard />} />
-        <Route path="/email-activity/clients"       element={<EmailClients />} />
-        <Route path="/email-activity/clients/:id"   element={<EmailClientDetail />} />
-        <Route path="/email-activity/emails"        element={<EmailList />} />
-        <Route path="/email-activity/team"          element={<EmailTeam />} />
+        <Route path="/email-activity/clients"      element={<EmailClients />} />
+        <Route path="/email-activity/clients/:id"  element={<EmailClientDetail />} />
+        <Route path="/email-activity/emails"       element={<EmailList />} />
+        <Route path="/email-activity/team"         element={<EmailTeam />} />
         <Route path="/email-activity/notifications" element={<EmailNotifications />} />
 
-        {/* ── 404 ─────────────────────────────────────────────────────────── */}
         <Route path="*" element={
           <div className="bg-secondary rounded-xl p-12 text-center shadow-sm">
             <div className="w-20 h-20 bg-core-primary-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -130,13 +108,11 @@ const AppRoutes = () => {
             <p className="text-secondary">This page does not exist</p>
           </div>
         } />
-
       </Routes>
     </DashboardLayout>
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
