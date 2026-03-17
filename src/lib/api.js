@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-// ─── Axios Instance ──────────────────────────────────────────────────────────
+// ─── Axios Instance 
 const BASE_URL = "https://crm-email-backend.vercel.app/api";
 
 const api = axios.create({
@@ -9,7 +9,7 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// ─── Helper: normalize MongoDB _id → id ─────────────────────────────────────
+// ─── Helper: normalize MongoDB _id → id  
 function normalize(obj) {
   if (!obj) return obj;
   if (Array.isArray(obj)) return obj.map(normalize);
@@ -33,7 +33,7 @@ function normalizeResponse(data) {
   return result;
 }
 
-// ─── Stats ───────────────────────────────────────────────────────────────────
+// ─── Stats ─────────
 export function useGetStatsOverview() {
   return useQuery({
     queryKey: ["stats", "overview"],
@@ -44,7 +44,7 @@ export function useGetStatsOverview() {
   });
 }
 
-// ─── Clients ─────────────────────────────────────────────────────────────────
+// ─── Clients ───────
 export function useListClients(params) {
   return useQuery({
     queryKey: ["clients", params],
@@ -79,7 +79,7 @@ export function useCreateClient() {
   });
 }
 
-// ─── Timeline ────────────────────────────────────────────────────────────────
+// ─── Timeline ──────
 export function useGetClientTimeline(clientId, params) {
   return useQuery({
     queryKey: ["timeline", clientId, params],
@@ -104,7 +104,7 @@ export function useAddNote() {
   });
 }
 
-// ─── Emails ──────────────────────────────────────────────────────────────────
+// ─── Emails ────────
 export function useListEmails(params) {
   return useQuery({
     queryKey: ["emails", params],
@@ -115,7 +115,7 @@ export function useListEmails(params) {
   });
 }
 
-// ─── Email Engagements — WHO opened / clicked / downloaded ───────────────────
+// ─── Email Engagements — WHO opened / clicked / downloaded   
 // Fetches full detail per email: who opened, device, OS, location, time
 // Used by the EmailDrawer side panel
 export function useGetEmailEngagements(emailId) {
@@ -129,13 +129,13 @@ export function useGetEmailEngagements(emailId) {
         clicks:    (data.clicks    || []).map(normalize),
         downloads: (data.downloads || []).map(normalize),
       };
-    },
+    },  
     enabled:   !!emailId,
     staleTime: 30_000, // refresh every 30s — engagements are near real-time
   });
 }
 
-// ─── Track Email (API-based) ──────────────────────────────────────────────────
+// ─── Track Email (API-based)   
 // Call this to manually record open / click / download from frontend
 export function useTrackEmail() {
   const queryClient = useQueryClient();
@@ -157,7 +157,7 @@ export function useTrackEmail() {
   });
 }
 
-// ─── Send Email ───────────────────────────────────────────────────────────────
+// ─── Send Email ─────
 export function useSendEmail() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -175,7 +175,7 @@ export function useSendEmail() {
   });
 }
 
-// ─── Team ─────────────────────────────────────────────────────────────────────
+// ─── Team ───────────
 export function useListTeamMembers() {
   return useQuery({
     queryKey: ["team"],
@@ -200,7 +200,7 @@ export function useTriggerOutlookSync() {
   });
 }
 
-// ─── Notifications ────────────────────────────────────────────────────────────
+// ─── Notifications ──
 export function useListNotifications() {
   return useQuery({
     queryKey: ["notifications"],

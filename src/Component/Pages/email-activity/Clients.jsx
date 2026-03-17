@@ -319,7 +319,6 @@ export default function EmailClients() {
                     </td>
                     <td className="px-5 py-4">
                       <div className="flex items-center justify-end gap-2">
-                        {/* Delete button — stops row click propagation */}
                         <button
                           className="ec-delete-btn"
                           onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}

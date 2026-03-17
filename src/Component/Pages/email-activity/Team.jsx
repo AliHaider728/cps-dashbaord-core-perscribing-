@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useListTeamMembers, useTriggerOutlookSync } from "../../../lib/api.js";
 import {
   Copy, RefreshCw, CheckCircle2, XCircle, Mail, Users,
-  UserPlus, Wifi, Shield, Info, X, Activity, Clock,
-  ArrowUpRight, ArrowDownLeft,
+  UserPlus, Wifi, Shield, Info, X, Clock, ArrowUpRight, ArrowDownLeft,
+  Bell,   // ← NEW for alerts
 } from "lucide-react";
 import { getInitials, formatSmartDate } from "../../../lib/utils.js";
 
@@ -174,10 +174,12 @@ function InviteModal({ isOpen, onClose }) {
                   ))}
                 </div>
               </div>
-              {/* BCC Preview */}
+              {/* BCC Preview — emoji hata diya, ab clean + icon */}
               {name && (
                 <div className="rounded-xl p-4" style={{ backgroundColor:"rgba(16,185,129,0.06)", border:"1px solid rgba(16,185,129,0.2)" }}>
-                  <p className="text-xs font-bold mb-2" style={{ color:"#10b981" }}>🎉 Auto-generated BCC address:</p>
+                  <p className="text-xs font-bold mb-2 flex items-center gap-2" style={{ color:"#10b981" }}>
+                    <Mail size={13} /> Auto-generated BCC address:
+                  </p>
                   <code className="text-xs font-mono" style={{ color:"#34d399" }}>
                     activity+{name.toLowerCase().replace(/\s+/g,"-")}@ourcrm.com
                   </code>
@@ -228,12 +230,13 @@ function OutlookModal({ isOpen, member, onClose }) {
             <div className="p-6 space-y-4">
               <div className="space-y-3">
                 {[
-                  { icon:"📨", text:"Auto-log sent emails to client timelines" },
-                  { icon:"📥", text:"Capture all replies even without BCC" },
-                  { icon:"🔔", text:"Real-time alerts for opens, clicks & downloads" },
+                  { Icon:Mail,           text:"Auto-log sent emails to client timelines" },
+                  { Icon:ArrowDownLeft,  text:"Capture all replies even without BCC" },
+                  { Icon:Bell,           text:"Real-time alerts for opens, clicks & downloads" },
                 ].map((f) => (
                   <div key={f.text} className="flex items-center gap-3 text-sm" style={textSecondary}>
-                    <span>{f.icon}</span> {f.text}
+                    <f.Icon size={16} style={{ color:BRAND }} />
+                    {f.text}
                   </div>
                 ))}
               </div>
@@ -444,7 +447,7 @@ export default function EmailTeam() {
                       {m.bccAddress || `activity+${(m.name||"").toLowerCase().replace(/\s+/g,"-")}@ourcrm.com`}
                     </div>
                     <button onClick={() => copyBcc(m.id, m.bccAddress || "")}
-                      className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+                      className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors"
                       style={surfaceStyle}
                       onMouseEnter={e => { e.currentTarget.style.borderColor=BRAND; e.currentTarget.style.color=BRAND; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor=cv("--border-color"); e.currentTarget.style.color=cv("--text-muted"); }}>
