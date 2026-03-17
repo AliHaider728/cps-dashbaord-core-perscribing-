@@ -126,11 +126,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
     <>
       <style>{`
         .sidebar-scroll { scrollbar-width: none; }
-        .sidebar-scroll::-webkit-scrollbar { width: 0; }
-        .sidebar-expanded .sidebar-scroll:hover { scrollbar-width: thin; }
-        .sidebar-expanded .sidebar-scroll:hover::-webkit-scrollbar { width: 4px; }
-        .sidebar-expanded .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
-        .sidebar-expanded .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--core-primary-200); border-radius: 10px; }
+        .sidebar-scroll::-webkit-scrollbar { display: none; }
         .dropdown-content { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.3s cubic-bezier(0.4,0,0.2,1), margin-top 0.3s cubic-bezier(0.4,0,0.2,1); }
         .dropdown-content.open { max-height: 600px; opacity: 1; margin-top: 0.25rem; }
         .hover-popup { opacity: 0; visibility: hidden; transform: translateX(-8px) scale(0.96); pointer-events: none; transition: opacity 0.2s cubic-bezier(0.4,0,0.2,1), transform 0.2s cubic-bezier(0.4,0,0.2,1), visibility 0.2s; }
@@ -175,7 +171,7 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
 
         <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mx-4" />
 
-        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 sidebar-scroll">
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-1 sidebar-scroll scrollbar-hide">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = isItemActive(item);
@@ -316,4 +312,4 @@ const Sidebar = ({ isOpen, setIsOpen, isCollapsed, setIsCollapsed }) => {
   );
 };
 
-export default Sidebar;
+export default Sidebar; 

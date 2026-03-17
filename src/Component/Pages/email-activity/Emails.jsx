@@ -8,7 +8,7 @@ import {
 import { formatSmartDate } from "../../../lib/utils.js";
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
 
-// ─── CSS var helpers ──────────────────────────────────────────────────────────
+// ─── CSS var helpers  ──────────────────
 const cv = (v) => `var(${v})`;
 const surfaceStyle  = { backgroundColor: cv("--bg-secondary"), border: `1px solid ${cv("--border-color")}` };
 const bgStyle       = { backgroundColor: cv("--bg-primary") };
@@ -20,7 +20,7 @@ const BRAND      = "#6673FF";
 const BRAND_DARK = "#2F2CCB";
 const BRAND_GRAD = `linear-gradient(135deg, ${BRAND}, ${BRAND_DARK})`;
 
-// ─── Global styles ────────────────────────────────────────────────────────────
+// ─── Global styles  ────────────────────
 const GLOBAL = `
   @keyframes el-pulse  { 0%,100%{opacity:1} 50%{opacity:.4} }
   @keyframes fadeUp    { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
@@ -44,7 +44,7 @@ const GLOBAL = `
   .el-email-row {
     border-radius: 14px;
     overflow: hidden;
-    display: flex;
+    display: flex;  
     transition: box-shadow .2s, border-color .2s, transform .15s;
     cursor: pointer;
     animation: fadeUp .25s ease both;
@@ -139,7 +139,7 @@ const GLOBAL = `
   }
 `;
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+// ─── Skeleton  ─────────────────────────
 function EmailSkeleton() {
   return (
     <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
@@ -157,14 +157,14 @@ function EmailSkeleton() {
   );
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants  
 const DIRECTIONS = [
   { value:"all",      label:"All emails" },
   { value:"outbound", label:"Sent"       },
   { value:"inbound",  label:"Received"   },
 ];
 
-// ─── Who Row (single engagement event) ────────────────────────────────────────
+// ─── Who Row (single engagement event)  
 function WhoRow({ e, type }) {
   const deviceIcon = e.device === "mobile" ? "📱" : e.device === "tablet" ? "📱" : "🖥";
   const label = type === "open"
@@ -195,7 +195,7 @@ function WhoRow({ e, type }) {
   );
 }
 
-// ─── Email Detail Drawer ──────────────────────────────────────────────────────
+// ─── Email Detail Drawer   
 function EmailDrawer({ email, onClose }) {
   const [copied, setCopied] = useState(false);
 
@@ -426,7 +426,7 @@ function EmailDrawer({ email, onClose }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page  ─────────────────────────────
 export default function EmailList() {
   const { data, isLoading } = useListEmails();
   const allEmails = data?.emails || [];
