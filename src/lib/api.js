@@ -2,7 +2,7 @@ import axios from "axios";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ─── Axios Instance 
-const BASE_URL = "https://crm-email-backend.vercel.app/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "https://crm-email-backend.vercel.app/api";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -14,33 +14,39 @@ function normalize(obj) {
   if (!obj) return obj;
   if (Array.isArray(obj)) return obj.map(normalize);
   const { _id, __v, ...rest } = obj;
-  return { id: String(_id ?? rest.id), ...rest };
+  return { id: String(_id ?? rest.id ?? ""), ...rest };
 }
 
 function normalizeResponse(data) {
+  if (!data || typeof data !== "object") return data;
   if (Array.isArray(data)) return data.map(normalize);
   const result = {};
   for (const key of Object.keys(data)) {
-    result[key] = Array.isArray(data[key])
-      ? data[key].map(normalize)
-      : typeof data[key] === "object" && data[key] !== null && key !== "recentActivity"
-      ? normalize(data[key])
-      : data[key];
-  }
-  if (data.recentActivity) {
-    result.recentActivity = data.recentActivity.map(normalize);
+    const val = data[key];
+    if (Array.isArray(val)) {
+      result[key] = val.map(normalize);
+    } else if (val && typeof val === "object" && !(val instanceof Date)) {
+      result[key] = normalize(val);
+    } else {
+      result[key] = val;
+    }
   }
   return result;
 }
 
-// ─── Stats ─────────
+// ─── Stats  
 export function useGetStatsOverview() {
   return useQuery({
     queryKey: ["stats", "overview"],
     queryFn: async () => {
       const { data } = await api.get("/stats/overview");
-      return normalizeResponse(data);
+      // recentActivity is an array — normalize separately
+      return {
+        ...data,
+        recentActivity: (data.recentActivity || []).map(normalize),
+      };
     },
+    staleTime: 60_000,
   });
 }
 
@@ -50,7 +56,10 @@ export function useListClients(params) {
     queryKey: ["clients", params],
     queryFn: async () => {
       const { data } = await api.get("/clients", { params });
-      return normalizeResponse(data);
+      return {
+        ...data,
+        clients: (data.clients || []).map(normalize),
+      };
     },
   });
 }
@@ -73,9 +82,17 @@ export function useCreateClient() {
       const res = await api.post("/clients", data);
       return normalize(res.data.client ?? res.data);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clients"] }),
+  });
+}
+
+export function useDeleteClient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (clientId) => {
+      await api.delete(`/clients/${clientId}`);
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["clients"] }),
   });
 }
 
@@ -85,7 +102,10 @@ export function useGetClientTimeline(clientId, params) {
     queryKey: ["timeline", clientId, params],
     queryFn: async () => {
       const { data } = await api.get(`/clients/${clientId}/timeline`, { params });
-      return normalizeResponse(data);
+      return {
+        ...data,
+        entries: (data.entries || []).map(normalize),
+      };
     },
     enabled: !!clientId,
   });
@@ -96,7 +116,7 @@ export function useAddNote() {
   return useMutation({
     mutationFn: async ({ data }) => {
       const res = await api.post("/notes", data);
-      return res.data;
+      return normalize(res.data);
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["timeline", variables.data.clientId] });
@@ -110,39 +130,69 @@ export function useListEmails(params) {
     queryKey: ["emails", params],
     queryFn: async () => {
       const { data } = await api.get("/emails", { params });
-      return normalizeResponse(data);
+      return {
+        ...data,
+        emails: (data.emails || []).map(normalize),
+      };
     },
   });
 }
 
-// ─── Email Engagements — WHO opened / clicked / downloaded   
-// Fetches full detail per email: who opened, device, OS, location, time
-// Used by the EmailDrawer side panel
+export function useGetEmail(emailId) {
+  return useQuery({
+    queryKey: ["emails", emailId],
+    queryFn: async () => {
+      const { data } = await api.get(`/emails/${emailId}`);
+      return normalize(data);
+    },
+    enabled: !!emailId,
+  });
+}
+
+// ─── FIX: Email Engagements      ──────
+// Backend returns: { engagements: [ { type: 'open'|'click'|'download', ...} ] }
+// EmailList/EmailDrawer expects: { opens[], clicks[], downloads[], summary{} }
 export function useGetEmailEngagements(emailId) {
   return useQuery({
     queryKey: ["email-engagements", emailId],
     queryFn: async () => {
       const { data } = await api.get(`/emails/${emailId}/engagements`);
+      const all = (data.engagements || []).map(normalize);
+
+      const opens     = all.filter((e) => e.type === "open");
+      const clicks    = all.filter((e) => e.type === "click");
+      const downloads = all.filter((e) => e.type === "download");
+
+      // Unique openers by email address
+      const uniqueOpeners = new Set(opens.map((e) => e.openedByEmail).filter(Boolean)).size;
+
       return {
-        ...data,
-        opens:     (data.opens     || []).map(normalize),
-        clicks:    (data.clicks    || []).map(normalize),
-        downloads: (data.downloads || []).map(normalize),
+        engagements: all,
+        opens,
+        clicks,
+        downloads,
+        // FIX: summary object that EmailDrawer reads
+        summary: {
+          openCount:      opens.length,
+          clickCount:     clicks.length,
+          downloadCount:  downloads.length,
+          uniqueOpeners,
+        },
       };
-    },  
+    },
     enabled:   !!emailId,
-    staleTime: 30_000, // refresh every 30s — engagements are near real-time
+    staleTime: 30_000,
   });
 }
 
-// ─── Track Email (API-based)   
-// Call this to manually record open / click / download from frontend
+// ─── Track Email (manual, API-based)     ─────
 export function useTrackEmail() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ emailId, eventType, openedByEmail, linkUrl, fileName }) => {
+    mutationFn: async ({ emailId, type, openedByEmail, linkUrl, fileName }) => {
+      // FIX: backend expects 'type' not 'eventType'
       const res = await api.post(`/emails/${emailId}/track`, {
-        eventType,
+        type,
         openedByEmail,
         linkUrl,
         fileName,
@@ -157,35 +207,59 @@ export function useTrackEmail() {
   });
 }
 
-// ─── Send Email ─────
+// ─── FIX: Send Email — correct route is POST /emails not /emails/send  
 export function useSendEmail() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ data }) => {
-      const res = await api.post("/emails/send", data);
+      // FIX: route was /emails/send — correct route is POST /emails
+      const res = await api.post("/emails", {
+        ...data,
+        direction:  "outbound",
+        syncMethod: "manual",
+        sentAt:     new Date().toISOString(),
+        isRead:     true,
+      });
       return normalize(res.data.email ?? res.data);
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["emails"] });
       if (variables.data?.clientId) {
         queryClient.invalidateQueries({ queryKey: ["timeline", variables.data.clientId] });
+        queryClient.invalidateQueries({ queryKey: ["clients"] });
       }
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
     },
   });
 }
 
-// ─── Team ───────────
+// ─── Team  ─
 export function useListTeamMembers() {
   return useQuery({
     queryKey: ["team"],
     queryFn: async () => {
       const { data } = await api.get("/team");
-      return normalizeResponse(data);
+      return {
+        ...data,
+        members: (data.members || []).map(normalize),
+      };
     },
   });
 }
 
+export function useCreateTeamMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ data }) => {
+      const res = await api.post("/team", data);
+      return normalize(res.data);
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["team"] }),
+  });
+}
+
+// ─── Outlook Sync ──
 export function useTriggerOutlookSync() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -196,30 +270,56 @@ export function useTriggerOutlookSync() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["team"] });
       queryClient.invalidateQueries({ queryKey: ["emails"] });
+      queryClient.invalidateQueries({ queryKey: ["timeline"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
 }
 
-// ─── Notifications ──
-export function useListNotifications() {
+// FIX: returns the real Microsoft OAuth URL for redirecting the browser
+export function getOutlookAuthUrl(memberId) {
+  return `${BASE_URL}/outlook/auth/${memberId}`;
+}
+
+// ─── Notifications ─
+export function useListNotifications(params) {
   return useQuery({
-    queryKey: ["notifications"],
+    queryKey: ["notifications", params],
     queryFn: async () => {
-      const { data } = await api.get("/notifications");
-      return normalizeResponse(data);
+      const { data } = await api.get("/notifications", { params });
+      return {
+        ...data,
+        notifications: (data.notifications || []).map(normalize),
+      };
     },
+    refetchInterval: 30_000,   // auto-poll every 30s
   });
 }
 
+// ─── FIX: method was PATCH, backend expects POST /:id/read   ──
 export function useMarkNotificationRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ notificationId }) => {
-      const res = await api.patch(`/notifications/${notificationId}/read`);
-      return res.data;
+      // FIX: was api.patch — backend route is POST /notifications/:id/read
+      const res = await api.post(`/notifications/${notificationId}/read`);
+      return normalize(res.data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
+  });
+}
+
+// ─── Mark ALL notifications read (bulk helper)    ─────
+export function useMarkAllNotificationsRead() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (notificationIds) => {
+      await Promise.all(
+        notificationIds.map((id) => api.post(`/notifications/${id}/read`))
+      );
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["notifications"] }),
   });
 }

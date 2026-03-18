@@ -5,7 +5,7 @@ import {
   Users, RefreshCw, BarChart3, TrendingUp, AlertCircle,
   Zap, Activity, MailOpen, Download, Bell, Eye, Inbox,
 } from "lucide-react";
-import { useGetStatsOverview } from "../../../lib/api.js";
+import { useGetStatsOverview, useListNotifications } from "../../../lib/api.js";
 import { formatRelative } from "../../../lib/utils.js";
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
 import { ParticleCard, GlobalSpotlight } from "../../MagicBento/MagicBento.jsx";
@@ -17,7 +17,6 @@ const textPrimary   = { color: cv("--text-primary") };
 const textSecondary = { color: cv("--text-secondary") };
 const textMuted     = { color: cv("--text-muted") };
 
-/* ─── Global CSS ─────────────────────────────────────────────── */
 const GLOBAL_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap');
 
@@ -28,7 +27,6 @@ const GLOBAL_STYLES = `
 
   .ed-font * { font-family:'DM Sans',sans-serif !important; }
 
-  /* ──────── Stat cards ──────── */
   .sc-card {
     position:relative; overflow:hidden; border-radius:18px; border:1px solid;
     cursor:default; transition:transform .25s, box-shadow .25s;
@@ -40,39 +38,26 @@ const GLOBAL_STYLES = `
     animation:shimmer 2s ease infinite; pointer-events:none; z-index:1;
   }
 
-  /* dark */
   .sc-blue   { background:rgba(30,27,143,0.22);  border-color:rgba(102,115,255,0.35); }
   .sc-green  { background:rgba(6,78,59,0.28);    border-color:rgba(16,185,129,0.3);  }
   .sc-violet { background:rgba(76,29,149,0.28);  border-color:rgba(139,92,246,0.3);  }
   .sc-amber  { background:rgba(120,53,15,0.28);  border-color:rgba(245,158,11,0.3);  }
 
-  /* light — rich gradient fills + strong borders */
   [data-theme="light"] .sc-blue   { background:linear-gradient(145deg,#dde3ff,#c7d0ff); border-color:#4f46e5; border-width:1.5px; }
   [data-theme="light"] .sc-green  { background:linear-gradient(145deg,#ccfce8,#a7f3d0); border-color:#059669; border-width:1.5px; }
   [data-theme="light"] .sc-violet { background:linear-gradient(145deg,#ede9fe,#d8d3fe); border-color:#7c3aed; border-width:1.5px; }
   [data-theme="light"] .sc-amber  { background:linear-gradient(145deg,#fef3c7,#fde68a); border-color:#d97706; border-width:1.5px; }
 
-  /* dark values */
-  .sc-blue   .sc-val { color:#DADFFF; }
-  .sc-green  .sc-val { color:#d1fae5; }
-  .sc-violet .sc-val { color:#ede9fe; }
-  .sc-amber  .sc-val { color:#fef3c7; }
-  .sc-blue   .sc-sub { color:#8F9AFF; }
-  .sc-green  .sc-sub { color:#34d399; }
-  .sc-violet .sc-sub { color:#a78bfa; }
-  .sc-amber  .sc-sub { color:#fbbf24; }
+  .sc-blue .sc-val { color:#DADFFF; } .sc-green .sc-val { color:#d1fae5; }
+  .sc-violet .sc-val { color:#ede9fe; } .sc-amber .sc-val { color:#fef3c7; }
+  .sc-blue .sc-sub { color:#8F9AFF; } .sc-green .sc-sub { color:#34d399; }
+  .sc-violet .sc-sub { color:#a78bfa; } .sc-amber .sc-sub { color:#fbbf24; }
 
-  /* light values — deep saturated text */
-  [data-theme="light"] .sc-blue   .sc-val { color:#1e1b8f; }
-  [data-theme="light"] .sc-green  .sc-val { color:#064e3b; }
-  [data-theme="light"] .sc-violet .sc-val { color:#3b0764; }
-  [data-theme="light"] .sc-amber  .sc-val { color:#78350f; }
-  [data-theme="light"] .sc-blue   .sc-sub { color:#3730a3; }
-  [data-theme="light"] .sc-green  .sc-sub { color:#047857; }
-  [data-theme="light"] .sc-violet .sc-sub { color:#5b21b6; }
-  [data-theme="light"] .sc-amber  .sc-sub { color:#92400e; }
+  [data-theme="light"] .sc-blue .sc-val   { color:#1e1b8f; } [data-theme="light"] .sc-green .sc-val  { color:#064e3b; }
+  [data-theme="light"] .sc-violet .sc-val { color:#3b0764; } [data-theme="light"] .sc-amber .sc-val  { color:#78350f; }
+  [data-theme="light"] .sc-blue .sc-sub   { color:#3730a3; } [data-theme="light"] .sc-green .sc-sub  { color:#047857; }
+  [data-theme="light"] .sc-violet .sc-sub { color:#5b21b6; } [data-theme="light"] .sc-amber .sc-sub  { color:#92400e; }
 
-  /* ──────── Activity timeline ──────── */
   .act-list { position:relative; }
   .act-list::before {
     content:''; position:absolute; left:34px; top:0; bottom:0; width:1px;
@@ -92,25 +77,20 @@ const GLOBAL_STYLES = `
     width:30px; height:30px; border-radius:9px; display:flex; align-items:center;
     justify-content:center; border:1.5px solid; flex-shrink:0; position:relative; z-index:1;
   }
-
-  /* dark icons */
   .act-icon-email_sent     { background:rgba(102,115,255,0.15); border-color:rgba(102,115,255,0.4); color:#818cf8; }
   .act-icon-email_received { background:rgba(16,185,129,0.15);  border-color:rgba(16,185,129,0.4);  color:#34d399; }
   .act-icon-engagement     { background:rgba(139,92,246,0.15);  border-color:rgba(139,92,246,0.4);  color:#a78bfa; }
   .act-icon-note           { background:rgba(245,158,11,0.15);  border-color:rgba(245,158,11,0.4);  color:#fbbf24; }
 
-  /* light icons — solid fills for maximum visibility */
   [data-theme="light"] .act-icon-email_sent     { background:#e0e7ff; border-color:#4f46e5; color:#3730a3; }
   [data-theme="light"] .act-icon-email_received { background:#d1fae5; border-color:#059669; color:#065f46; }
   [data-theme="light"] .act-icon-engagement     { background:#ede9fe; border-color:#7c3aed; color:#5b21b6; }
   [data-theme="light"] .act-icon-note           { background:#fef3c7; border-color:#d97706; color:#92400e; }
 
-  /* ──────── Engagement bars ──────── */
   .eng-track { height:8px; border-radius:99px; overflow:hidden; background:rgba(0,0,0,0.15); }
   [data-theme="light"] .eng-track { background:#e5e7eb; }
   .eng-fill  { height:100%; border-radius:99px; animation:bar-grow .9s cubic-bezier(.16,1,.3,1) both; }
 
-  /* ──────── Quick action rows ──────── */
   .qa-row {
     display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:12px;
     border:1px solid transparent; transition:border-color .15s, background .15s, transform .15s;
@@ -119,19 +99,14 @@ const GLOBAL_STYLES = `
   .qa-row:hover { background:var(--bg-primary); border-color:rgba(102,115,255,0.3); transform:translateX(2px); }
   [data-theme="light"] .qa-row:hover { background:#f5f3ff; border-color:#6673FF; }
 
-  /* ──────── Live dot ──────── */
   .live-dot {
     width:7px; height:7px; border-radius:50%; background:#10b981;
     animation:live-dot 2s ease-in-out infinite; display:inline-block;
   }
 
-  /* ──────── Skeleton ──────── */
   .skel { border-radius:12px; background:var(--border-color); animation:ed-pulse 1.5s ease infinite; }
 
-  /* ──────── Particle card z-fix ──────── */
   .ed-pc-content { position:relative; z-index:1; }
-
-  /* ──────── Light mode card surfaces ──────── */
   [data-theme="light"] .ed-surface {
     background:#ffffff !important;
     border:1.5px solid #d1d5db !important;
@@ -139,7 +114,6 @@ const GLOBAL_STYLES = `
   }
 `;
 
-/* ─── Skeleton ───────────────────────────────────────────────── */
 function DashboardSkeleton() {
   return (
     <div className="space-y-5 ed-font">
@@ -156,7 +130,6 @@ function DashboardSkeleton() {
   );
 }
 
-/* ─── Stat Card ─────────────────────────────────────────────── */
 const STAT_THEMES = {
   blue:   { cls:"sc-blue",   grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", glow:"0 8px 28px rgba(102,115,255,0.45)" },
   green:  { cls:"sc-green",  grad:"linear-gradient(135deg,#10b981,#0d9488)", glow:"0 8px 28px rgba(16,185,129,0.4)"  },
@@ -174,15 +147,13 @@ function StatCard({ title, value, Icon, theme, sub }) {
       <div style={{ position:"absolute", top:-24, right:-24, width:90, height:90, borderRadius:"50%",
                     background:"radial-gradient(circle,rgba(255,255,255,0.08),transparent)", pointerEvents:"none" }} />
       <div style={{ padding:"18px 20px", display:"flex", alignItems:"center", gap:14, position:"relative", zIndex:1 }}>
-        {/* icon */}
         <div style={{ width:46, height:46, borderRadius:12, background:t.grad, flexShrink:0,
                       display:"flex", alignItems:"center", justifyContent:"center",
                       boxShadow:"0 4px 12px rgba(0,0,0,0.28)" }}>
           <Icon size={20} color="white" />
         </div>
         <div style={{ flex:1, minWidth:0 }}>
-          <p className="sc-sub" style={{ fontSize:"0.75rem", fontWeight:700, textTransform:"uppercase",
-                                          letterSpacing:"0.07em", marginBottom:3 }}>{title}</p>
+          <p className="sc-sub" style={{ fontSize:"0.75rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:3 }}>{title}</p>
           <p className="sc-val" style={{ fontSize:"1.875rem", fontWeight:800, lineHeight:1, letterSpacing:"-0.025em" }}>{value}</p>
           {sub && <p className="sc-sub" style={{ fontSize:"0.75rem", marginTop:3, opacity:0.8 }}>{sub}</p>}
         </div>
@@ -191,8 +162,8 @@ function StatCard({ title, value, Icon, theme, sub }) {
   );
 }
 
-/* ─── Engagement Bar ─────────────────────────────────────────── */
 function EngBar({ label, value, gradient, sub }) {
+  const safe = Math.min(Math.max(value || 0, 0), 100);
   return (
     <div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:7 }}>
@@ -200,16 +171,15 @@ function EngBar({ label, value, gradient, sub }) {
           <span style={{ ...textSecondary, fontSize:"0.9375rem", fontWeight:600 }}>{label}</span>
           {sub && <span style={{ ...textMuted, fontSize:"0.8125rem", marginLeft:6 }}>{sub}</span>}
         </div>
-        <span style={{ ...textPrimary, fontSize:"1rem", fontWeight:800 }} className="tabular-nums">{value}%</span>
+        <span style={{ ...textPrimary, fontSize:"1rem", fontWeight:800 }} className="tabular-nums">{safe}%</span>
       </div>
       <div className="eng-track">
-        <div className="eng-fill" style={{ "--w":`${Math.min(value,100)}%`, width:`${Math.min(value,100)}%`, background:gradient }} />
+        <div className="eng-fill" style={{ "--w":`${safe}%`, width:`${safe}%`, background:gradient }} />
       </div>
     </div>
   );
 }
 
-/* ─── Activity Row ───────────────────────────────────────────── */
 const TYPE_META = {
   email_sent:     { dot:"#818cf8", Icon:<ArrowUpRight size={15} />,      label:"Sent"  },
   email_received: { dot:"#34d399", Icon:<ArrowDownLeft size={15} />,     label:"Reply" },
@@ -259,7 +229,6 @@ function ActivityRow({ a, onClick }) {
   );
 }
 
-/* ─── Card Header ────────────────────────────────────────────── */
 function CardHead({ iconGrad, IconEl, title, sub, action }) {
   return (
     <div style={{ ...bgStyle, borderBottom:`1px solid ${cv("--border-color")}`,
@@ -280,13 +249,15 @@ function CardHead({ iconGrad, IconEl, title, sub, action }) {
   );
 }
 
-/* ─── Shared ParticleCard props ──────────────────────────────── */
 const PC = { glowColor:"102, 115, 255", clickEffect:true, particleCount:10, innerGlow:true };
 
-/* ══════════════════════════════════════════════════════════════ */
 export default function EmailDashboard() {
   const navigate = useNavigate();
   const { data: stats, isLoading, isError, refetch } = useGetStatsOverview();
+  // FIX: get unread count from notifications hook
+  const { data: notifData } = useListNotifications();
+  const unreadNotifications = notifData?.unreadCount || 0;
+
   const [composeOpen, setComposeOpen] = useState(false);
   const gridRef = useRef(null);
 
@@ -312,13 +283,19 @@ export default function EmailDashboard() {
   }
 
   const STATS = [
-    { title:"Emails Sent",     value:stats?.totalEmailsSent     || 0, sub:"Outlook + BCC",     Icon:ArrowUpRight,      theme:"blue"   },
-    { title:"Emails Received", value:stats?.totalEmailsReceived || 0, sub:"Replies captured",  Icon:ArrowDownLeft,     theme:"green"  },
-    { title:"Avg Open Rate",   value:`${stats?.openRate  || 0}%`,     sub:"Engagement",        Icon:Eye,               theme:"violet" },
-    { title:"Avg Click Rate",  value:`${stats?.clickRate || 0}%`,     sub:"Link interactions", Icon:MousePointerClick, theme:"amber"  },
+    { title:"Emails Sent",     value: stats?.totalEmailsSent     || 0, sub:"Outlook + BCC",     Icon:ArrowUpRight,      theme:"blue"   },
+    { title:"Emails Received", value: stats?.totalEmailsReceived || 0, sub:"Replies captured",  Icon:ArrowDownLeft,     theme:"green"  },
+    { title:"Avg Open Rate",   value:`${stats?.openRate  || 0}%`,      sub:"Engagement",        Icon:Eye,               theme:"violet" },
+    { title:"Avg Click Rate",  value:`${stats?.clickRate || 0}%`,      sub:"Link interactions", Icon:MousePointerClick, theme:"amber"  },
   ];
 
-  const hasActivity = stats?.recentActivity?.length > 0;
+  const hasActivity = (stats?.recentActivity?.length || 0) > 0;
+
+  // FIX: safe fallback for fields that backend may not return yet
+  const replyRate      = stats?.replyRate      || 0;
+  const bccTracked     = stats?.bccTrackedCount  || stats?.totalEmailsSent || 0;
+  const inboxSynced    = stats?.inboxSyncedCount || stats?.totalEmailsReceived || 0;
+  const totalDownloads = stats?.totalDownloads   || 0;
 
   return (
     <div className="ed-font space-y-5">
@@ -326,7 +303,7 @@ export default function EmailDashboard() {
 
       <GlobalSpotlight containerRef={gridRef} spotlightRadius={420} glowColor="102, 115, 255" />
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div style={{ display:"flex", flexWrap:"wrap", justifyContent:"space-between", alignItems:"center", gap:12 }}>
         <div>
           <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:3 }}>
@@ -339,15 +316,13 @@ export default function EmailDashboard() {
             <span style={{ display:"flex", alignItems:"center", gap:5, padding:"3px 9px", borderRadius:99,
                            background:"rgba(16,185,129,0.12)", border:"1px solid rgba(16,185,129,0.25)" }}>
               <span className="live-dot" />
-              <span style={{ color:"#10b981", fontSize:"0.6875rem", fontWeight:700,
-                             letterSpacing:"0.07em", textTransform:"uppercase" }}>Live</span>
+              <span style={{ color:"#10b981", fontSize:"0.6875rem", fontWeight:700, letterSpacing:"0.07em", textTransform:"uppercase" }}>Live</span>
             </span>
           </div>
           <p style={{ ...textMuted, fontSize:"0.9375rem", paddingLeft:41 }}>Outlook + BCC sync — all client comms in one view</p>
         </div>
 
         <div style={{ display:"flex", alignItems:"center", gap:9 }}>
-          {/* Clients btn */}
           <button onClick={() => navigate("/email-activity/clients")}
             style={{ ...surfaceStyle, ...textSecondary, padding:"8px 16px", borderRadius:10,
                      fontSize:"0.9375rem", fontWeight:600, cursor:"pointer", transition:"all .15s" }}
@@ -356,7 +331,6 @@ export default function EmailDashboard() {
             Clients
           </button>
 
-          {/* Notifications btn */}
           <button onClick={() => navigate("/email-activity/notifications")}
             style={{ ...surfaceStyle, ...textSecondary, padding:"8px 16px", borderRadius:10, fontSize:"0.9375rem",
                      fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:7,
@@ -364,16 +338,15 @@ export default function EmailDashboard() {
             onMouseEnter={e => { e.currentTarget.style.borderColor="#6673FF"; e.currentTarget.style.color="#6673FF"; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor=cv("--border-color"); e.currentTarget.style.color=cv("--text-secondary"); }}>
             <Bell size={15} /> Notifications
-            {stats?.unreadNotifications > 0 && (
+            {unreadNotifications > 0 && (
               <span style={{ position:"absolute", top:-5, right:-5, width:17, height:17, borderRadius:"50%",
                              background:"#ef4444", fontSize:"0.625rem", fontWeight:700, color:"#fff",
                              display:"flex", alignItems:"center", justifyContent:"center" }}>
-                {stats.unreadNotifications}
+                {unreadNotifications > 9 ? "9+" : unreadNotifications}
               </span>
             )}
           </button>
 
-          {/* Compose btn */}
           <button onClick={() => setComposeOpen(true)}
             style={{ background:"linear-gradient(135deg,#6673FF,#2F2CCB)", color:"#fff",
                      padding:"8px 18px", borderRadius:10, fontSize:"0.9375rem", fontWeight:700,
@@ -386,12 +359,12 @@ export default function EmailDashboard() {
         </div>
       </div>
 
-      {/* ── Stat Cards ── */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {STATS.map(s => <StatCard key={s.title} {...s} />)}
       </div>
 
-      {/* ── Main Grid ── */}
+      {/* Main Grid */}
       <div ref={gridRef} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
         {/* Recent Activity */}
@@ -443,12 +416,11 @@ export default function EmailDashboard() {
           </div>
         </ParticleCard>
 
-        {/* ── Sidebar ── */}
+        {/* Sidebar */}
         <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
 
           {/* Engagement */}
-          <ParticleCard {...PC} className="ed-surface"
-            style={{ ...surfaceStyle, borderRadius:18, padding:18 }}>
+          <ParticleCard {...PC} className="ed-surface" style={{ ...surfaceStyle, borderRadius:18, padding:18 }}>
             <div className="ed-pc-content">
               <div style={{ display:"flex", alignItems:"center", gap:9, marginBottom:16 }}>
                 <div style={{ width:30, height:30, borderRadius:8, background:"linear-gradient(135deg,#8b5cf6,#7c3aed)",
@@ -459,17 +431,16 @@ export default function EmailDashboard() {
                 <p style={{ ...textPrimary, fontWeight:700, fontSize:"1rem" }}>Engagement</p>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
-                <EngBar label="Open rate"  value={stats?.openRate  || 0} gradient="linear-gradient(90deg,#8b5cf6,#7c3aed)" sub="opened" />
+                <EngBar label="Open rate"  value={stats?.openRate  || 0} gradient="linear-gradient(90deg,#8b5cf6,#7c3aed)" sub="opened"  />
                 <EngBar label="Click rate" value={stats?.clickRate || 0} gradient="linear-gradient(90deg,#f59e0b,#ea580c)" sub="clicked" />
-                <EngBar label="Reply rate" value={stats?.replyRate || 0} gradient="linear-gradient(90deg,#10b981,#0d9488)" sub="replied" />
+                <EngBar label="Reply rate" value={replyRate}             gradient="linear-gradient(90deg,#10b981,#0d9488)" sub="replied" />
               </div>
-              {/* mini totals */}
               <div style={{ marginTop:16, paddingTop:14, borderTop:`1px solid ${cv("--border-color")}`,
                             display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
                 {[
-                  { label:"Opens",     val:stats?.totalOpens     || 0, color:"#8b5cf6", lcol:"#5b21b6", Icon:MailOpen          },
-                  { label:"Clicks",    val:stats?.totalClicks    || 0, color:"#f59e0b", lcol:"#b45309", Icon:MousePointerClick  },
-                  { label:"Downloads", val:stats?.totalDownloads || 0, color:"#10b981", lcol:"#065f46", Icon:Download           },
+                  { label:"Opens",     val:stats?.totalOpens  || 0, color:"#8b5cf6", Icon:MailOpen          },
+                  { label:"Clicks",    val:stats?.totalClicks || 0, color:"#f59e0b", Icon:MousePointerClick  },
+                  { label:"Downloads", val:totalDownloads,           color:"#10b981", Icon:Download           },
                 ].map(s => (
                   <div key={s.label} style={{ borderRadius:11, padding:"10px 6px", textAlign:"center",
                                               background:cv("--bg-primary"), border:`1px solid ${cv("--border-color")}` }}>
@@ -501,8 +472,8 @@ export default function EmailDashboard() {
               </p>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
                 {[
-                  { label:"BCC Tracked",  val:stats?.bccTrackedCount  || 0 },
-                  { label:"Inbox Synced", val:stats?.inboxSyncedCount || 0 },
+                  { label:"BCC Tracked",  val: bccTracked  },
+                  { label:"Inbox Synced", val: inboxSynced },
                 ].map(s => (
                   <div key={s.label} style={{ borderRadius:11, padding:"10px 12px",
                                               background:"rgba(255,255,255,0.12)", border:"1px solid rgba(255,255,255,0.15)" }}>
@@ -523,8 +494,7 @@ export default function EmailDashboard() {
                                   border:"2px solid #1e1c8a", background:"#10b981" }} />
                 </div>
                 <div>
-                  <p style={{ color:"#c7d2fe", fontSize:"0.6875rem", fontWeight:700,
-                               textTransform:"uppercase", letterSpacing:"0.07em" }}>Active Members</p>
+                  <p style={{ color:"#c7d2fe", fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.07em" }}>Active Members</p>
                   <p style={{ color:"#fff", fontWeight:800, fontSize:"1.5rem", lineHeight:1 }}>
                     {stats?.teamMembersActive || 0}
                   </p>
@@ -534,8 +504,7 @@ export default function EmailDashboard() {
           </ParticleCard>
 
           {/* Quick Actions */}
-          <ParticleCard {...PC} className="ed-surface"
-            style={{ ...surfaceStyle, borderRadius:18, overflow:"hidden" }}>
+          <ParticleCard {...PC} className="ed-surface" style={{ ...surfaceStyle, borderRadius:18, overflow:"hidden" }}>
             <div className="ed-pc-content">
               <div style={{ ...bgStyle, borderBottom:`1px solid ${cv("--border-color")}`,
                             padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between" }}>
@@ -544,10 +513,10 @@ export default function EmailDashboard() {
               </div>
               <div style={{ padding:"8px" }}>
                 {[
-                  { label:"Add New Client",  sub:"Create PCN / Surgery",        path:"/email-activity/clients",       grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", Icon:Users     },
-                  { label:"Compose Email",   sub:"Send to any client",           action:() => setComposeOpen(true),    grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", Icon:Mail      },
-                  { label:"Team & Sync",     sub:"Manage Outlook connections",   path:"/email-activity/team",          grad:"linear-gradient(135deg,#10b981,#0d9488)", Icon:RefreshCw },
-                  { label:"Notifications",   sub:"View alerts & engagements",    path:"/email-activity/notifications", grad:"linear-gradient(135deg,#f59e0b,#ea580c)", Icon:Bell      },
+                  { label:"Add New Client",  sub:"Create PCN / Surgery",       path:"/email-activity/clients",       grad:"linear-gradient(135deg,#6673FF,#2F2CCB)", Icon:Users     },
+                  { label:"Compose Email",   sub:"Send to any client",          action:() => setComposeOpen(true),    grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", Icon:Mail      },
+                  { label:"Team & Sync",     sub:"Manage Outlook connections",  path:"/email-activity/team",          grad:"linear-gradient(135deg,#10b981,#0d9488)", Icon:RefreshCw },
+                  { label:"Notifications",   sub:"View alerts & engagements",   path:"/email-activity/notifications", grad:"linear-gradient(135deg,#f59e0b,#ea580c)", Icon:Bell      },
                 ].map(q => (
                   <button key={q.label} className="qa-row"
                     onClick={() => q.action ? q.action() : navigate(q.path)}>

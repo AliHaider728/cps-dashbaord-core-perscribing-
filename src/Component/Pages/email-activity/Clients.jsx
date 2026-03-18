@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useListClients, useCreateClient } from "../../../lib/api.js";
+import { useListClients, useCreateClient, useDeleteClient } from "../../../lib/api.js";
 import {
   Search, Plus, Building2, Phone, Mail, ChevronRight,
   X, Users, Trash2, AlertTriangle, CheckCircle2,
@@ -31,25 +31,18 @@ const GLOBAL = `
   }
   .ec-input::placeholder { color:var(--text-muted); }
   .ec-input:focus { border-color:${BRAND}; box-shadow:0 0 0 4px rgba(102,115,255,0.12); }
-
   .ec-label { color:var(--text-secondary); font-size:0.8125rem; font-weight:600; display:block; margin-bottom:6px; }
-
   .ec-row { transition:background-color .15s; cursor:pointer; border-bottom:1px solid var(--border-color); }
   .ec-row:hover { background-color:var(--bg-primary); }
   .ec-row:last-child { border-bottom:none; }
-
   .ec-chevron { color:var(--text-muted); transition:color .15s; }
   .ec-row:hover .ec-chevron { color:${BRAND}; }
-
   .ec-name { font-size:0.9rem; font-weight:600; transition:color .15s; }
   .ec-row:hover .ec-name { color:${BRAND}; }
-
   .ec-dot { width:5px;height:5px;border-radius:50%;background:white;display:inline-block;animation:ec-bounce 1.2s ease infinite }
   .ec-dot:nth-child(2){animation-delay:.16s}.ec-dot:nth-child(3){animation-delay:.32s}
-
   .ec-ghost-btn { background:transparent; transition:background-color .15s; }
   .ec-ghost-btn:hover { background-color:var(--bg-primary); }
-
   .ec-delete-btn {
     opacity:0; transition:opacity .15s, color .15s, background-color .15s;
     width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center;
@@ -93,8 +86,7 @@ function DeleteModal({ client, onConfirm, onClose, isDeleting }) {
       <div className="absolute inset-0" style={{ backgroundColor:"rgba(0,0,0,0.5)", backdropFilter:"blur(4px)" }} onClick={onClose} />
       <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" style={{ ...surfaceStyle, animation:"ec-modalIn .18s ease both" }}>
         <div className="p-6 text-center">
-          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-            style={{ backgroundColor:"rgba(239,68,68,0.1)" }}>
+          <div className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor:"rgba(239,68,68,0.1)" }}>
             <AlertTriangle size={26} style={{ color:"#ef4444" }} />
           </div>
           <h3 className="font-bold text-lg mb-2" style={textPrimary}>Delete Client?</h3>
@@ -110,9 +102,12 @@ function DeleteModal({ client, onConfirm, onClose, isDeleting }) {
               style={{ ...surfaceStyle, ...textSecondary }}>
               Cancel
             </button>
-            <button onClick={() => onConfirm(client.id)} disabled={isDeleting}
+            <button
+              onClick={() => onConfirm(client.id)}
+              disabled={isDeleting}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-white rounded-xl disabled:opacity-60"
-              style={{ background:"linear-gradient(135deg,#ef4444,#dc2626)", boxShadow:"0 4px 12px rgba(239,68,68,0.35)" }}>
+              style={{ background:"linear-gradient(135deg,#ef4444,#dc2626)", boxShadow:"0 4px 12px rgba(239,68,68,0.35)" }}
+            >
               {isDeleting ? <SaveLoader /> : <><Trash2 size={14} /> Delete Client</>}
             </button>
           </div>
@@ -133,7 +128,14 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
           <h3 className="font-bold text-base" style={textPrimary}>Add New Client</h3>
           <button onClick={onClose} className="p-1.5 rounded-lg ec-ghost-btn" style={textMuted}><X size={15} /></button>
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); onSave(Object.fromEntries(fd)); }} className="p-6 space-y-4">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const fd = new FormData(e.currentTarget);
+            onSave(Object.fromEntries(fd));
+          }}
+          className="p-6 space-y-4"
+        >
           {[
             { label:"Client Name *",  name:"name",        required:true,  placeholder:"e.g. North London Health" },
             { label:"PCN Number *",   name:"pcnNumber",   required:true,  placeholder:"e.g. PCN-12345" },
@@ -157,9 +159,12 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
           </div>
           <div className="flex justify-end gap-3 pt-4 mt-2" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
             <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-semibold rounded-xl ec-ghost-btn" style={textSecondary}>Cancel</button>
-            <button type="submit" disabled={isSaving}
+            <button
+              type="submit"
+              disabled={isSaving}
               className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white rounded-xl disabled:opacity-60"
-              style={{ background:BRAND_GRAD, boxShadow:"0 4px 12px rgba(102,115,255,0.35)" }}>
+              style={{ background:BRAND_GRAD, boxShadow:"0 4px 12px rgba(102,115,255,0.35)" }}
+            >
               {isSaving ? <SaveLoader /> : <><Plus size={14} /> Create Client</>}
             </button>
           </div>
@@ -169,38 +174,33 @@ function AddClientModal({ isOpen, onClose, onSave, isSaving }) {
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page  
 export default function EmailClients() {
   const navigate = useNavigate();
-  const [search,       setSearch]    = useState("");
-  const [modalOpen,    setModal]     = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState(null);
-  const [isDeleting,   setIsDeleting]   = useState(false);
-  const [deletedId,    setDeletedId]    = useState(null);
+  const [search,       setSearch]      = useState("");
+  const [modalOpen,    setModal]       = useState(false);
+  const [deleteTarget, setDeleteTarget]= useState(null);
+  const [deletedName,  setDeletedName] = useState(null);
 
-  const { data, isLoading, refetch }            = useListClients({ search });
-  const clients                                 = data?.clients || [];
-  const { mutate: createClient, isPending: saving } = useCreateClient();
+  const { data, isLoading, refetch }                    = useListClients({ search });
+  const clients                                         = data?.clients || [];
+  const { mutate: createClient, isPending: saving }     = useCreateClient();
+  // FIX: use mutation hook instead of raw fetch
+  const { mutate: deleteClient, isPending: isDeleting } = useDeleteClient();
 
   const handleSave = (formData) => {
     createClient({ data: formData }, { onSuccess: () => { setModal(false); refetch(); } });
   };
 
-  const handleDelete = async (clientId) => {
-    setIsDeleting(true);
-    try {
-      const res = await fetch(`https://crm-email-backend.vercel.app/api/clients/${clientId}`, { method:"DELETE" });
-      if (res.ok) {
-        setDeletedId(clientId);
+  const handleDelete = (clientId) => {
+    const name = deleteTarget?.name;
+    deleteClient(clientId, {
+      onSuccess: () => {
+        setDeletedName(name);
         setDeleteTarget(null);
-        refetch();
-        setTimeout(() => setDeletedId(null), 2000);
-      }
-    } catch (err) {
-      console.error("Delete failed:", err);
-    } finally {
-      setIsDeleting(false);
-    }
+        setTimeout(() => setDeletedName(null), 3000);
+      },
+    });
   };
 
   return (
@@ -219,19 +219,23 @@ export default function EmailClients() {
           </div>
           <p className="ml-9 text-sm" style={textMuted}>Manage accounts and track communication history.</p>
         </div>
-        <button onClick={() => setModal(true)}
+        <button
+          onClick={() => setModal(true)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl hover:-translate-y-px transition-all"
-          style={{ background:BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}>
+          style={{ background:BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}
+        >
           <Plus size={16} /> Add Client
         </button>
       </div>
 
-      {/* Deleted toast */}
-      {deletedId && (
+      {/* Delete success toast */}
+      {deletedName && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
           style={{ backgroundColor:"rgba(16,185,129,0.08)", border:"1px solid rgba(16,185,129,0.3)" }}>
           <CheckCircle2 size={16} style={{ color:"#10b981", flexShrink:0 }} />
-          <p className="text-sm font-medium" style={{ color:"#10b981" }}>Client deleted successfully.</p>
+          <p className="text-sm font-medium" style={{ color:"#10b981" }}>
+            <strong>{deletedName}</strong> deleted successfully.
+          </p>
         </div>
       )}
 
@@ -242,11 +246,17 @@ export default function EmailClients() {
           style={{ ...bgStyle, borderBottom:`1px solid ${cv("--border-color")}` }}>
           <div className="relative max-w-sm w-full flex items-center">
             <Search size={15} className="absolute left-3 pointer-events-none" style={textMuted} />
-            <input value={search} onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, PCN, or email…" className="ec-input"
-              style={{ paddingLeft:36, paddingRight:search ? 32 : 14 }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, PCN, or email…"
+              className="ec-input"
+              style={{ paddingLeft:36, paddingRight:search ? 32 : 14 }}
+            />
             {search && (
-              <button onClick={() => setSearch("")} className="absolute right-2.5" style={textMuted}><X size={14} /></button>
+              <button onClick={() => setSearch("")} className="absolute right-2.5" style={textMuted}>
+                <X size={14} />
+              </button>
             )}
           </div>
           <span className="text-sm font-medium hidden sm:block" style={textMuted}>{clients.length} Accounts</span>
@@ -322,7 +332,8 @@ export default function EmailClients() {
                         <button
                           className="ec-delete-btn"
                           onClick={(e) => { e.stopPropagation(); setDeleteTarget(c); }}
-                          title="Delete client">
+                          title="Delete client"
+                        >
                           <Trash2 size={14} />
                         </button>
                         <div className="ec-chevron w-8 h-8 rounded-full flex items-center justify-center">
@@ -339,7 +350,12 @@ export default function EmailClients() {
       </div>
 
       <AddClientModal isOpen={modalOpen} onClose={() => setModal(false)} onSave={handleSave} isSaving={saving} />
-      <DeleteModal client={deleteTarget} onConfirm={handleDelete} onClose={() => setDeleteTarget(null)} isDeleting={isDeleting} />
+      <DeleteModal
+        client={deleteTarget}
+        onConfirm={handleDelete}
+        onClose={() => setDeleteTarget(null)}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

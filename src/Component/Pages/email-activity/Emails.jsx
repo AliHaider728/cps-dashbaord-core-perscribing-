@@ -4,7 +4,6 @@ import {
   Search, Mail, ArrowUpRight, ArrowDownLeft, Filter, X,
   ChevronDown, MailOpen, MousePointerClick, Download,
   Clock, User, Tag, Building2, ExternalLink, Copy, CheckCircle2,
-  Monitor, Smartphone, Tablet, MapPin,   // ← NEW: Lucide icons (no emojis)
 } from "lucide-react";
 import { formatSmartDate } from "../../../lib/utils.js";
 import { ComposeEmailModal } from "../../layout/ComposeEmailModal.jsx";
@@ -165,38 +164,14 @@ const DIRECTIONS = [
   { value:"inbound",  label:"Received"   },
 ];
 
-// ─── Who Row (single engagement event) — NOW 100% LUCIDE ICONS (no emojis)  
+// ─── Who Row (single engagement event)  
 function WhoRow({ e, type }) {
-  // Device icon (Lucide)
-  const DeviceIcon = () => {
-    if (e.device === "mobile") return <Smartphone size={14} style={{ color: BRAND }} />;
-    if (e.device === "tablet") return <Tablet size={14} style={{ color: BRAND }} />;
-    return <Monitor size={14} style={{ color: BRAND }} />;
-  };
-
-  let labelContent;
-  if (type === "open") {
-    labelContent = (
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <DeviceIcon />
-        <span>{e.device || "Unknown"} · {e.os || ""} · {e.browser || ""}</span>
-      </div>
-    );
-  } else if (type === "click") {
-    labelContent = (
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <ExternalLink size={14} style={{ color: BRAND }} />
-        <span>{e.linkUrl ? e.linkUrl.replace(/^https?:\/\//, "").slice(0, 40) : "Unknown link"}</span>
-      </div>
-    );
-  } else {
-    labelContent = (
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-        <Download size={14} style={{ color: BRAND }} />
-        <span>{e.fileName || "File"} · {e.device || "Unknown"}</span>
-      </div>
-    );
-  }
+  const deviceIcon = e.device === "mobile" ? "📱" : e.device === "tablet" ? "📱" : "🖥";
+  const label = type === "open"
+    ? `${deviceIcon} ${e.device || "Unknown"} · ${e.os || ""} · ${e.browser || ""}`
+    : type === "click"
+    ? `${deviceIcon} ${e.linkUrl ? e.linkUrl.replace(/^https?:\/\//, "").slice(0, 40) : "Unknown link"}`
+    : `📄 ${e.fileName || "File"} · ${e.device || "Unknown"}`;
 
   return (
     <div style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"8px 0", borderBottom:`1px solid ${cv("--border-color")}` }}>
@@ -210,19 +185,8 @@ function WhoRow({ e, type }) {
         {e.openedByEmail && e.openedByName && (
           <p style={{ ...textMuted, fontSize:"0.7rem", marginBottom:2 }}>{e.openedByEmail}</p>
         )}
-
-        {/* Label with Lucide icons */}
-        <div style={{ ...textMuted, fontSize:"0.7rem" }}>
-          {labelContent}
-        </div>
-
-        {/* Location — tracked by your system (IP from pixel) — using MapPin */}
-        {e.location && (
-          <div style={{ ...textMuted, fontSize:"0.7rem", display:"flex", alignItems:"center", gap:6, marginTop:4 }}>
-            <MapPin size={13} style={{ color: "#f59e0b" }} />
-            {e.location}
-          </div>
-        )}
+        <p style={{ ...textMuted, fontSize:"0.7rem" }}>{label}</p>
+        {e.location && <p style={{ ...textMuted, fontSize:"0.7rem" }}>📍 {e.location}</p>}
       </div>
       <span style={{ ...textMuted, fontSize:"0.65rem", whiteSpace:"nowrap", flexShrink:0 }}>
         {e.occurredAt ? new Date(e.occurredAt).toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" }) : ""}
@@ -235,35 +199,10 @@ function WhoRow({ e, type }) {
 function EmailDrawer({ email, onClose }) {
   const [copied, setCopied] = useState(false);
 
+  // Fetch WHO opened detail from backend
   const { data: engData, isLoading: engLoading } = useGetEmailEngagements(email?.id);
 
-  // ──────────────────────────────────────────────────────────────
-  // 🔥 MOCK DATA (DEFAULT DEMO) — abhi yeh dikhayega
-  // Jab live backend ready ho (real counts > 0), auto real data use ho jayega
-  // ──────────────────────────────────────────────────────────────
-  const mockEngagements = {
-    summary: { openCount: 4, clickCount: 2, downloadCount: 1, uniqueOpeners: 3 },
-    opens: [
-      { id: "mock-open-1", openedByName: "Ahmed Raza", openedByEmail: "ahmed@client.com", device: "desktop", os: "Windows 11", browser: "Chrome", occurredAt: "2026-03-17T10:15:00Z", location: "Rawalpindi, Pakistan" },
-      { id: "mock-open-2", openedByName: "Sara Khan",  openedByEmail: "sara@client.com",  device: "mobile",   os: "Android",   browser: "Chrome", occurredAt: "2026-03-17T09:45:00Z", location: "Islamabad, Pakistan" },
-      { id: "mock-open-3", openedByName: "Usman Malik", openedByEmail: "usman@client.com", device: "tablet",  os: "iPadOS",    browser: "Safari", occurredAt: "2026-03-17T11:05:00Z", location: "Lahore, Pakistan" }
-    ],
-    clicks: [
-      { id: "mock-click-1", openedByName: "Ahmed Raza", openedByEmail: "ahmed@client.com", linkUrl: "https://yourwebsite.com/services", device: "desktop", os: "macOS", browser: "Firefox", occurredAt: "2026-03-17T10:20:00Z", location: "Rawalpindi, Pakistan" },
-      { id: "mock-click-2", openedByName: "Sara Khan",  openedByEmail: "sara@client.com",  linkUrl: "https://yourwebsite.com/pricing",  device: "mobile", os: "Android", browser: "Chrome", occurredAt: "2026-03-17T09:50:00Z", location: "Islamabad, Pakistan" }
-    ],
-    downloads: [
-      { id: "mock-download-1", openedByName: "Usman Malik", openedByEmail: "usman@client.com", fileName: "Proposal_Final.pdf", device: "desktop", occurredAt: "2026-03-17T11:10:00Z", location: "Lahore, Pakistan" }
-    ]
-  };
-
-  // Real data priority (jab live API se real engagements aayenge)
-  const effectiveEngData = 
-    engData && 
-    (engData.summary?.openCount > 0 || engData.opens?.length > 0 || engData.clicks?.length > 0 || engData.downloads?.length > 0)
-      ? engData 
-      : mockEngagements;
-
+  // Close on Escape
   useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
@@ -281,10 +220,11 @@ function EmailDrawer({ email, onClose }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const openCount     = effectiveEngData?.summary?.openCount     ?? email.openCount     ?? 0;
-  const clickCount    = effectiveEngData?.summary?.clickCount    ?? email.clickCount    ?? 0;
-  const downloadCount = effectiveEngData?.summary?.downloadCount ?? email.downloadCount ?? 0;
-  const uniqueOpeners = effectiveEngData?.summary?.uniqueOpeners ?? email.uniqueOpenCount ?? 0;
+  // Use real counts from engagement data if available, fallback to email counts
+  const openCount     = engData?.summary?.openCount     ?? email.openCount     ?? 0;
+  const clickCount    = engData?.summary?.clickCount    ?? email.clickCount    ?? 0;
+  const downloadCount = engData?.summary?.downloadCount ?? email.downloadCount ?? 0;
+  const uniqueOpeners = engData?.summary?.uniqueOpeners ?? email.uniqueOpenCount ?? 0;
 
   const ENGAGEMENT = [
     openCount     > 0 && { label:`Opened ×${openCount}`,       Icon:MailOpen,          bg:"rgba(139,92,246,0.12)", color:"#8b5cf6" },
@@ -295,8 +235,10 @@ function EmailDrawer({ email, onClose }) {
 
   return (
     <>
+      {/* Overlay */}
       <div className="el-drawer-overlay" onClick={onClose} />
 
+      {/* Drawer */}
       <div className="el-drawer" style={{ backgroundColor: cv("--bg-secondary"), borderLeft:`1px solid ${cv("--border-color")}` }}>
 
         {/* Header */}
@@ -333,7 +275,7 @@ function EmailDrawer({ email, onClose }) {
           </div>
         )}
 
-        {/* WHO section */}
+        {/* WHO opened / clicked / downloaded */}
         {isOutbound && (openCount > 0 || clickCount > 0 || downloadCount > 0) && (
           <div style={{ padding:"16px 22px", borderBottom:`1px solid ${cv("--border-color")}` }}>
             {engLoading ? (
@@ -351,22 +293,31 @@ function EmailDrawer({ email, onClose }) {
               </div>
             ) : (
               <>
-                {effectiveEngData?.opens?.length > 0 && (
+                {/* Opens */}
+                {engData?.opens?.length > 0 && (
                   <div style={{ marginBottom:14 }}>
-                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Who Opened</p>
-                    {effectiveEngData.opens.map((e, i) => <WhoRow key={e.id || i} e={e} type="open" />)}
+                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+                      Who Opened
+                    </p>
+                    {engData.opens.map((e, i) => <WhoRow key={e.id || i} e={e} type="open" />)}
                   </div>
                 )}
-                {effectiveEngData?.clicks?.length > 0 && (
+                {/* Clicks */}
+                {engData?.clicks?.length > 0 && (
                   <div style={{ marginBottom:14 }}>
-                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Links Clicked</p>
-                    {effectiveEngData.clicks.map((e, i) => <WhoRow key={e.id || i} e={e} type="click" />)}
+                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+                      Links Clicked
+                    </p>
+                    {engData.clicks.map((e, i) => <WhoRow key={e.id || i} e={e} type="click" />)}
                   </div>
                 )}
-                {effectiveEngData?.downloads?.length > 0 && (
+                {/* Downloads */}
+                {engData?.downloads?.length > 0 && (
                   <div>
-                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>Files Downloaded</p>
-                    {effectiveEngData.downloads.map((e, i) => <WhoRow key={e.id || i} e={e} type="download" />)}
+                    <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:8 }}>
+                      Files Downloaded
+                    </p>
+                    {engData.downloads.map((e, i) => <WhoRow key={e.id || i} e={e} type="download" />)}
                   </div>
                 )}
               </>
@@ -374,9 +325,10 @@ function EmailDrawer({ email, onClose }) {
           </div>
         )}
 
-        {/* Meta info + Body (same as before) */}
+        {/* Meta info */}
         <div style={{ padding:"18px 22px", borderBottom:`1px solid ${cv("--border-color")}`, display:"flex", flexDirection:"column", gap:12 }}>
-          {/* From / To / Chips same as previous version */}
+
+          {/* From */}
           <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
             <div style={{ width:32, height:32, borderRadius:"50%", background: dirGrad, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
               <User size={14} color="white" />
@@ -396,6 +348,7 @@ function EmailDrawer({ email, onClose }) {
             </div>
           </div>
 
+          {/* To */}
           <div style={{ display:"flex", alignItems:"flex-start", gap:10 }}>
             <div style={{ width:32, height:32, borderRadius:"50%", backgroundColor: cv("--border-color"), display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
               <Mail size={14} style={textMuted} />
@@ -411,6 +364,7 @@ function EmailDrawer({ email, onClose }) {
             </div>
           </div>
 
+          {/* Chips row */}
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginTop:4 }}>
             {email.clientName && (
               <span className="el-meta-chip" style={textSecondary}>
@@ -433,8 +387,11 @@ function EmailDrawer({ email, onClose }) {
           </div>
         </div>
 
+        {/* Body */}
         <div style={{ flex:1, padding:"20px 22px" }}>
-          <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>Message Body</p>
+          <p style={{ ...textMuted, fontSize:"0.6875rem", fontWeight:700, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:12 }}>
+            Message Body
+          </p>
           <div style={{
             backgroundColor: cv("--bg-primary"),
             border:`1px solid ${cv("--border-color")}`,
@@ -448,12 +405,17 @@ function EmailDrawer({ email, onClose }) {
             )}
           </div>
 
+          {/* Outlook sync note */}
           <div style={{ marginTop:16, padding:"10px 14px", borderRadius:10, backgroundColor:"rgba(102,115,255,0.06)", border:`1px solid ${BRAND}22`, display:"flex", alignItems:"center", justifyContent:"space-between", gap:8 }}>
             <span style={{ color:BRAND, fontSize:"0.75rem", fontWeight:600 }}>
               📨 Logged via {email.syncMethod === "bcc" ? "BCC Tracking" : "Outlook Inbox Sync"}
             </span>
             {email.outlookMessageId && (
-              <button className="el-copy-btn" style={{ color:BRAND, borderColor:`${BRAND}44` }} onClick={() => copyEmail(email.outlookMessageId)}>
+              <button
+                className="el-copy-btn"
+                style={{ color:BRAND, borderColor:`${BRAND}44` }}
+                onClick={() => copyEmail(email.outlookMessageId)}
+              >
                 <ExternalLink size={10} /> View in Outlook
               </button>
             )}
@@ -464,20 +426,20 @@ function EmailDrawer({ email, onClose }) {
   );
 }
 
-// ─── Page (rest same) ─────────────────────────────
+// ─── Page  ─────────────────────────────
 export default function EmailList() {
   const { data, isLoading } = useListEmails();
   const allEmails = data?.emails || [];
 
-  const [search, setSearch] = useState("");
-  const [direction, setDir] = useState("all");
-  const [filterOpen, setFilter] = useState(false);
-  const [composeOpen, setCompose] = useState(false);
+  const [search,      setSearch]   = useState("");
+  const [direction,   setDir]      = useState("all");
+  const [filterOpen,  setFilter]   = useState(false);
+  const [composeOpen, setCompose]  = useState(false);
   const [selectedEmail, setSelected] = useState(null);
 
   const filtered = useMemo(() => allEmails.filter((e) => {
-    const q = search.toLowerCase();
-    const ms = !q || [e.subject, e.fromName, e.toName, e.fromEmail, e.clientName, e.bodyPreview].some(v => v?.toLowerCase().includes(q));
+    const q  = search.toLowerCase();
+    const ms = !q || [e.subject, e.fromName, e.toName, e.fromEmail, e.clientName, e.bodyPreview].some((v) => v?.toLowerCase().includes(q));
     const md = direction === "all" || e.direction === direction;
     return ms && md;
   }), [allEmails, search, direction]);
@@ -488,7 +450,7 @@ export default function EmailList() {
     <div className="space-y-5">
       <style>{GLOBAL}</style>
 
-      {/* Header + Search + Filter + List (exactly same as before) */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <div className="flex items-center gap-2.5 mb-0.5">
@@ -499,32 +461,51 @@ export default function EmailList() {
           </div>
           <p className="ml-9 text-sm" style={textMuted}>All synced Outlook communications. Click any email to view details.</p>
         </div>
-        <button onClick={() => setCompose(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-px" style={{ background: BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}>
+        <button
+          onClick={() => setCompose(true)}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-px"
+          style={{ background: BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}
+        >
           <Mail size={15} /> Compose Email
         </button>
       </div>
 
-      {/* Search + Filter same */}
+      {/* Search + Filter */}
       <div className="flex gap-3 flex-col sm:flex-row">
         <div className="relative flex-1 flex items-center">
           <Search size={15} className="absolute left-3 pointer-events-none" style={textMuted} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search emails, subjects, or clients…" className="el-input" style={{ paddingLeft:36, paddingRight: search ? 32 : 14 }} />
-          {search && <button onClick={() => setSearch("")} className="absolute right-2.5" style={textMuted}><X size={14} /></button>}
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search emails, subjects, or clients…"
+            className="el-input"
+            style={{ paddingLeft:36, paddingRight: search ? 32 : 14 }}
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-2.5" style={textMuted}><X size={14} /></button>
+          )}
         </div>
 
         <div className="relative">
-          <button onClick={() => setFilter(v => !v)} className="el-filter-btn" style={hasFilters ? { borderColor: BRAND, color: BRAND, backgroundColor: cv("--bg-secondary") } : {}}>
+          <button onClick={() => setFilter((v) => !v)} className="el-filter-btn"
+            style={hasFilters ? { borderColor: BRAND, color: BRAND, backgroundColor: cv("--bg-secondary") } : {}}>
             <Filter size={14} />
-            {direction === "all" ? "Filter" : DIRECTIONS.find(d => d.value === direction)?.label}
+            {direction === "all" ? "Filter" : DIRECTIONS.find((d) => d.value === direction)?.label}
             <ChevronDown size={13} />
           </button>
+
           {filterOpen && (
             <div className="el-dropdown">
-              {DIRECTIONS.map(opt => (
-                <button key={opt.value} onClick={() => { setDir(opt.value); setFilter(false); }} className="el-dd-item" style={direction === opt.value ? { backgroundColor: "rgba(102,115,255,0.1)", color: BRAND, fontWeight:700 } : textSecondary}>
+              {DIRECTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => { setDir(opt.value); setFilter(false); }}
+                  className="el-dd-item"
+                  style={direction === opt.value ? { backgroundColor: "rgba(102,115,255,0.1)", color: BRAND, fontWeight:700 } : textSecondary}
+                >
                   {opt.value === "outbound" && <ArrowUpRight size={14} style={{ color: BRAND }} />}
-                  {opt.value === "inbound" && <ArrowDownLeft size={14} style={{ color:"#10b981" }} />}
-                  {opt.value === "all" && <Mail size={14} style={textMuted} />}
+                  {opt.value === "inbound"  && <ArrowDownLeft size={14} style={{ color:"#10b981" }} />}
+                  {opt.value === "all"      && <Mail size={14} style={textMuted} />}
                   {opt.label}
                 </button>
               ))}
@@ -533,7 +514,13 @@ export default function EmailList() {
         </div>
 
         {hasFilters && (
-          <button onClick={() => { setSearch(""); setDir("all"); }} className="p-2.5 rounded-xl transition-colors" style={{ ...surfaceStyle }} onMouseEnter={e => { e.currentTarget.style.borderColor = "#ef4444"; e.currentTarget.style.color = "#ef4444"; }} onMouseLeave={e => { e.currentTarget.style.borderColor = cv("--border-color"); e.currentTarget.style.color = cv("--text-muted"); }}>
+          <button
+            onClick={() => { setSearch(""); setDir("all"); }}
+            className="p-2.5 rounded-xl transition-colors"
+            style={{ ...surfaceStyle }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = "#ef4444"; e.currentTarget.style.color = "#ef4444"; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = cv("--border-color"); e.currentTarget.style.color = cv("--text-muted"); }}
+          >
             <X size={14} />
           </button>
         )}
@@ -546,6 +533,7 @@ export default function EmailList() {
         </p>
       )}
 
+      {/* List */}
       {isLoading ? (
         <EmailSkeleton />
       ) : filtered.length === 0 ? (
@@ -558,7 +546,11 @@ export default function EmailList() {
             {hasFilters ? "Try adjusting your search or filter." : "Connect your Outlook account or BCC address to start logging emails."}
           </p>
           {hasFilters && (
-            <button onClick={() => { setSearch(""); setDir("all"); }} className="mt-4 px-4 py-2 text-sm font-semibold rounded-xl transition-colors" style={{ ...surfaceStyle, ...textSecondary }}>
+            <button
+              onClick={() => { setSearch(""); setDir("all"); }}
+              className="mt-4 px-4 py-2 text-sm font-semibold rounded-xl transition-colors"
+              style={{ ...surfaceStyle, ...textSecondary }}
+            >
               Clear filters
             </button>
           )}
@@ -566,19 +558,31 @@ export default function EmailList() {
       ) : (
         <div className="space-y-3">
           {filtered.map((email, i) => {
-            const isOut = email.direction === "outbound";
+            const isOut      = email.direction === "outbound";
             const isSelected = selectedEmail?.id === email.id;
             return (
-              <div key={email.id} className={`el-email-row ${isSelected ? "el-selected" : ""}`} style={{ ...surfaceStyle, animationDelay:`${i*0.03}s` }} onClick={() => setSelected(isSelected ? null : email)}>
+              <div
+                key={email.id}
+                className={`el-email-row ${isSelected ? "el-selected" : ""}`}
+                style={{ ...surfaceStyle, animationDelay:`${i*0.03}s` }}
+                onClick={() => setSelected(isSelected ? null : email)}
+              >
+                {/* Direction accent bar */}
                 <div className="w-1 shrink-0 rounded-l-xl" style={{ background: isOut ? BRAND_GRAD : "linear-gradient(180deg,#10b981,#0d9488)" }} />
+
                 <div className="flex-1 p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  {/* From/To avatar + name */}
                   <div className="flex items-center gap-3 w-full sm:w-60 shrink-0">
                     <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: isOut ? BRAND_GRAD : "linear-gradient(135deg,#10b981,#0d9488)" }}>
-                      {isOut ? <ArrowUpRight size={16} color="white" /> : <ArrowDownLeft size={16} color="white" />}
+                      {isOut
+                        ? <ArrowUpRight size={16} color="white" />
+                        : <ArrowDownLeft size={16} color="white" />}
                     </div>
                     <div className="overflow-hidden">
                       <p className="font-semibold text-sm truncate" style={textPrimary}>
-                        {isOut ? `To: ${email.toName || email.toEmail || "—"}` : `From: ${email.fromName || email.fromEmail || "—"}`}
+                        {isOut
+                          ? `To: ${email.toName || email.toEmail || "—"}`
+                          : `From: ${email.fromName || email.fromEmail || "—"}`}
                       </p>
                       <p className="text-[11px] mt-0.5" style={textMuted}>
                         {formatSmartDate(email.sentAt || email.receivedAt || email.createdAt)}
@@ -586,11 +590,13 @@ export default function EmailList() {
                     </div>
                   </div>
 
+                  {/* Subject + Preview */}
                   <div className="flex-1 min-w-0">
                     <h4 className="el-subject text-sm font-semibold truncate transition-colors" style={textPrimary}>{email.subject || "(No Subject)"}</h4>
                     <p className="text-xs truncate mt-0.5" style={textSecondary}>{email.bodyPreview}</p>
                   </div>
 
+                  {/* Badges */}
                   <div className="flex items-center gap-2 flex-wrap shrink-0">
                     {email.clientName && (
                       <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full flex items-center gap-1" style={{ backgroundColor: cv("--border-color"), ...textMuted }}>
@@ -607,6 +613,7 @@ export default function EmailList() {
                         <MousePointerClick size={9} /> Clicked
                       </span>
                     )}
+                    {/* Click to open hint */}
                     <span className="text-[10px] font-medium px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" style={{ backgroundColor:"rgba(102,115,255,0.08)", color:BRAND }}>
                       View →
                     </span>
@@ -618,7 +625,9 @@ export default function EmailList() {
         </div>
       )}
 
+      {/* Email Detail Drawer */}
       <EmailDrawer email={selectedEmail} onClose={() => setSelected(null)} />
+
       <ComposeEmailModal isOpen={composeOpen} onClose={() => setCompose(false)} />
     </div>
   );

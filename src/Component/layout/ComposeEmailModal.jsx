@@ -5,8 +5,6 @@ import {
 } from "lucide-react";
 import { useSendEmail, useListClients, useListTeamMembers } from "../../lib/api.js";
 
-// ─── Manual DotsLoader (replaces Spinner) ────────────────────────────────────
-
 function DotsLoader() {
   return (
     <>
@@ -22,10 +20,9 @@ function DotsLoader() {
   );
 }
 
-// ─── ComposeEmailModal ────────────────────────────────────────────────────────
-
 export function ComposeEmailModal({
-  isOpen, onClose,
+  isOpen,
+  onClose,
   defaultClientId = "",
   defaultToEmail  = "",
   defaultToName   = "",
@@ -41,13 +38,16 @@ export function ComposeEmailModal({
   const [showClientDrop, setShowClientDrop] = useState(false);
   const [attachments,    setAttachments]    = useState([]);
 
-  const { data: clientsData }                              = useListClients({});
-  const { data: teamData }                                 = useListTeamMembers();
-  const { mutate: sendEmail, isPending: isSending }        = useSendEmail?.() || { mutate: () => {}, isPending: false };
+  const { data: clientsData }         = useListClients({});
+  const { data: teamData }            = useListTeamMembers();
+  const { mutate: sendEmail, isPending: isSending } = useSendEmail();
 
+  // Pick first member's BCC address or build a default
   const currentMember = teamData?.members?.[0];
-  const bccAddress    = currentMember?.bccAddress || `activity+${currentMember?.id || "user"}@ourcrm.com`;
+  const bccAddress    = currentMember?.bccAddress
+    || `activity+${currentMember?.id || "user"}@ourcrm.com`;
 
+  // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setTo(defaultToEmail);
@@ -69,9 +69,30 @@ export function ComposeEmailModal({
   const isValid        = to.trim() && subject.trim() && body.trim();
 
   const handleSend = () => {
-    if (!isValid) return;
+    if (!isValid || isSending) return;
+
+    // FIX: pass correct shape — useSendEmail expects { data: {...} }
     sendEmail(
-      { data: { to, toName, subject, body, clientId: clientId || undefined, bcc: bccAddress } },
+      {
+        data: {
+          subject,
+          direction:          "outbound",
+          fromEmail:          currentMember?.email || "",
+          fromName:           currentMember?.name  || "",
+          toEmail:            to,
+          toName:             toName || to,
+          body,
+          bodyPreview:        body.slice(0, 200),
+          clientId:           clientId || undefined,
+          accountManagerId:   currentMember?.id    || undefined,
+          accountManagerName: currentMember?.name  || undefined,
+          bccTracked:         true,
+          syncMethod:         "manual",
+          isRead:             true,
+          sentAt:             new Date().toISOString(),
+          attachments:        attachments.map((f) => f.name),
+        },
+      },
       { onSuccess: onClose }
     );
   };
@@ -86,6 +107,7 @@ export function ComposeEmailModal({
         .ce-label { font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.05em; width:48px; flex-shrink:0; }
         .ce-bare-input { flex:1; font-size:14px; outline:none; color:#0f172a; background:transparent; }
         .ce-bare-input::placeholder { color:#94a3b8; }
+        .ce-tooltip-wrap:hover .ce-tooltip { opacity:1 !important; pointer-events:auto; }
       `}</style>
 
       {/* Backdrop */}
@@ -99,7 +121,6 @@ export function ComposeEmailModal({
           padding: 16,
         }}
       >
-        {/* Modal panel */}
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
@@ -111,17 +132,22 @@ export function ComposeEmailModal({
             animation: "ce-modal-in .18s ease both",
           }}
         >
-          {/* Dark header */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 24px", backgroundColor: "#0f172a" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: "rgba(59,130,246,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {/* Header */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 24px", backgroundColor:"#0f172a" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ width:32, height:32, borderRadius:10, backgroundColor:"rgba(59,130,246,0.2)", display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <Mail size={16} color="#60a5fa" />
               </div>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>New Email</span>
+              <span style={{ fontSize:14, fontWeight:600, color:"#fff" }}>New Email</span>
+              {currentMember && (
+                <span style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginLeft:4 }}>
+                  as {currentMember.name}
+                </span>
+              )}
             </div>
             <button
               onClick={onClose}
-              style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", justifyContent: "center", transition: "background .15s" }}
+              style={{ padding:6, borderRadius:8, background:"transparent", border:"none", cursor:"pointer", color:"#94a3b8", display:"flex", alignItems:"center", justifyContent:"center" }}
               onMouseEnter={e => e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)"}
               onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
             >
@@ -129,7 +155,7 @@ export function ComposeEmailModal({
             </button>
           </div>
 
-          {/* ── To ── */}
+          {/* To */}
           <div className="ce-input-row">
             <span className="ce-label">To</span>
             <input
@@ -140,16 +166,15 @@ export function ComposeEmailModal({
               className="ce-bare-input"
             />
             {/* Link client dropdown */}
-            <div style={{ position: "relative" }}>
+            <div style={{ position:"relative" }}>
               <button
                 onClick={() => setShowClientDrop((v) => !v)}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "6px 12px", borderRadius: 8,
-                  fontSize: 12, fontWeight: 500, cursor: "pointer", border: "none",
+                  display:"flex", alignItems:"center", gap:6,
+                  padding:"6px 12px", borderRadius:8,
+                  fontSize:12, fontWeight:500, cursor:"pointer", border:"none",
                   backgroundColor: selectedClient ? "#eff6ff" : "#f1f5f9",
                   color: selectedClient ? "#2563eb" : "#64748b",
-                  transition: "background .15s",
                 }}
               >
                 {selectedClient ? selectedClient.name : "Link client"}
@@ -158,16 +183,25 @@ export function ComposeEmailModal({
 
               {showClientDrop && (
                 <div style={{
-                  position: "absolute", right: 0, top: 38, zIndex: 50,
-                  width: 256, backgroundColor: "#fff",
-                  border: "1px solid #e2e8f0", borderRadius: 14,
-                  boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-                  overflow: "hidden",
+                  position:"absolute", right:0, top:38, zIndex:50,
+                  width:256, backgroundColor:"#fff",
+                  border:"1px solid #e2e8f0", borderRadius:14,
+                  boxShadow:"0 10px 30px rgba(0,0,0,0.12)",
+                  overflow:"hidden",
                 }}>
-                  <div style={{ padding: "8px 12px", borderBottom: "1px solid #f1f5f9" }}>
-                    <p style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".05em" }}>Link to client</p>
+                  <div style={{ padding:"8px 12px", borderBottom:"1px solid #f1f5f9" }}>
+                    <p style={{ fontSize:11, fontWeight:600, color:"#94a3b8", textTransform:"uppercase", letterSpacing:".05em" }}>Link to client</p>
                   </div>
-                  <div style={{ maxHeight: 192, overflowY: "auto" }}>
+                  <div style={{ maxHeight:192, overflowY:"auto" }}>
+                    {/* Clear option */}
+                    {clientId && (
+                      <button
+                        onClick={() => { setClientId(""); setShowClientDrop(false); }}
+                        style={{ width:"100%", padding:"8px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left", fontSize:12, color:"#ef4444" }}
+                      >
+                        ✕ Remove link
+                      </button>
+                    )}
                     {clientsData?.clients?.map((c) => (
                       <button
                         key={c.id}
@@ -177,16 +211,16 @@ export function ComposeEmailModal({
                           if (!toName) setToName(c.name);
                           setShowClientDrop(false);
                         }}
-                        style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", background: "transparent", border: "none", cursor: "pointer", textAlign: "left", transition: "background .15s" }}
+                        style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left" }}
                         onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f8fafc"}
                         onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                       >
-                        <div style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: "#dbeafe", color: "#1d4ed8", fontSize: 11, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <div style={{ width:28, height:28, borderRadius:8, backgroundColor:"#dbeafe", color:"#1d4ed8", fontSize:11, fontWeight:700, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                           {c.name.charAt(0)}
                         </div>
                         <div>
-                          <p style={{ fontSize: 13, fontWeight: 500, color: "#0f172a", margin: 0 }}>{c.name}</p>
-                          <p style={{ fontSize: 11, color: "#94a3b8", margin: 0 }}>{c.email || "No email"}</p>
+                          <p style={{ fontSize:13, fontWeight:500, color:"#0f172a", margin:0 }}>{c.name}</p>
+                          <p style={{ fontSize:11, color:"#94a3b8", margin:0 }}>{c.email || "No email"}</p>
                         </div>
                       </button>
                     ))}
@@ -196,7 +230,7 @@ export function ComposeEmailModal({
             </div>
           </div>
 
-          {/* ── Subject ── */}
+          {/* Subject */}
           <div className="ce-input-row">
             <span className="ce-label">Subject</span>
             <input
@@ -204,28 +238,28 @@ export function ComposeEmailModal({
               onChange={(e) => setSubject(e.target.value)}
               placeholder="Email subject..."
               className="ce-bare-input"
-              style={{ fontWeight: 500 }}
+              style={{ fontWeight:500 }}
             />
           </div>
 
-          {/* ── BCC ── */}
-          <div className="ce-input-row" style={{ borderBottom: "1px solid #f1f5f9" }}>
+          {/* BCC */}
+          <div className="ce-input-row">
             <button
               onClick={() => setShowBcc((v) => !v)}
-              style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8", textTransform: "uppercase", letterSpacing: ".05em", width: 48, flexShrink: 0, background: "transparent", border: "none", cursor: "pointer", padding: 0, transition: "color .15s" }}
+              style={{ fontSize:11, fontWeight:600, color:"#94a3b8", textTransform:"uppercase", letterSpacing:".05em", width:48, flexShrink:0, background:"transparent", border:"none", cursor:"pointer", padding:0 }}
               onMouseEnter={e => e.currentTarget.style.color = "#2563eb"}
               onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
             >
               BCC
             </button>
             {showBcc && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flex: 1 }}>
-                <code style={{ flex: 1, fontSize: 12, backgroundColor: "#f8fafc", border: "1px solid #e2e8f0", padding: "6px 12px", borderRadius: 8, color: "#059669", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, flex:1 }}>
+                <code style={{ flex:1, fontSize:12, backgroundColor:"#f8fafc", border:"1px solid #e2e8f0", padding:"6px 12px", borderRadius:8, color:"#059669", fontFamily:"monospace", overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
                   {bccAddress}
                 </code>
                 <button
                   onClick={copyBcc}
-                  style={{ padding: 6, borderRadius: 8, background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", alignItems: "center", transition: "background .15s" }}
+                  style={{ padding:6, borderRadius:8, background:"transparent", border:"none", cursor:"pointer", color:"#94a3b8", display:"flex", alignItems:"center" }}
                   onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f1f5f9"}
                   onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
                 >
@@ -234,16 +268,17 @@ export function ComposeEmailModal({
                     : <Copy size={16} />}
                 </button>
                 {/* Tooltip */}
-                <div style={{ position: "relative", display: "flex" }}>
-                  <Info size={14} color="#cbd5e1" style={{ cursor: "help" }} />
-                  <div style={{
-                    position: "absolute", right: 0, bottom: 22, width: 224,
-                    backgroundColor: "#0f172a", color: "#fff", fontSize: 12,
-                    padding: "10px 12px", borderRadius: 10,
-                    opacity: 0, transition: "opacity .2s", pointerEvents: "none",
-                    lineHeight: 1.5, zIndex: 50,
-                  }}
+                <div className="ce-tooltip-wrap" style={{ position:"relative", display:"flex" }}>
+                  <Info size={14} color="#cbd5e1" style={{ cursor:"help" }} />
+                  <div
                     className="ce-tooltip"
+                    style={{
+                      position:"absolute", right:0, bottom:22, width:224,
+                      backgroundColor:"#0f172a", color:"#fff", fontSize:12,
+                      padding:"10px 12px", borderRadius:10,
+                      opacity:0, transition:"opacity .2s", pointerEvents:"none",
+                      lineHeight:1.5, zIndex:50,
+                    }}
                   >
                     Adding this BCC automatically logs the email under the correct client in the activity timeline.
                   </div>
@@ -252,32 +287,32 @@ export function ComposeEmailModal({
             )}
           </div>
 
-          {/* ── Body ── */}
-          <div style={{ padding: "16px 24px" }}>
+          {/* Body */}
+          <div style={{ padding:"16px 24px" }}>
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder="Write your message here..."
               autoFocus
               style={{
-                width: "100%", minHeight: 200, resize: "none",
-                fontSize: 14, color: "#1e293b", lineHeight: 1.7,
-                outline: "none", border: "none", background: "transparent",
-                fontFamily: "inherit",
+                width:"100%", minHeight:200, resize:"none",
+                fontSize:14, color:"#1e293b", lineHeight:1.7,
+                outline:"none", border:"none", background:"transparent",
+                fontFamily:"inherit",
               }}
             />
           </div>
 
-          {/* ── Attachments ── */}
+          {/* Attachments */}
           {attachments.length > 0 && (
-            <div style={{ padding: "0 24px 12px", display: "flex", flexWrap: "wrap", gap: 8, borderTop: "1px solid #f1f5f9", paddingTop: 12 }}>
+            <div style={{ padding:"0 24px 12px", display:"flex", flexWrap:"wrap", gap:8, borderTop:"1px solid #f1f5f9", paddingTop:12 }}>
               {attachments.map((file, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", backgroundColor: "#f1f5f9", borderRadius: 8, fontSize: 12, color: "#475569" }}>
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:6, padding:"5px 10px", backgroundColor:"#f1f5f9", borderRadius:8, fontSize:12, color:"#475569" }}>
                   <Paperclip size={12} color="#94a3b8" />
-                  <span style={{ maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{file.name}</span>
+                  <span style={{ maxWidth:120, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{file.name}</span>
                   <button
                     onClick={() => setAttachments((p) => p.filter((_, j) => j !== i))}
-                    style={{ background: "transparent", border: "none", cursor: "pointer", color: "#94a3b8", display: "flex", padding: 0, transition: "color .15s" }}
+                    style={{ background:"transparent", border:"none", cursor:"pointer", color:"#94a3b8", display:"flex", padding:0 }}
                     onMouseEnter={e => e.currentTarget.style.color = "#ef4444"}
                     onMouseLeave={e => e.currentTarget.style.color = "#94a3b8"}
                   >
@@ -288,52 +323,50 @@ export function ComposeEmailModal({
             </div>
           )}
 
-          {/* ── Footer ── */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 24px", backgroundColor: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              {/* Attachment button */}
-              <label style={{ padding: 8, borderRadius: 8, cursor: "pointer", color: "#94a3b8", display: "flex", transition: "background .15s" }}
+          {/* Footer */}
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"12px 24px", backgroundColor:"#f8fafc", borderTop:"1px solid #f1f5f9" }}>
+            <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+              <label
+                style={{ padding:8, borderRadius:8, cursor:"pointer", color:"#94a3b8", display:"flex" }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = "#e2e8f0"}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 <Paperclip size={16} />
-                <input type="file" multiple className="hidden" onChange={(e) => { if (e.target.files) setAttachments((p) => [...p, ...Array.from(e.target.files)]); }} />
+                <input
+                  type="file"
+                  multiple
+                  style={{ display:"none" }}
+                  onChange={(e) => { if (e.target.files) setAttachments((p) => [...p, ...Array.from(e.target.files)]); }}
+                />
               </label>
-
-              {/* Linked client badge */}
               {selectedClient && (
-                <span style={{ display: "inline-flex", alignItems: "center", padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, backgroundColor: "#dbeafe", color: "#1d4ed8" }}>
+                <span style={{ display:"inline-flex", alignItems:"center", padding:"3px 10px", borderRadius:999, fontSize:11, fontWeight:600, backgroundColor:"#dbeafe", color:"#1d4ed8" }}>
                   Linked: {selectedClient.name}
                 </span>
               )}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 12, color: "#94a3b8" }}>{body.length} chars</span>
-
-              {/* Discard */}
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <span style={{ fontSize:12, color:"#94a3b8" }}>{body.length} chars</span>
               <button
                 onClick={onClose}
-                style={{ padding: "7px 14px", fontSize: 13, fontWeight: 600, color: "#475569", backgroundColor: "transparent", border: "1px solid #e2e8f0", borderRadius: 10, cursor: "pointer", transition: "background .15s" }}
+                style={{ padding:"7px 14px", fontSize:13, fontWeight:600, color:"#475569", backgroundColor:"transparent", border:"1px solid #e2e8f0", borderRadius:10, cursor:"pointer" }}
                 onMouseEnter={e => e.currentTarget.style.backgroundColor = "#f1f5f9"}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = "transparent"}
               >
                 Discard
               </button>
-
-              {/* Send */}
               <button
                 onClick={handleSend}
                 disabled={!isValid || isSending}
                 style={{
-                  display: "flex", alignItems: "center", gap: 6,
-                  padding: "7px 16px", fontSize: 13, fontWeight: 600,
-                  color: "#fff", backgroundColor: "#2563eb",
-                  border: "none", borderRadius: 10, cursor: "pointer",
+                  display:"flex", alignItems:"center", gap:6,
+                  padding:"7px 16px", fontSize:13, fontWeight:600,
+                  color:"#fff", backgroundColor:"#2563eb",
+                  border:"none", borderRadius:10, cursor:"pointer",
                   opacity: (!isValid || isSending) ? 0.5 : 1,
-                  transition: "background .15s",
                 }}
-                onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
+                onMouseEnter={e => { if (!isSending && isValid) e.currentTarget.style.backgroundColor = "#1d4ed8"; }}
                 onMouseLeave={e => e.currentTarget.style.backgroundColor = "#2563eb"}
               >
                 {isSending ? <DotsLoader /> : <><Send size={14} /> Send</>}
@@ -342,11 +375,6 @@ export function ComposeEmailModal({
           </div>
         </div>
       </div>
-
-      <style>{`
-        .ce-tooltip { opacity: 0 !important; }
-        *:hover > .ce-tooltip { opacity: 1 !important; }
-      `}</style>
     </>
   );
 }

@@ -2,10 +2,10 @@ import React, { useState } from "react";
 import { useListTeamMembers, useTriggerOutlookSync } from "../../../lib/api.js";
 import {
   Copy, RefreshCw, CheckCircle2, XCircle, Mail, Users,
-  UserPlus, Wifi, Shield, Info, X, Clock, ArrowUpRight, ArrowDownLeft,
-  Bell,   // ← NEW for alerts
+  UserPlus, Wifi, Shield, Info, X, Clock, ArrowUpRight, ArrowDownLeft, Bell,
 } from "lucide-react";
 import { getInitials, formatSmartDate } from "../../../lib/utils.js";
+import { OutlookConnectModal } from "../../layout/OutlookConnectModal.jsx";
 
 const cv = (v) => `var(${v})`;
 const surfaceStyle  = { backgroundColor: cv("--bg-secondary"), border: `1px solid ${cv("--border-color")}` };
@@ -111,9 +111,9 @@ function InviteModal({ isOpen, onClose }) {
   const [done,  setDone]  = useState(false);
 
   const ROLES = [
-    { id:"account_manager", label:"Account Manager", desc:"Manages client emails & BCC tracking", Icon:Users,  grad:BRAND_GRAD,                            active_bg:"rgba(102,115,255,0.1)", active_border:BRAND      },
-    { id:"admin",           label:"Admin",           desc:"Full access to all modules",           Icon:Shield, grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", active_bg:"rgba(139,92,246,0.1)", active_border:"#8b5cf6"  },
-    { id:"viewer",          label:"Viewer",          desc:"Read-only access to activity",         Icon:Info,   grad:"linear-gradient(135deg,#64748b,#475569)", active_bg:"rgba(100,116,139,0.1)", active_border:"#64748b" },
+    { id:"account_manager", label:"Account Manager", desc:"Manages client emails & BCC tracking", Icon:Users,  grad:BRAND_GRAD,                            active_bg:"rgba(102,115,255,0.1)", active_border:BRAND     },
+    { id:"admin",           label:"Admin",           desc:"Full access to all modules",           Icon:Shield, grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", active_bg:"rgba(139,92,246,0.1)", active_border:"#8b5cf6" },
+    { id:"viewer",          label:"Viewer",          desc:"Read-only access to activity",         Icon:Info,   grad:"linear-gradient(135deg,#64748b,#475569)", active_bg:"rgba(100,116,139,0.1)",active_border:"#64748b" },
   ];
 
   const reset = () => { setName(""); setEmail(""); setRole("account_manager"); setDone(false); };
@@ -174,7 +174,6 @@ function InviteModal({ isOpen, onClose }) {
                   ))}
                 </div>
               </div>
-              {/* BCC Preview — emoji hata diya, ab clean + icon */}
               {name && (
                 <div className="rounded-xl p-4" style={{ backgroundColor:"rgba(16,185,129,0.06)", border:"1px solid rgba(16,185,129,0.2)" }}>
                   <p className="text-xs font-bold mb-2 flex items-center gap-2" style={{ color:"#10b981" }}>
@@ -194,9 +193,12 @@ function InviteModal({ isOpen, onClose }) {
             </div>
             <div className="flex gap-3 px-6 pb-6 pt-4" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
               <button onClick={() => { reset(); onClose(); }} className="flex-1 py-2.5 text-sm font-semibold rounded-xl et-outline-btn justify-center">Cancel</button>
-              <button onClick={() => { if (name && email) setDone(true); }} disabled={!name || !email}
+              <button
+                onClick={() => { if (name && email) setDone(true); }}
+                disabled={!name || !email}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-semibold text-white rounded-xl disabled:opacity-50"
-                style={{ background:BRAND_GRAD, boxShadow:"0 4px 12px rgba(102,115,255,0.3)" }}>
+                style={{ background:BRAND_GRAD, boxShadow:"0 4px 12px rgba(102,115,255,0.3)" }}
+              >
                 <UserPlus size={15} /> Send Invite
               </button>
             </div>
@@ -207,100 +209,16 @@ function InviteModal({ isOpen, onClose }) {
   );
 }
 
-// ─── Outlook Modal ────────────────────────────────────────────────────────────
-function OutlookModal({ isOpen, member, onClose }) {
-  const [step, setStep] = useState("overview");
-  const reset = () => { setStep("overview"); onClose(); };
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor:"rgba(0,0,0,0.5)" }}>
-      <div className="absolute inset-0" style={{ backdropFilter:"blur(4px)" }} onClick={reset} />
-      <div className="relative w-full max-w-md rounded-2xl shadow-2xl overflow-hidden" style={{ ...surfaceStyle, animation:"modalIn .18s ease both" }}>
-        {step === "overview" && (
-          <>
-            <div className="p-8 text-white" style={{ background:BRAND_GRAD }}>
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor:"rgba(255,255,255,0.15)" }}>
-                <Mail size={22} className="text-white" />
-              </div>
-              <h3 className="text-xl font-bold mb-1">Connect Outlook</h3>
-              <p className="text-sm mb-1" style={{ color:"#DADFFF" }}>Syncing for <strong className="text-white">{member?.name}</strong></p>
-              <p className="text-xs" style={{ color:"#B8C0FF" }}>Microsoft Graph API · Inbox sync + BCC tracking</p>
-            </div>
-            <div className="p-6 space-y-4">
-              <div className="space-y-3">
-                {[
-                  { Icon:Mail,           text:"Auto-log sent emails to client timelines" },
-                  { Icon:ArrowDownLeft,  text:"Capture all replies even without BCC" },
-                  { Icon:Bell,           text:"Real-time alerts for opens, clicks & downloads" },
-                ].map((f) => (
-                  <div key={f.text} className="flex items-center gap-3 text-sm" style={textSecondary}>
-                    <f.Icon size={16} style={{ color:BRAND }} />
-                    {f.text}
-                  </div>
-                ))}
-              </div>
-              {member?.outlookConnected && (
-                <div className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor:"rgba(16,185,129,0.08)", border:"1px solid rgba(16,185,129,0.3)" }}>
-                  <CheckCircle2 size={18} style={{ color:"#10b981", flexShrink:0 }} />
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color:"#10b981" }}>Already connected</p>
-                    <p className="text-xs" style={{ color:"#34d399" }}>Reconnect to refresh token</p>
-                  </div>
-                </div>
-              )}
-              <div className="flex gap-3">
-                <button onClick={reset} className="flex-1 py-2.5 text-sm font-semibold rounded-xl et-outline-btn justify-center">Cancel</button>
-                <button onClick={() => setStep("connecting")} className="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl" style={{ background:BRAND_GRAD }}>
-                  {member?.outlookConnected ? "Reconnect" : "Connect Now"} →
-                </button>
-              </div>
-            </div>
-          </>
-        )}
-        {step === "connecting" && (
-          <div className="p-12 flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor:"rgba(102,115,255,0.1)" }}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none" style={{ animation:"ot-spin .8s linear infinite" }}>
-                <circle cx="14" cy="14" r="11" stroke="var(--border-color)" strokeWidth="3" />
-                <path d="M14 3a11 11 0 0 1 11 11" stroke={BRAND} strokeWidth="3" strokeLinecap="round" />
-              </svg>
-            </div>
-            <h3 className="font-bold mb-2" style={textPrimary}>Connecting via Microsoft Graph…</h3>
-            <p className="text-sm" style={textSecondary}>Requesting inbox read + send permissions.</p>
-            <button className="mt-6 text-xs transition-colors" style={{ color:BRAND }} onClick={() => setStep("success")}
-              onMouseEnter={e => e.currentTarget.style.textDecoration="underline"}
-              onMouseLeave={e => e.currentTarget.style.textDecoration="none"}>
-              (Simulate success →)
-            </button>
-          </div>
-        )}
-        {step === "success" && (
-          <div className="p-12 flex flex-col items-center text-center">
-            <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor:"rgba(16,185,129,0.12)" }}>
-              <CheckCircle2 size={28} style={{ color:"#10b981" }} />
-            </div>
-            <h3 className="font-bold text-lg mb-2" style={textPrimary}>Outlook Connected!</h3>
-            <p className="text-sm mb-2" style={textSecondary}>
-              <strong>{member?.name}</strong>'s inbox is now syncing automatically.
-            </p>
-            <p className="text-xs mb-6" style={textMuted}>Sent emails, replies, and BCC-tracked emails will appear in client timelines.</p>
-            <button onClick={reset} className="w-full py-2.5 text-sm font-semibold text-white rounded-xl" style={{ background:BRAND_GRAD }}>Done</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ─── Page  
 export default function EmailTeam() {
-  const { data, isLoading, refetch }                  = useListTeamMembers();
-  const members                                       = data?.members || [];
-  const { mutate: syncOutlook, isPending: isSyncing } = useTriggerOutlookSync();
+  const { data, isLoading, refetch }    = useListTeamMembers();
+  const members                         = data?.members || [];
+  // FIX: useTriggerOutlookSync expects { memberId } not { data: { memberId } }
+  const { mutate: syncOutlook, isPending: isSyncing, variables: syncVars } = useTriggerOutlookSync();
   const [copiedId,     setCopied]  = useState(null);
   const [inviteOpen,   setInvite]  = useState(false);
-  const [outlookModal, setOutlook] = useState({ open:false, member:null });
+  // FIX: use real OutlookConnectModal with memberId
+  const [outlookModal, setOutlook] = useState({ open: false, member: null });
 
   const copyBcc = (id, bcc) => {
     navigator.clipboard.writeText(bcc);
@@ -309,15 +227,14 @@ export default function EmailTeam() {
   };
 
   const connectedCount = members.filter(m => m.outlookConnected).length;
-  const totalEmails    = members.reduce((a,m) => a+(m.emailCount||0), 0);
-  const totalSent      = members.reduce((a,m) => a+(m.sentCount||0), 0);
-  const totalReceived  = members.reduce((a,m) => a+(m.receivedCount||0), 0);
+  const totalSent      = members.reduce((a, m) => a + (m.sentCount     || 0), 0);
+  const totalReceived  = members.reduce((a, m) => a + (m.receivedCount || 0), 0);
 
   const SUMMARY = [
-    { Icon:Users,          label:"Members",        value:members.length,   grad:BRAND_GRAD,                              glow:"rgba(102,115,255,0.25)" },
-    { Icon:Wifi,           label:"Outlook Synced", value:connectedCount,   grad:"linear-gradient(135deg,#10b981,#0d9488)", glow:"rgba(16,185,129,0.25)"  },
-    { Icon:ArrowUpRight,   label:"Emails Sent",    value:totalSent,        grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", glow:"rgba(139,92,246,0.25)"  },
-    { Icon:ArrowDownLeft,  label:"Replies Recv.",  value:totalReceived,    grad:"linear-gradient(135deg,#f59e0b,#ea580c)", glow:"rgba(245,158,11,0.25)"  },
+    { Icon:Users,         label:"Members",        value:members.length, grad:BRAND_GRAD,                              glow:"rgba(102,115,255,0.25)" },
+    { Icon:Wifi,          label:"Outlook Synced", value:connectedCount, grad:"linear-gradient(135deg,#10b981,#0d9488)", glow:"rgba(16,185,129,0.25)"  },
+    { Icon:ArrowUpRight,  label:"Emails Sent",    value:totalSent,      grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)", glow:"rgba(139,92,246,0.25)"  },
+    { Icon:ArrowDownLeft, label:"Replies Recv.",  value:totalReceived,  grad:"linear-gradient(135deg,#f59e0b,#ea580c)", glow:"rgba(245,158,11,0.25)"  },
   ];
 
   return (
@@ -335,9 +252,11 @@ export default function EmailTeam() {
           </div>
           <p className="ml-9 text-sm" style={textMuted}>Manage Outlook connections, BCC addresses & sync per team member.</p>
         </div>
-        <button onClick={() => setInvite(true)}
+        <button
+          onClick={() => setInvite(true)}
           className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl transition-all hover:-translate-y-px"
-          style={{ background:BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}>
+          style={{ background:BRAND_GRAD, boxShadow:"0 4px 14px rgba(102,115,255,0.35)" }}
+        >
           <UserPlus size={16} /> Invite Member
         </button>
       </div>
@@ -367,7 +286,7 @@ export default function EmailTeam() {
         </div>
       )}
 
-      {/* Members */}
+      {/* Members Grid */}
       {isLoading ? (
         <TeamSkeleton />
       ) : members.length === 0 ? (
@@ -377,119 +296,144 @@ export default function EmailTeam() {
           </div>
           <h3 className="font-bold mb-1" style={textPrimary}>No team members yet</h3>
           <p className="text-sm mb-4" style={textSecondary}>Invite someone to start syncing emails and tracking client communications.</p>
-          <button onClick={() => setInvite(true)} className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl" style={{ background:BRAND_GRAD }}>
+          <button
+            onClick={() => setInvite(true)}
+            className="px-5 py-2.5 text-sm font-semibold text-white rounded-xl"
+            style={{ background:BRAND_GRAD }}
+          >
             <UserPlus size={14} className="inline mr-1.5" /> Invite First Member
           </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          {members.map((m, i) => (
-            <div key={m.id} className="et-card rounded-2xl overflow-hidden"
-              style={{ ...surfaceStyle, borderTop:`3px solid ${m.outlookConnected ? BRAND : "#f59e0b"}`, animation:`fadeUp .4s ease ${i*0.1}s both` }}>
-              <div className="p-6">
-
-                {/* Member Header */}
-                <div className="flex justify-between items-start mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-md shrink-0"
-                        style={{ background:BRAND_GRAD }}>
-                        {m.avatarInitials || getInitials(m.name)}
+          {members.map((m, i) => {
+            const isSyncingThis = isSyncing && syncVars?.memberId === m.id;
+            return (
+              <div
+                key={m.id}
+                className="et-card rounded-2xl overflow-hidden"
+                style={{ ...surfaceStyle, borderTop:`3px solid ${m.outlookConnected ? BRAND : "#f59e0b"}`, animation:`fadeUp .4s ease ${i*0.1}s both` }}
+              >
+                <div className="p-6">
+                  {/* Member Header */}
+                  <div className="flex justify-between items-start mb-5">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-md shrink-0"
+                          style={{ background:BRAND_GRAD }}>
+                          {m.avatarInitials || getInitials(m.name)}
+                        </div>
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2"
+                          style={{ backgroundColor: m.outlookConnected ? "#10b981" : "#6b7280", borderColor: cv("--bg-secondary") }} />
                       </div>
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2`}
-                        style={{ backgroundColor: m.outlookConnected ? "#10b981" : "#6b7280", borderColor: cv("--bg-secondary") }} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold" style={textPrimary}>{m.name}</h3>
-                      <p className="text-xs mt-0.5" style={textMuted}>{m.role || "Account Manager"}</p>
-                      <p className="text-xs" style={textMuted}>{m.email}</p>
-                    </div>
-                  </div>
-                  {m.outlookConnected ? (
-                    <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor:"rgba(16,185,129,0.12)", color:"#10b981" }}>
-                      <CheckCircle2 size={12} /> Synced
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor:"rgba(245,158,11,0.1)", color:"#f59e0b", border:"1px solid rgba(245,158,11,0.3)" }}>
-                      <XCircle size={12} /> Not Connected
-                    </span>
-                  )}
-                </div>
-
-                {/* Stats grid */}
-                <div className="grid grid-cols-3 gap-2 mb-5">
-                  {[
-                    { Icon:Users,         label:"Clients",  value:m.clientCount||0,   grad:BRAND_GRAD },
-                    { Icon:ArrowUpRight,  label:"Sent",     value:m.sentCount||0,     grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)" },
-                    { Icon:ArrowDownLeft, label:"Received", value:m.receivedCount||0, grad:"linear-gradient(135deg,#10b981,#0d9488)" },
-                  ].map((s) => (
-                    <div key={s.label} className="rounded-xl p-3 flex flex-col items-center text-center"
-                      style={{ ...bgStyle, border:`1px solid ${cv("--border-color")}` }}>
-                      <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-1 text-white" style={{ background:s.grad }}>
-                        <s.Icon size={13} />
+                      <div>
+                        <h3 className="font-bold" style={textPrimary}>{m.name}</h3>
+                        <p className="text-xs mt-0.5" style={textMuted}>{m.role || "Account Manager"}</p>
+                        <p className="text-xs" style={textMuted}>{m.email}</p>
                       </div>
-                      <p className="text-lg font-extrabold leading-none" style={textPrimary}>{s.value}</p>
-                      <p className="text-[9px] font-bold uppercase mt-0.5" style={textMuted}>{s.label}</p>
                     </div>
-                  ))}
-                </div>
-
-                {/* BCC Address */}
-                <div className="mb-4">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-[10px] font-bold uppercase tracking-widest" style={textMuted}>BCC Tracking Address</label>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor:"rgba(16,185,129,0.1)", color:"#10b981" }}>
-                      Auto-logs to client timeline
-                    </span>
+                    {m.outlookConnected ? (
+                      <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full" style={{ backgroundColor:"rgba(16,185,129,0.12)", color:"#10b981" }}>
+                        <CheckCircle2 size={12} /> Synced
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor:"rgba(245,158,11,0.1)", color:"#f59e0b", border:"1px solid rgba(245,158,11,0.3)" }}>
+                        <XCircle size={12} /> Not Connected
+                      </span>
+                    )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="et-bcc-code">
-                      {m.bccAddress || `activity+${(m.name||"").toLowerCase().replace(/\s+/g,"-")}@ourcrm.com`}
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-2 mb-5">
+                    {[
+                      { Icon:Users,         label:"Clients",  value:m.clientCount  || 0, grad:BRAND_GRAD },
+                      { Icon:ArrowUpRight,  label:"Sent",     value:m.sentCount    || 0, grad:"linear-gradient(135deg,#8b5cf6,#7c3aed)" },
+                      { Icon:ArrowDownLeft, label:"Received", value:m.receivedCount|| 0, grad:"linear-gradient(135deg,#10b981,#0d9488)" },
+                    ].map((s) => (
+                      <div key={s.label} className="rounded-xl p-3 flex flex-col items-center text-center"
+                        style={{ ...bgStyle, border:`1px solid ${cv("--border-color")}` }}>
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center mb-1 text-white" style={{ background:s.grad }}>
+                          <s.Icon size={13} />
+                        </div>
+                        <p className="text-lg font-extrabold leading-none" style={textPrimary}>{s.value}</p>
+                        <p className="text-[9px] font-bold uppercase mt-0.5" style={textMuted}>{s.label}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* BCC Address */}
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[10px] font-bold uppercase tracking-widest" style={textMuted}>BCC Tracking Address</label>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ backgroundColor:"rgba(16,185,129,0.1)", color:"#10b981" }}>
+                        Auto-logs to client timeline
+                      </span>
                     </div>
-                    <button onClick={() => copyBcc(m.id, m.bccAddress || "")}
-                      className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors"
-                      style={surfaceStyle}
-                      onMouseEnter={e => { e.currentTarget.style.borderColor=BRAND; e.currentTarget.style.color=BRAND; }}
-                      onMouseLeave={e => { e.currentTarget.style.borderColor=cv("--border-color"); e.currentTarget.style.color=cv("--text-muted"); }}>
-                      {copiedId===m.id ? <CheckCircle2 size={15} style={{ color:"#10b981" }} /> : <Copy size={15} style={textMuted} />}
-                    </button>
-                  </div>
-                  <p className="text-[10px] mt-1.5" style={textMuted}>
-                    BCC this when sending from Outlook to auto-log under the correct client.
-                  </p>
-                </div>
-
-                {/* Footer */}
-                <div className="pt-4 flex justify-between items-center gap-2 flex-wrap" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
-                  <div className="flex items-center gap-1.5">
-                    <Clock size={11} style={textMuted} />
-                    <span className="text-xs" style={textMuted}>
-                      {m.lastSyncAt ? `Synced ${formatSmartDate(m.lastSyncAt)}` : "Never synced"}
-                    </span>
-                  </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setOutlook({ open:true, member:m })} className="et-outline-btn">
-                      <Mail size={12} /> {m.outlookConnected ? "Reconnect" : "Connect Outlook"}
-                    </button>
-                    {m.outlookConnected && (
+                    <div className="flex items-center gap-2">
+                      <div className="et-bcc-code">
+                        {m.bccAddress || `activity+${(m.name || "").toLowerCase().replace(/\s+/g, "-")}@ourcrm.com`}
+                      </div>
                       <button
-                        onClick={() => syncOutlook({ data:{ memberId:m.id } }, { onSuccess:refetch })}
-                        disabled={isSyncing}
+                        onClick={() => copyBcc(m.id, m.bccAddress || "")}
+                        className="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-colors"
+                        style={surfaceStyle}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = BRAND; e.currentTarget.style.color = BRAND; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = cv("--border-color"); e.currentTarget.style.color = cv("--text-muted"); }}
+                      >
+                        {copiedId === m.id ? <CheckCircle2 size={15} style={{ color:"#10b981" }} /> : <Copy size={15} style={textMuted} />}
+                      </button>
+                    </div>
+                    <p className="text-[10px] mt-1.5" style={textMuted}>
+                      BCC this when sending from Outlook to auto-log under the correct client.
+                    </p>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="pt-4 flex justify-between items-center gap-2 flex-wrap" style={{ borderTop:`1px solid ${cv("--border-color")}` }}>
+                    <div className="flex items-center gap-1.5">
+                      <Clock size={11} style={textMuted} />
+                      <span className="text-xs" style={textMuted}>
+                        {m.lastSyncAt ? `Synced ${formatSmartDate(m.lastSyncAt)}` : "Never synced"}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      {/* FIX: real OutlookConnectModal with memberId */}
+                      <button
+                        onClick={() => setOutlook({ open: true, member: m })}
                         className="et-outline-btn"
                       >
-                        {isSyncing ? <DotsLoader color={cv("--text-muted")} /> : <><RefreshCw size={12} /> Sync Now</>}
+                        <Mail size={12} /> {m.outlookConnected ? "Reconnect" : "Connect Outlook"}
                       </button>
-                    )}
+                      {m.outlookConnected && (
+                        <button
+                          onClick={() => syncOutlook({ memberId: m.id }, { onSuccess: refetch })}
+                          disabled={isSyncingThis}
+                          className="et-outline-btn"
+                        >
+                          {isSyncingThis
+                            ? <DotsLoader color={cv("--text-muted")} />
+                            : <><RefreshCw size={12} /> Sync Now</>}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
       <InviteModal isOpen={inviteOpen} onClose={() => setInvite(false)} />
-      <OutlookModal isOpen={outlookModal.open} member={outlookModal.member} onClose={() => setOutlook({ open:false, member:null })} />
+
+      {/* FIX: Real OutlookConnectModal with proper memberId */}
+      <OutlookConnectModal
+        isOpen={outlookModal.open}
+        memberId={outlookModal.member?.id}
+        memberName={outlookModal.member?.name}
+        isConnected={outlookModal.member?.outlookConnected}
+        onClose={() => setOutlook({ open: false, member: null })}
+      />
     </div>
   );
 }
